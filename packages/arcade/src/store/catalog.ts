@@ -8,6 +8,11 @@ export interface CatalogFile {
   dependencies?: string[]
 }
 export interface CatalogGame extends CatalogFile {
+  name?: string
+  genre?: string
+  publisher?: string
+  tags?: string[]
+  system?: string
   rom_name: string
   dependencies: string[]
 }
@@ -100,6 +105,15 @@ function loadCatalog(source: string, signal?: AbortSignal): Promise<ArcadeCatalo
     loadedCatalogs.set(url, loading)
   }
   return loading
+}
+
+export async function loadCatalogs(signal?: AbortSignal): Promise<{ catalogs: ArcadeCatalog[]; errors: string[] }> {
+  const results = await Promise.allSettled(catalogUrls.map(url => loadCatalog(url, signal)))
+  signal?.throwIfAborted()
+  return {
+    catalogs: results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []),
+    errors: results.flatMap(result => result.status === 'rejected' ? [result.reason instanceof Error ? result.reason.message : String(result.reason)] : []),
+  }
 }
 
 export async function findCatalogGame(hash: string, signal?: AbortSignal): Promise<{ game: CatalogGame; catalog: ArcadeCatalog } | undefined> {

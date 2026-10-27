@@ -6,10 +6,12 @@ import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import TouchControls from './components/TouchControls.vue'
+import RomStorePanel from './components/RomStorePanel.vue'
+import type { ArcadeCatalog, CatalogGame } from './store/catalog'
 import { ArcadeRunner } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action } from './emulator/settings'
 import { CORE_BUILD, bundleKey, getSnapshot, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
-import { prepareGame, type DependencyProgress } from './store/dependencies'
+import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
 import { navEnabled, useRemoteNav } from './composables/useRemoteNav'
@@ -26,8 +28,6 @@ const tab=ref<'library'|'saves'|'keys'|'display'>('library')
 const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示与声音'}] as const
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
 const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b.importedAt-a.importedAt))
-const query=ref('')
-const filteredGames=computed(()=>games.value.filter(game=>game.name.includes(query.value.trim().toLowerCase())))
 const current=shallowRef<Archive|null>(null)
 const currentDependencies=shallowRef<Archive[]>([])
 const loaded=computed(()=>!!current.value&&!!runner.value?.loaded)
@@ -61,6 +61,9 @@ async function importFiles(){
 }
 async function startGame(source:Archive,snapshot?:Snapshot){
   const {game,dependencies}=await prepareGame(source,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
+  await loadPreparedGame(game,dependencies,snapshot)
+}
+async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Snapshot){
   if(snapshot&&bundleKey(game,dependencies)!==snapshot.key)throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
   progress.value=null
   await refresh()
@@ -70,6 +73,16 @@ async function startGame(source:Archive,snapshot?:Snapshot){
   await nextTick();measure()
 }
 async function play(game:Archive){await task(async()=>{await startGame(game);menuOpen.value=false})}
+async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog,launch:boolean){
+  await task(async()=>{
+    try{
+      const {game,dependencies}=await prepareCatalogGame(entry,catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
+      if(launch){await loadPreparedGame(game,dependencies);menuOpen.value=false}
+      else notify('游戏及依赖已下载')
+    }finally{await refresh()}
+  })
+}
+async function deleteGame(game:Archive){await task(async()=>{await removeArchive(game.id);await refresh()})}
 async function save(){
   const game=current.value
   if(!game||!runner.value?.loaded)throw new Error('请先启动游戏')
@@ -166,7 +179,6 @@ onBeforeUnmount(()=>{
   delete (window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack
   runner.value?.dispose()
 })
-const formatSize=(size:number)=>size>=1024*1024?`${(size/1024/1024).toFixed(1)} MB`:`${Math.ceil(size/1024)} KB`
 const PAD_LABELS:Record<number,string>={0:'A / ×',1:'B / ○',2:'X / □',3:'Y / △',4:'LB / L1',5:'RB / R1',8:'Select / Back',9:'Start',12:'↑',13:'↓',14:'←',15:'→'}
 const time=(value:number)=>new Date(value).toLocaleString()
 </script>
@@ -182,7 +194,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
     <main class="arcade-stage">
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
-        <div v-if="!loaded" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在菜单中导入 ZIP 游戏包，投币后开始游戏。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
+        <div v-if="!loaded" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在游戏库中选择游戏，自动下载后投币开始。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
       </div>
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'}" :disabled="!enabled" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
@@ -194,16 +206,10 @@ const time=(value:number)=>new Date(value).toLocaleString()
         <nav class="arcade-tabs" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :class="{selected:tab===item.id}" @click="tab=item.id">{{item.label}}</SButton></nav>
         <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
         <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
-        <fieldset class="arcade-content" :disabled="busy||leaving">
-          <section v-if="tab==='library'" class="library-page">
-            <div class="arcade-actions"><SButton @click="importFiles">导入游戏 ZIP</SButton><input v-model="query" class="arcade-search" type="search" placeholder="搜索游戏文件名" aria-label="搜索街机游戏" /></div>
-            <SHint>导入目录对应版本的 ZIP 游戏包。启动时自动下载所需依赖，下载完成后可离线使用。</SHint>
-            <div v-if="!games.length" class="library-empty">还没有游戏，点击「导入游戏 ZIP」添加。</div>
-            <div v-else-if="!filteredGames.length" class="library-empty">没有匹配的游戏。</div>
-            <article v-for="game in filteredGames" :key="game.id" class="game-row">
-              <div class="game-summary"><div><strong>{{game.name}}</strong><small>{{formatSize(game.size)}}<span v-if="current?.hash===game.hash"> · 正在游玩</span></small></div><div class="row-actions"><SButton @click="play(game)">启动</SButton><SButton @click="task(async()=>{await removeArchive(game.id);await refresh()})">删除</SButton></div></div>
-            </article>
-          </section>
+        <fieldset class="arcade-content" :class="{'library-content':tab==='library'}" :disabled="busy||leaving">
+          <RomStorePanel v-if="tab==='library'" :archives="archives" :busy="busy||leaving" :progress="progress"
+            :play="(game,catalog)=>remoteGame(game,catalog,true)" :download="(game,catalog)=>remoteGame(game,catalog,false)"
+            :play-cached="play" :remove="deleteGame" :import-files="importFiles" />
 
           <section v-else-if="tab==='saves'">
             <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取当前游戏存档</SButton></div>
@@ -247,7 +253,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .arcade-menu{display:flex;flex-direction:column;min-height:0;height:100%}.arcade-tabs{display:flex;gap:6px;padding:12px;overflow-x:auto;flex-shrink:0}.arcade-tabs :deep(button){flex-shrink:0}.selected{background:#383e4c!important;border-color:#82a4dc!important}
 .arcade-error{margin:0 12px 10px;padding:12px;background:#482c30;border:1px solid #8d545a;border-radius:6px;color:#ffccd0;line-height:1.6;font-size:13px;overflow-wrap:anywhere}.arcade-progress{padding:0 16px;color:#bbb;font-size:13px}
 .arcade-content{min-width:0;min-height:0;flex:1;border:0;padding:4px 16px 20px;margin:0;overflow:auto}.arcade-content section{max-width:760px;margin:0 auto}.arcade-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
-.arcade-search{flex:1;min-width:140px;min-height:40px;background:#1e1e1e;border:1px solid #505050;border-radius:6px;color:#eee;padding:8px 12px}.library-empty{padding:36px 12px;text-align:center;color:#aaa;line-height:1.6}
+.arcade-content.library-content{display:flex;flex-direction:column;padding:0;overflow:hidden}.library-content :deep(.store-panel){max-width:none;width:100%;margin:0}.library-empty{padding:36px 12px;text-align:center;color:#aaa;line-height:1.6}
 .game-row{border:1px solid #414141;border-radius:8px;padding:14px;margin-top:12px;background:#282828}.game-summary{display:flex;justify-content:space-between;align-items:center;gap:12px}.game-summary>div:first-child{min-width:0}.game-row strong{font-size:15px;overflow-wrap:anywhere}.game-row small{display:block;margin-top:7px;color:#aaa;font-size:12px}.row-actions{display:flex;gap:8px;flex-shrink:0}
 .keys-page h3{font-size:14px;margin:8px 0 14px}.keyboard-help{border-bottom:1px solid #414141;padding-bottom:16px;margin-bottom:20px!important}.keyboard-help dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;margin:0;line-height:1.6;font-size:13px}.keyboard-help dd{margin:0;color:#bbb}.keyboard-help kbd{background:#333;border:1px solid #555;border-radius:4px;padding:3px 6px}.arcade-key-row{display:grid;grid-template-columns:60px minmax(110px,1fr) minmax(90px,1fr);gap:12px;align-items:center;margin:10px 0;font-size:13px}.key-heading{color:#aaa;margin-top:18px}
 .core-licenses{margin-top:24px;color:#aaa;font-size:12px}.core-licenses summary{cursor:pointer;min-height:32px}.core-licenses pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;border:1px solid #444;line-height:1.5}

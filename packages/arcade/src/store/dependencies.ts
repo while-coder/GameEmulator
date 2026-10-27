@@ -1,4 +1,4 @@
-import { dependencyPlan, downloadUrl, findCatalogGame, type CatalogFile } from './catalog'
+import { dependencyPlan, downloadUrl, findCatalogGame, type ArcadeCatalog, type CatalogFile, type CatalogGame } from './catalog'
 import { hashBlob, importArchive, listArchives, putArchive, validateZip, type Archive } from './library'
 
 export interface DependencyProgress {
@@ -11,7 +11,7 @@ interface ResolveOptions {
   onProgress?: (progress: DependencyProgress) => void
 }
 
-async function downloadDependency(entry: CatalogFile, options: ResolveOptions): Promise<Archive> {
+async function downloadArchive(entry: CatalogFile, options: ResolveOptions, kind: 'game' | 'support' = 'support'): Promise<Archive> {
   const abort = new AbortController()
   let timeout = false
   let timer: ReturnType<typeof setTimeout>
@@ -49,13 +49,13 @@ async function downloadDependency(entry: CatalogFile, options: ResolveOptions): 
     await validateZip(file)
     if (await hashBlob(file) !== entry.sha256.toLowerCase()) throw new Error('SHA-256 校验失败')
     options.signal?.throwIfAborted()
-    const archive = await importArchive(file, 'support')
+    const archive = await importArchive(file, kind)
     report(received)
     return archive
   } catch (error) {
     if (options.signal?.aborted) throw error
     const detail = timeout ? '连接超时' : error instanceof TypeError ? '无法访问下载源，请检查网络或下载源是否允许跨域访问' : error instanceof Error ? error.message : String(error)
-    throw new Error(`下载依赖 ${entry.file_name} 失败：${detail}。请重试。`)
+    throw new Error(`下载 ${entry.file_name} 失败：${detail}。请重试。`)
   } finally {
     clearTimeout(timer!)
     options.signal?.removeEventListener('abort', cancel)
@@ -67,8 +67,16 @@ async function downloadDependency(entry: CatalogFile, options: ResolveOptions): 
 export async function prepareGame(game: Archive, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {
   const match = await findCatalogGame(game.hash, options.signal)
   if (!match) throw new Error(`${game.name} 未被游戏目录收录，无法自动确定依赖。请使用目录对应版本的游戏 ZIP。`)
-  const plan = dependencyPlan(match.game, match.catalog)
+  return prepareCatalogGame(match.game, match.catalog, options)
+}
+
+export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCatalog, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {
+  const plan = dependencyPlan(entry, catalog)
   const cached = await listArchives()
+  const localGame = cached.find(file => file.hash === entry.sha256.toLowerCase() && file.size === entry.file_size)
+  const game = localGame && await hashBlob(localGame.file) === entry.sha256.toLowerCase()
+    ? { ...localGame, id: `game:${entry.file_name}`, kind: 'game' as const, name: entry.file_name }
+    : await downloadArchive(entry, options, 'game')
   const dependencies: Archive[] = []
   for (const entry of plan) {
     options.signal?.throwIfAborted()
@@ -77,11 +85,11 @@ export async function prepareGame(game: Archive, options: ResolveOptions = {}): 
     // Verify its bytes before loading instead of relying only on the DB record.
     const archive = local && await hashBlob(local.file) === entry.sha256.toLowerCase()
       ? { ...local, name: entry.file_name }
-      : await downloadDependency(entry, options)
+      : await downloadArchive(entry, options)
     dependencies.push(archive)
   }
   options.signal?.throwIfAborted()
-  const resolved = { ...game, name: match.game.file_name, dependencies: dependencies.map(file => file.name) }
+  const resolved = { ...game, dependencies: dependencies.map(file => file.name) }
   await putArchive(resolved)
   return { game: resolved, dependencies }
 }
