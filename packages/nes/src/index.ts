@@ -63,3 +63,4 @@ export {
   type Settings,
   type TouchPadMode,
 } from './emulator/settings'
+export { default as NesView } from './NesView.vue'

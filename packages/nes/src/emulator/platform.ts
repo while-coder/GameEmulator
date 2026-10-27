@@ -9,7 +9,7 @@ function ua(): string {
 export const isAndroid = /android/i.test(ua())
 
 /** 是否运行在 Tauri WebView 中。 */
-export const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 export type PickedRomFile = {
   name: string

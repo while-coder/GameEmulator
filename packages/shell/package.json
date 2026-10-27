@@ -1,0 +1,8 @@
+{
+  "name": "@game-emulator/shell",
+  "private": true,
+  "type": "module",
+  "version": "0.1.1",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "vue": "catalog:" }
+}

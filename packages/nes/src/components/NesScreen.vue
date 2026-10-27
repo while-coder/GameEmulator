@@ -43,6 +43,16 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const displayRef = ref<HTMLDivElement | null>(null)
 const frameRef = ref<HTMLDivElement | null>(null)
 let runner: NesRunner | null = null
+// Complete in-flight saves before the host destroys this document.
+const pendingOperations = new Set<Promise<unknown>>()
+function trackOperation<T>(operation: Promise<T>): Promise<T> {
+  pendingOperations.add(operation)
+  return operation.finally(() => pendingOperations.delete(operation))
+}
+function quickSave() { return trackOperation(doQuickSave()) }
+function quickLoad() { return trackOperation(doQuickLoad()) }
+function quickNewSave() { return trackOperation(doQuickNewSave()) }
+
 
 // 快速存档/读档:单槽,按 romKey 绑定。toast 显示一行短暂的操作反馈。
 const toast = ref('')
@@ -64,7 +74,7 @@ function describeError(err: unknown): string {
   return String(err)
 }
 
-async function quickSave() {
+async function doQuickSave() {
   if (!runner?.loaded || !props.romKey) {
     showToast('请先载入游戏')
     return
@@ -84,7 +94,7 @@ async function quickSave() {
 }
 
 // 快速新建存档:不覆盖 quick,而是往存档列表追加一条(自动编号 label)。
-async function quickNewSave(): Promise<boolean> {
+async function doQuickNewSave(): Promise<boolean> {
   if (!runner?.loaded || !props.romKey) {
     showToast('请先载入游戏')
     return false
@@ -107,7 +117,7 @@ async function quickNewSave(): Promise<boolean> {
   }
 }
 
-async function quickLoad() {
+async function doQuickLoad() {
   if (!runner?.loaded || !props.romKey) {
     showToast('请先载入游戏')
     return
@@ -479,6 +489,7 @@ onMounted(() => {
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
   window.addEventListener('blur', releaseAllGameInput)
+  window.addEventListener('pagehide', onPageHide)
   document.addEventListener('visibilitychange', onVisibilityChange)
   window.addEventListener('gamepadconnected', syncGamepadAssignments)
   window.addEventListener('gamepaddisconnected', syncGamepadAssignments)
@@ -493,6 +504,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
   window.removeEventListener('blur', releaseAllGameInput)
+  window.removeEventListener('pagehide', onPageHide)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   window.removeEventListener('gamepadconnected', syncGamepadAssignments)
   window.removeEventListener('gamepaddisconnected', syncGamepadAssignments)
@@ -549,6 +561,15 @@ function resume() {
 function stop() {
   runner?.unload()
 }
+function onPageHide() {
+  releaseAllGameInput()
+  void runner?.dispose()
+}
+async function shutdown() {
+  releaseAllGameInput()
+  await Promise.allSettled([...pendingOperations])
+  await runner?.dispose()
+}
 
 // 供存档列表面板使用:抓取当前引擎状态 / 把某条存档状态应用到引擎。
 async function captureState(): Promise<SaveState | null> {
@@ -561,6 +582,7 @@ async function applyState(state: SaveState): Promise<boolean> {
   return ok
 }
 defineExpose({
+  shutdown,
   loadRom,
   reset,
   setAudioEnabled,

@@ -60,6 +60,21 @@ const loading = ref(false)
 const paused = ref(false)
 const settingsOpen = ref(false)
 const layoutEditing = ref(false)
+const leaving = ref(false)
+const leaveError = ref('')
+async function leaveEmulator() {
+  if (leaving.value || loading.value || creatingSave.value) return
+  leaving.value = true
+  leaveError.value = ''
+  try {
+    await screen.value?.shutdown()
+    await props.onExit?.()
+  } catch (err) {
+    leaveError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    leaving.value = false
+  }
+}
 function editTouchLayout() {
   layoutEditing.value = true
   settingsOpen.value = false
@@ -89,7 +104,7 @@ let exitArmedAt = 0
 let exitHintTimer: ReturnType<typeof setTimeout> | null = null
 
 const inputLocked = computed(
-  () => settingsOpen.value || helpOpen.value || layoutEditing.value,
+  () => settingsOpen.value || helpOpen.value || layoutEditing.value || leaving.value,
 )
 
 const toolbarRef = ref<HTMLElement | null>(null)
@@ -217,6 +232,7 @@ function onSystemAction(action: string) {
 
 const EXIT_CONFIRM_MS = 2000
 function handleBack(): BackResult {
+  if (loading.value || leaving.value || creatingSave.value) return 'handled'
   if (layoutEditing.value) {
     finishTouchLayout()
     return 'handled'
@@ -235,6 +251,8 @@ function handleBack(): BackResult {
   }
   if (!props.enableBackExit) return 'handled'
 
+  // Returning to the launcher never terminates the application.
+  if (props.onExit) return 'exit'
   const now = Date.now()
   if (now - exitArmedAt < EXIT_CONFIRM_MS) {
     if (exitHintTimer) {
@@ -255,12 +273,13 @@ function handleBack(): BackResult {
 }
 
 function consumeBack() {
-  if (handleBack() === 'exit') void props.onExit?.()
+  if (handleBack() === 'exit') void leaveEmulator()
 }
 
 defineExpose({
   handleBack,
   consumeBack,
+  leaveEmulator,
 })
 
 onBeforeUnmount(() => {
@@ -276,6 +295,7 @@ onBeforeUnmount(() => {
     :class="shellClasses"
   >
     <header ref="toolbarRef" class="desktop-toolbar" aria-label="游戏功能区">
+      <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave" @click="leaveEmulator">返回模拟器列表</SButton>
       <SButton @click="openSettings('library')">ROM 库</SButton>
       <SButton @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
       <SButton title="打开设置 (Esc)" @click="settingsOpen = true">菜单</SButton>
@@ -290,6 +310,8 @@ onBeforeUnmount(() => {
       @edit-touch-layout="editTouchLayout"
     >
       <template #actions="{ tab }">
+        <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave" @click="leaveEmulator">返回模拟器列表</SButton>
+        <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
         <template v-if="tab === 'library'">
           <SButton :loading="loading" @click="openRom">{{ loading ? openLoadingLabel : '打开本地 ROM' }}</SButton>
         </template>

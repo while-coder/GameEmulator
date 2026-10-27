@@ -1,62 +1,61 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { exit } from '@tauri-apps/plugin-process'
-import { PlayerShell, isTauri } from '@nes-emulator/ui'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { invoke } from '@tauri-apps/api/core'
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { MainView, emulators, type EmulatorId } from '@game-emulator/shell'
 import { UpdaterDialog } from '@while-coder/tauri-updater-vue'
 
-const shell = ref<InstanceType<typeof PlayerShell> | null>(null)
-
-async function exitApp() {
-  if (isTauri) {
+const native = '__TAURI_INTERNALS__' in window
+const main = ref<InstanceType<typeof MainView> | null>(null)
+const active = ref(true)
+let unlisten: UnlistenFn | undefined
+let disposed = false
+async function launch(id: EmulatorId) {
+  const emulator = emulators.find((entry) => entry.id === id)!
+  if (native && await invoke<boolean>('supports_emulator_webview')) {
+    active.value = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let readyOff: UnlistenFn | undefined
     try {
-      await exit(0)
+      let signalReady!: () => void
+      const ready = new Promise<void>((resolve, reject) => {
+        signalReady = resolve
+        timer = setTimeout(() => reject(new Error('模拟器页面加载超时，请重试')), 20000)
+      })
+      // Attach before creating the child: a cached page may become ready immediately.
+      readyOff = await listen('emulator-ready', signalReady)
+      await Promise.all([invoke('open_emulator', { id }), ready])
     } catch (err) {
-      console.warn('[app] 退出失败', err)
+      await invoke('close_emulator').catch(console.error)
+      active.value = true
+      throw err
+    } finally {
+      clearTimeout(timer)
+      readyOff?.()
     }
   } else {
-    window.close()
+    location.assign(new URL(emulator.page, location.href).href)
   }
 }
-
-function handleAndroidBack(): 'exit' | 'handled' {
-  return shell.value?.handleBack() ?? 'exit'
-}
-
-function onPopState() {
-  shell.value?.consumeBack()
-  history.pushState(null, '', location.href)
-}
-
-onMounted(() => {
-  if (typeof window !== 'undefined') {
-    ;(window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack =
-      handleAndroidBack
-  }
-  if (isTauri && typeof window !== 'undefined') {
-    history.pushState(null, '', location.href)
-    window.addEventListener('popstate', onPopState)
+onMounted(async () => {
+  ;(window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack = () => 'exit'
+  if (native) {
+    const off = await listen('emulator-closed', () => {
+      active.value = true
+      void nextTick(() => main.value?.focusCard())
+    })
+    if (disposed) off()
+    else unlisten = off
   }
 })
-
 onBeforeUnmount(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('popstate', onPopState)
-    delete (window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack
-  }
+  disposed = true
+  unlisten?.()
+  delete (window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack
 })
 </script>
 
 <template>
   <UpdaterDialog />
-  <PlayerShell
-    ref="shell"
-    title="NES/FC 模拟器"
-    hint="打开本地 .nes 文件开始游戏"
-    :platform-label="isTauri ? 'Tauri App' : '浏览器预览'"
-    library-label="游戏库"
-    toolbar-mode="app"
-    storage-key="nes:app:lastRom"
-    enable-back-exit
-    :on-exit="exitApp"
-  />
+  <MainView ref="main" :launch="launch" :active="active" />
 </template>

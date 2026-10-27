@@ -1,4 +1,3 @@
-import { mountPlayerApp } from '@nes-emulator/ui'
+import { mountShell } from '@game-emulator/shell'
 import App from './App.vue'
-
-mountPlayerApp(App)
+mountShell(App)

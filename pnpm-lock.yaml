@@ -28,9 +28,12 @@ importers:
 
   apps/app:
     dependencies:
-      '@nes-emulator/ui':
+      '@game-emulator/nes':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/nes
+      '@game-emulator/shell':
+        specifier: workspace:*
+        version: link:../../packages/shell
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.1
@@ -65,9 +68,12 @@ importers:
 
   apps/pwa:
     dependencies:
-      '@nes-emulator/ui':
+      '@game-emulator/nes':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/nes
+      '@game-emulator/shell':
+        specifier: workspace:*
+        version: link:../../packages/shell
       vue:
         specifier: 'catalog:'
         version: 3.5.39(typescript@5.9.3)
@@ -88,7 +94,7 @@ importers:
         specifier: 'catalog:'
         version: 2.2.12(typescript@5.9.3)
 
-  packages/ui:
+  packages/nes:
     dependencies:
       '@qingfeng346/ui-kit':
         specifier: link:../../../ui-kit/ui-kit
@@ -96,6 +102,12 @@ importers:
       nostalgist:
         specifier: 0.21.1
         version: 0.21.1
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.39(typescript@5.9.3)
+
+  packages/shell:
+    dependencies:
       vue:
         specifier: 'catalog:'
         version: 3.5.39(typescript@5.9.3)

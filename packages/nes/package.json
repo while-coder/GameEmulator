@@ -1,5 +1,5 @@
 {
-  "name": "@nes-emulator/ui",
+  "name": "@game-emulator/nes",
   "private": true,
   "type": "module",
   "exports": {

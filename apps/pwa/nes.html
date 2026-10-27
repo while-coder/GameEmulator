@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#202328" />
+    <!-- iOS 添加到主屏后全屏运行、状态栏样式、主屏名称与图标 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- default:内容从状态栏下方开始,避免 black-translucent 下顶部命中区偏移(点击要靠下才中) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Emulator" />
+    <link rel="apple-touch-icon" href="icons/icon-512.png" />
+    <link rel="icon" href="icons/favicon.png" />
+    <title>NES / FC 模拟器</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/nes.ts"></script>
+  </body>
+</html>

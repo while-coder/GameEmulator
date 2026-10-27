@@ -4,7 +4,7 @@ apps/app/src-tauri/target/
 # Node
 node_modules/
 apps/app/node_modules/
-packages/ui/node_modules/
+packages/*/node_modules/
 apps/pwa/node_modules/
 apps/app/dist/
 apps/pwa/dist/

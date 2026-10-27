@@ -8,8 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nes-emulator/ui": "workspace:*",
-    "vue": "catalog:"
+    "vue": "catalog:",
+    "@game-emulator/nes": "workspace:*",
+    "@game-emulator/shell": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

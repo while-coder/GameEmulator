@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   plugins: [
@@ -12,9 +13,9 @@ export default defineConfig({
       // public/icons 下的生成图标纳入预缓存(它们不被构建引用)。
       includeAssets: ['icons/favicon.png', 'icons/icon-256.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'],
       manifest: {
-        name: 'NES/FC 模拟器',
-        short_name: 'NES',
-        description: 'NES/FC 在线模拟器,支持触屏手柄与存档,可添加到主屏全屏游玩。',
+        name: 'Game Emulator',
+        short_name: 'Emulator',
+        description: '选择模拟器，游玩经典游戏，支持触屏手柄与存档。',
         lang: 'zh-CN',
         display: 'standalone',
         // Android 上优先 fullscreen(隐藏系统状态栏);不支持时回退 standalone。
@@ -34,6 +35,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Preserve separate emulator documents when navigating offline.
+        navigateFallback: null,
         // 纳入 wasm:libretro 核心(fceumm_libretro.wasm)需被 PWA 预缓存以支持离线。
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm}'],
         // fceumm 核心 wasm 约 3MB,放宽单文件预缓存上限留足余量。
@@ -49,5 +52,11 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        nes: fileURLToPath(new URL('./nes.html', import.meta.url)),
+      },
+    },
   },
 })

@@ -294,8 +294,8 @@ export class NesRunner {
   }
 
   /** 释放资源。 */
-  dispose(): void {
-    void this.destroy()
+  async dispose(): Promise<void> {
+    await this.destroy()
   }
 }
 
