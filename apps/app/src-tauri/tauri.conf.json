@@ -1,0 +1,63 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "nes-emulator",
+  "version": "../../../package.json",
+  "identifier": "com.while.nesemulator",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1801",
+    "beforeDevCommand": "node src-tauri/native/sync-icons.cjs && npm run dev:frontend",
+    "beforeBuildCommand": "node src-tauri/native/sync-icons.cjs && npm run build:frontend"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "NES/FC 模拟器",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "publisher": "while",
+    "createUpdaterArtifacts": true,
+    "targets": [
+      "nsis",
+      "app",
+      "dmg",
+      "deb",
+      "appimage"
+    ],
+    "icon": [
+      "../../icon/icon.png"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "languages": [
+          "SimpChinese",
+          "English",
+          "TradChinese"
+        ],
+        "displayLanguageSelector": true
+      }
+    },
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhEN0M3NkIyM0MwRUFEQzYKUldUR3JRNDhzblo4alZ4dVRCUHJzekJPUUgwUG9SaVdJT2hDcytnQStBdkY2UkxhN1FhMUxvN1AK",
+      "endpoints": [
+        "https://github.com/while-coder/nes-emulator/releases/download/updater/latest.json"
+      ]
+    }
+  }
+}

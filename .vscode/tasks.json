@@ -1,0 +1,112 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pwa:kill",
+      "type": "process",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/scripts/kill-port.cjs",
+        "1800"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "pwa:dev",
+      "type": "shell",
+      "command": "pnpm",
+      "args": [
+        "--filter",
+        "@nes-emulator/pwa",
+        "dev"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "pwa:kill"
+      ],
+      "dependsOrder": "sequence",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": ".+"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".+",
+          "endsPattern": "Local.*1800"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "ui:kill",
+      "type": "process",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/scripts/kill-port.cjs",
+        "1801"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "debug:app",
+      "type": "shell",
+      "command": "pnpm run debug:app",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "ui:dev",
+      "type": "shell",
+      "isBackground": true,
+      "command": "pnpm",
+      "args": [
+        "vite",
+        "dev",
+        "--port",
+        "1801"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/apps/app"
+      },
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": ".+"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".+",
+          "endsPattern": "Local.*1801"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "tauri:before:dev",
+      "dependsOn": [
+        "ui:kill",
+        "debug:app",
+        "ui:dev"
+      ],
+      "dependsOrder": "sequence"
+    }
+  ]
+}

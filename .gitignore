@@ -1,0 +1,27 @@
+# Rust
+apps/app/src-tauri/target/
+
+# Node
+node_modules/
+apps/app/node_modules/
+packages/ui/node_modules/
+apps/pwa/node_modules/
+apps/app/dist/
+apps/pwa/dist/
+
+# TypeScript 增量构建产物
+**/tsconfig.tsbuildinfo
+
+# 密钥 — 禁止提交（release.jks、keystore.properties 等）
+/secrets/
+
+# 杂项
+.DS_Store
+*.log
+roms/
+roms_catalog.json
+
+# Generated platform projects, icons and generation cache
+apps/app/src-tauri/gen/
+apps/app/src-tauri/native/*/icons/
+.tmp/

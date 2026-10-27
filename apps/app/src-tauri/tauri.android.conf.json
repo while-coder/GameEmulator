@@ -1,0 +1,11 @@
+{
+  "bundle": {
+    "icon": [
+      "native/android/icons/icon.png"
+    ],
+    "android": {
+      "minSdkVersion": 24
+    }
+  },
+  "identifier": "com.wandergame.nesemulator"
+}

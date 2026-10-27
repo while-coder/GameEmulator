@@ -1,0 +1,128 @@
+name: Release App
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-app-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+      notes: ${{ steps.release.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: release
+        uses: while-coder/workflows/.github/actions/resolve-release-info@main
+        with:
+          tag-prefix: v
+          package-json: package.json
+          changelog: CHANGELOG.md
+
+  prepare-release:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recreate GitHub Release
+        uses: while-coder/workflows/.github/actions/recreate-github-release@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.check.outputs.tag }}
+          title: nes-emulator v${{ needs.check.outputs.version }}
+          notes: ${{ needs.check.outputs.notes }}
+
+  release-desktop:
+    needs: [check, prepare-release]
+    uses: while-coder/workflows/.github/workflows/tauri-desktop-release.yml@main
+    with:
+      project-path: apps/app
+      cargo-lock-path: apps/app/src-tauri/Cargo.lock
+      cargo-target-path: apps/app/src-tauri/target
+      tag-name: ${{ needs.check.outputs.tag }}
+      release-name: nes-emulator v${{ needs.check.outputs.version }}
+      release-body: ${{ needs.check.outputs.notes }}
+    secrets: inherit
+
+  release-android:
+    needs: [check, release-desktop]
+    if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
+    uses: while-coder/workflows/.github/workflows/tauri-android-release.yml@main
+    with:
+      project-path: apps/app
+      cargo-lock-path: apps/app/src-tauri/Cargo.lock
+      cargo-target-path: apps/app/src-tauri/target
+      tag-name: ${{ needs.check.outputs.tag }}
+      version: ${{ needs.check.outputs.version }}
+      asset-prefix: nes-emulator
+      init-command: pnpm android:init
+      build-command: pnpm run android:build -- --apk --aab
+    secrets: inherit
+
+  release-ios:
+    needs: [check, release-desktop]
+    if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
+    uses: while-coder/workflows/.github/workflows/tauri-ios-unsigned.yml@main
+    with:
+      project-path: apps/app
+      cargo-lock-path: apps/app/src-tauri/Cargo.lock
+      cargo-target-path: apps/app/src-tauri/target
+      tag-name: ${{ needs.check.outputs.tag }}
+      version: ${{ needs.check.outputs.version }}
+      asset-prefix: nes-emulator
+      init-command: pnpm ios:init
+      build-command: pnpm run ios:build -- --target aarch64 --no-sign --ci
+    secrets: inherit
+
+  release-sidestore:
+    name: Release SideStore source
+    needs: [check, release-ios]
+    if: ${{ !cancelled() && needs.release-ios.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download unsigned IPA
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.check.outputs.tag }}
+        run: gh release download "$TAG" --pattern '*_ios_unsigned.ipa' --output app.ipa
+
+      - name: Generate SideStore source
+        env:
+          TAG: ${{ needs.check.outputs.tag }}
+          SIDESTORE_VERSION: ${{ needs.check.outputs.version }}
+          SIDESTORE_NOTES: ${{ needs.check.outputs.notes }}
+          SIDESTORE_OUTPUT: apps.json
+        run: |
+          set -euo pipefail
+          SIDESTORE_SHA256="$(sha256sum app.ipa | cut -d' ' -f1)"
+          SIDESTORE_SIZE="$(stat -c%s app.ipa)"
+          SIDESTORE_DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/nes-emulator_${SIDESTORE_VERSION}_ios_unsigned.ipa" \
+            node scripts/sidestore-source.cjs
+
+      - name: Upload SideStore source to release
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.check.outputs.tag }}
+        run: gh release upload "$TAG" apps.json --clobber
+
+  publish-manifest:
+    needs: [check, release-desktop]
+    if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
+    uses: while-coder/workflows/.github/workflows/tauri-updater-manifest.yml@main
+    with:
+      product-prefix: nes-emulator
+      tag-name: ${{ needs.check.outputs.tag }}
+      version: ${{ needs.check.outputs.version }}
+      release-notes: ${{ needs.check.outputs.notes }}
+    secrets: inherit

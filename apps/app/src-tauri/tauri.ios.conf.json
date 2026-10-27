@@ -1,0 +1,7 @@
+{
+  "bundle": {
+    "icon": [
+      "native/ios/icons/icon.png"
+    ]
+  }
+}

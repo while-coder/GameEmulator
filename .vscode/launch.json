@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Web/Pwa",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:1800",
+      "webRoot": "${workspaceFolder}/apps/pwa",
+      "preLaunchTask": "pwa:dev"
+    },
+    {
+      "name": "Launch App · Windows",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/app/src-tauri/target/debug/app.exe",
+      "cwd": "${workspaceFolder}/apps/app/src-tauri",
+      "preLaunchTask": "tauri:before:dev"
+    },
+    {
+      "name": "Launch App · Android",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm --filter @nes-emulator/app android:dev",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "ui:kill"
+    },
+    {
+      "name": "Launch App · macOS",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/app/src-tauri/target/debug/app",
+      "cwd": "${workspaceFolder}/apps/app/src-tauri",
+      "preLaunchTask": "tauri:before:dev"
+    }
+  ]
+}

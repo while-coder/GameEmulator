@@ -1,0 +1,28 @@
+{
+  "name": "nes-emulator-workspace",
+  "private": true,
+  "version": "0.1.1",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm run dev:pwa",
+    "dev:pwa": "pnpm --filter @nes-emulator/pwa run dev",
+    "dev:app": "pnpm --filter @nes-emulator/app run dev",
+    "build:pwa": "pnpm --filter @nes-emulator/pwa run build",
+    "build:app": "pnpm --filter @nes-emulator/app run build",
+    "android:init": "pnpm --filter @nes-emulator/app run android:init",
+    "android:dev": "pnpm --filter @nes-emulator/app run android:dev",
+    "android:build": "pnpm --filter @nes-emulator/app run android:build",
+    "ios:dev": "pnpm --filter @nes-emulator/app run ios:dev",
+    "ios:build": "pnpm --filter @nes-emulator/app run ios:build",
+    "release": "node scripts/release.cjs",
+    "ios:init": "pnpm --filter @nes-emulator/app run ios:init",
+    "sync:versions": "node scripts/sync-versions.cjs",
+    "sync:icons": "node scripts/sync-icons.cjs",
+    "debug:app": "cargo build --manifest-path apps/app/src-tauri/Cargo.toml"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

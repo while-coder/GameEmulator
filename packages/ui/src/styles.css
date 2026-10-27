@@ -1,0 +1,71 @@
+@import '@qingfeng346/ui-kit/style.css';
+
+/* 在通用控件上沿用模拟器的中性深色主题。 */
+:root[data-theme='dark'] {
+  --sui-bg: #242424;
+  --sui-bg-page: #1a1a1a;
+  --sui-bg-soft: #2a2a2a;
+  --sui-bg-hover: #3b3b3b;
+  --sui-fg: #e8e8e8;
+  --sui-fg-secondary: #ddd;
+  --sui-fg-muted: #aaa;
+  --sui-border: #3a3a3a;
+  --sui-border-strong: #555;
+  --sui-primary: #2f6bd8;
+  --sui-primary-hover: #3d7ce8;
+  --sui-on-primary: #fff;
+  --sui-mask: rgba(0, 0, 0, 0.65);
+}
+.player-modal .s-modal-body {
+  padding: 0;
+}
+.player-modal .s-modal-box {
+  max-height: calc(100dvh - 32px);
+}
+@media (pointer: coarse) {
+  :root {
+    --player-control-height: 40px;
+    --player-control-gap: 8px;
+    --player-card-padding: 10px;
+    --player-tools-padding: 6px;
+  }
+  :root .player-modal :is(.s-button, .s-input, .s-select, .s-switch, .remote-select, select, .rename-input),
+  :root .rs-option {
+    height: var(--player-control-height);
+    min-height: var(--player-control-height);
+    padding-block: 4px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  :root .player-modal :is(input[type='range'], input[type='color'], .check) {
+    height: var(--player-control-height);
+    min-height: var(--player-control-height);
+  }
+  :root .player-modal .icon-btn {
+    min-width: var(--player-control-height);
+    width: var(--player-control-height);
+  }
+  :root .s-icon-close {
+    height: 44px;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .player-modal .s-modal-header { padding: 4px 12px; }
+  .s-modal-overlay {
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) {
+  :root {
+    --player-control-height: 36px;
+    --player-control-gap: 6px;
+    --player-card-padding: 8px;
+    --player-tools-padding: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s-button, .s-switch-track, .s-switch-thumb, .s-modal-enter-active, .s-modal-leave-active,
+  .s-modal-enter-active .s-modal-box, .s-modal-leave-active .s-modal-box {
+    transition: none;
+  }
+}

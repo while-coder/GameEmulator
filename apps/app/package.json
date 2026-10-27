@@ -1,0 +1,35 @@
+{
+  "name": "@nes-emulator/app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:frontend": "npx kill-port 1801 && vite",
+    "build": "tauri build",
+    "build:frontend": "vue-tsc -b --force && vite build",
+    "tauri": "tauri",
+    "preview": "vite preview",
+    "android:init": "node src-tauri/native/sync-icons.cjs android && tauri android init --ci && node src-tauri/native/android/prepare.cjs",
+    "android:dev": "node src-tauri/native/android/prepare.cjs && tauri android dev",
+    "android:build": "node src-tauri/native/android/prepare.cjs && tauri android build",
+    "ios:dev": "node src-tauri/native/ios/prepare.cjs && tauri ios dev",
+    "ios:build": "node src-tauri/native/ios/prepare.cjs && tauri ios build",
+    "ios:init": "node src-tauri/native/sync-icons.cjs ios && tauri ios init --ci && node src-tauri/native/ios/prepare.cjs"
+  },
+  "dependencies": {
+    "@nes-emulator/ui": "workspace:*",
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
+    "@while-coder/tauri-updater-vue": "git+https://github.com/while-coder/tauri-updater-kit.git#main&path:packages/vue",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.3",
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  },
+  "version": "0.1.1"
+}
