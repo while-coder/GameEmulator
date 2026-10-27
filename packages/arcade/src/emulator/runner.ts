@@ -73,7 +73,7 @@ export class ArcadeRunner {
       this.dispose()
       const detail=error instanceof Error?error.message:String(error)
       console.error('[Arcade] 核心启动失败',diagnostic,error)
-      throw new Error(`无法启动 ${game.name}。请确认游戏包属于 FBA 0.2.97.29，并导入所需 BIOS / 父 ROM。${detail?` (${detail.slice(0,180)})`:''}`)
+      throw new Error(`无法启动 ${game.name}。请确认游戏包为目录对应的 FBA 0.2.97.29 版本。${detail?` (${detail.slice(0,180)})`:''}`)
     }
   }
   press(player:number,action:Action){this.instance?.pressDown({button:action,player:player+1})}

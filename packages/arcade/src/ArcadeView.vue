@@ -8,7 +8,8 @@ import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import TouchControls from './components/TouchControls.vue'
 import { ArcadeRunner } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action } from './emulator/settings'
-import { CORE_BUILD, bundleKey, getSnapshot, importArchive, listArchives, listSnapshots, pickArchives, putArchive, putSnapshot, removeArchive, removeSnapshot, resolveDependencies, type Archive, type ArchiveKind, type Snapshot } from './store/library'
+import { CORE_BUILD, bundleKey, getSnapshot, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
+import { prepareGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
 import { navEnabled, useRemoteNav } from './composables/useRemoteNav'
@@ -21,11 +22,10 @@ const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??nul
 const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunner|null>(null)
 const menuOpen=ref(true),busy=ref(false),leaving=ref(false)
-const tab=ref<'library'|'saves'|'keys'|'display'|'support'>('library')
-const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示与声音'},{id:'support',label:'BIOS / 父 ROM'}] as const
+const tab=ref<'library'|'saves'|'keys'|'display'>('library')
+const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示与声音'}] as const
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
 const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b.importedAt-a.importedAt))
-const supportFiles=computed(()=>archives.value.filter(a=>a.kind==='support').sort((a,b)=>a.name.localeCompare(b.name)))
 const query=ref('')
 const filteredGames=computed(()=>games.value.filter(game=>game.name.includes(query.value.trim().toLowerCase())))
 const current=shallowRef<Archive|null>(null)
@@ -36,33 +36,34 @@ const input=useArcadeInput(runner,enabled)
 const player=ref(0)
 const capturing=ref<Action|null>(null)
 const error=ref(''),message=ref('')
+const progress=ref<DependencyProgress|null>(null)
+const retryAction=shallowRef<(()=>Promise<void>)|null>(null)
+const downloads=new AbortController()
+const progressText=computed(()=>progress.value?`正在下载 ${progress.value.name} · ${Math.floor(progress.value.received/progress.value.total*100)}%`:'正在处理，请稍候…')
 let messageTimer: ReturnType<typeof setTimeout>|undefined
 function notify(text:string){message.value=text;clearTimeout(messageTimer);messageTimer=setTimeout(()=>{message.value=''},2200)}
 async function task(action:()=>Promise<void>){
   if(busy.value||leaving.value)return
-  busy.value=true;error.value=''
-  try{await action()}catch(err){error.value=err instanceof Error?err.message:String(err);menuOpen.value=true}
-  finally{busy.value=false}
+  busy.value=true;error.value='';retryAction.value=null
+  try{await action()}catch(err){if(!downloads.signal.aborted){error.value=err instanceof Error?err.message:String(err);retryAction.value=action;menuOpen.value=true}}
+  finally{busy.value=false;progress.value=null}
 }
 async function refresh(){[archives.value,snapshots.value]=await Promise.all([listArchives(),listSnapshots()])}
-async function importFiles(kind:ArchiveKind){
+async function importFiles(){
   const files=await pickArchives()
   if(!files.length)return
   await task(async()=>{
     let count=0
-    try{for(const file of files){await importArchive(file,kind);count++}}
+    try{for(const file of files){await importArchive(file,'game');count++}}
     finally{await refresh()}
     notify(`已导入 ${count} 个文件`)
   })
 }
-async function dependenciesChanged(game:Archive,event:Event){
-  const element=event.target as HTMLInputElement
-  const dependency=element.value
-  const dependencies=element.checked?[...new Set([...game.dependencies,dependency])]:game.dependencies.filter(name=>name!==dependency)
-  await task(async()=>{await putArchive({...game,dependencies});await refresh()})
-}
-async function startGame(game:Archive){
-  const dependencies=resolveDependencies(game,archives.value)
+async function startGame(source:Archive,snapshot?:Snapshot){
+  const {game,dependencies}=await prepareGame(source,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
+  if(snapshot&&bundleKey(game,dependencies)!==snapshot.key)throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
+  progress.value=null
+  await refresh()
   current.value=null;input.releaseAll()
   await runner.value!.load(game,dependencies)
   current.value=game;currentDependencies.value=dependencies
@@ -80,15 +81,9 @@ async function save(){
 }
 async function restore(snapshot:Snapshot){
   if(snapshot.coreBuild!==CORE_BUILD)throw new Error('此存档不属于当前街机核心版本')
-  const game=games.value.find(g=>g.name===snapshot.gameName&&g.hash===snapshot.gameHash)
+  const game=games.value.find(g=>g.hash===snapshot.gameHash)
   if(!game)throw new Error(`请先导入存档对应的原始游戏包 ${snapshot.gameName}`)
-  const dependencies=snapshot.dependencies.map(expected=>{
-    const dependency=supportFiles.value.find(d=>d.name===expected.name&&d.hash===expected.hash)
-    if(!dependency)throw new Error(`请先导入存档对应的依赖文件 ${expected.name}`)
-    return dependency
-  })
-  const target={...game,dependencies:dependencies.map(d=>d.name)}
-  if(!current.value||bundleKey(current.value,currentDependencies.value)!==snapshot.key){await startGame(target)}
+  if(!current.value||bundleKey(current.value,currentDependencies.value)!==snapshot.key){await startGame(game,snapshot)}
   await runner.value!.restore(snapshot.state)
   menuOpen.value=false;notify('已读取存档')
 }
@@ -152,7 +147,7 @@ watch(()=>settings.aspect,()=>nextTick(measure))
 const touchVisible=computed(()=>settings.touch!=='never')
 let resize:ResizeObserver|null=null,mutation:MutationObserver|null=null
 const blurCanvas=()=>canvas.value?.blur()
-function pageHide(){input.releaseAll();runner.value?.dispose()}
+function pageHide(){downloads.abort();input.releaseAll();runner.value?.dispose()}
 onMounted(()=>{
   runner.value=new ArcadeRunner(canvas.value!)
   runner.value.setMuted(settings.muted)
@@ -164,6 +159,7 @@ onMounted(()=>{
   measure();void task(refresh)
 })
 onBeforeUnmount(()=>{
+  downloads.abort()
   clearTimeout(messageTimer);resize?.disconnect();mutation?.disconnect()
   window.removeEventListener('keydown',shellKey,true);window.removeEventListener('pagehide',pageHide)
   canvas.value?.removeEventListener('focus',blurCanvas)
@@ -196,32 +192,24 @@ const time=(value:number)=>new Date(value).toLocaleString()
     <SModal v-model:show="menuOpen" title="街机 · 设置" width="1040px" fill-height class="player-modal arcade-modal" :close-on-esc="false" :body-scrollable="false">
       <div ref="panel" class="arcade-menu">
         <nav class="arcade-tabs" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :class="{selected:tab===item.id}" @click="tab=item.id">{{item.label}}</SButton></nav>
-        <p v-if="error" class="arcade-error" role="alert">{{error}}</p>
-        <p v-if="busy" class="arcade-progress" role="status">正在处理，请稍候…</p>
+        <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
+        <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
         <fieldset class="arcade-content" :disabled="busy||leaving">
           <section v-if="tab==='library'" class="library-page">
-            <div class="arcade-actions"><SButton @click="importFiles('game')">导入游戏 ZIP</SButton><input v-model="query" class="arcade-search" type="search" placeholder="搜索游戏文件名" aria-label="搜索街机游戏" /></div>
-            <SHint>使用 FBA 0.2.97.29 对应的原始 ZIP 游戏包，不要解压或重命名。需要 BIOS / 父 ROM 的游戏，先导入依赖文件，再在下方勾选。</SHint>
+            <div class="arcade-actions"><SButton @click="importFiles">导入游戏 ZIP</SButton><input v-model="query" class="arcade-search" type="search" placeholder="搜索游戏文件名" aria-label="搜索街机游戏" /></div>
+            <SHint>导入目录对应版本的 ZIP 游戏包。启动时自动下载所需依赖，下载完成后可离线使用。</SHint>
             <div v-if="!games.length" class="library-empty">还没有游戏，点击「导入游戏 ZIP」添加。</div>
             <div v-else-if="!filteredGames.length" class="library-empty">没有匹配的游戏。</div>
             <article v-for="game in filteredGames" :key="game.id" class="game-row">
               <div class="game-summary"><div><strong>{{game.name}}</strong><small>{{formatSize(game.size)}}<span v-if="current?.hash===game.hash"> · 正在游玩</span></small></div><div class="row-actions"><SButton @click="play(game)">启动</SButton><SButton @click="task(async()=>{await removeArchive(game.id);await refresh()})">删除</SButton></div></div>
-              <details v-if="supportFiles.length||game.dependencies.length" class="game-dependencies"><summary>依赖文件{{game.dependencies.length?`（已选 ${game.dependencies.length}）`:''}}</summary><label v-for="file in supportFiles" :key="file.id"><input type="checkbox" :value="file.name" :checked="game.dependencies.includes(file.name)" :disabled="file.name===game.name" @change="dependenciesChanged(game,$event)" />{{file.name}}</label><SHint v-for="missing in game.dependencies.filter(name=>!supportFiles.some(file=>file.name===name))" :key="missing">缺少 {{missing}}，请重新导入。</SHint></details>
             </article>
           </section>
 
           <section v-else-if="tab==='saves'">
             <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取当前游戏存档</SButton></div>
-            <SHint>每个游戏版本保留一个快速存档，保存时覆盖。读取时会自动启动对应游戏；需保留原始游戏包及依赖文件。</SHint>
+            <SHint>每个游戏版本保留一个快速存档，保存时覆盖。读取时自动启动对应游戏并补齐缺失依赖；需保留原始游戏包。</SHint>
             <p v-if="!snapshots.length" class="library-empty">还没有存档。</p>
             <article v-for="snapshot in [...snapshots].sort((a,b)=>b.savedAt-a.savedAt)" :key="snapshot.key" class="game-row game-summary"><div><strong>{{snapshot.gameName}}</strong><small>{{time(snapshot.savedAt)}}</small></div><div class="row-actions"><SButton @click="task(()=>restore(snapshot))">读取</SButton><SButton @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
-          </section>
-
-          <section v-else-if="tab==='support'">
-            <div class="arcade-actions"><SButton @click="importFiles('support')">导入 BIOS / 父 ROM ZIP</SButton></div>
-            <SHint>例如 Neo Geo 游戏使用的 neogeo.zip。文件会保存在街机库中；导入后请回到游戏库，为对应游戏选择依赖文件。</SHint>
-            <p v-if="!supportFiles.length" class="library-empty">还没有依赖文件。</p>
-            <article v-for="file in supportFiles" :key="file.id" class="game-row game-summary"><div><strong>{{file.name}}</strong><small>{{formatSize(file.size)}}</small></div><SButton @click="task(async()=>{await removeArchive(file.id);await refresh()})">删除</SButton></article>
           </section>
 
           <section v-else-if="tab==='keys'" class="keys-page">
@@ -261,7 +249,6 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .arcade-content{min-width:0;min-height:0;flex:1;border:0;padding:4px 16px 20px;margin:0;overflow:auto}.arcade-content section{max-width:760px;margin:0 auto}.arcade-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
 .arcade-search{flex:1;min-width:140px;min-height:40px;background:#1e1e1e;border:1px solid #505050;border-radius:6px;color:#eee;padding:8px 12px}.library-empty{padding:36px 12px;text-align:center;color:#aaa;line-height:1.6}
 .game-row{border:1px solid #414141;border-radius:8px;padding:14px;margin-top:12px;background:#282828}.game-summary{display:flex;justify-content:space-between;align-items:center;gap:12px}.game-summary>div:first-child{min-width:0}.game-row strong{font-size:15px;overflow-wrap:anywhere}.game-row small{display:block;margin-top:7px;color:#aaa;font-size:12px}.row-actions{display:flex;gap:8px;flex-shrink:0}
-.game-dependencies{margin-top:12px;color:#ccc;font-size:13px}.game-dependencies summary{cursor:pointer;min-height:28px}.game-dependencies label{display:inline-flex;gap:8px;align-items:center;margin-right:16px;min-height:36px}
 .keys-page h3{font-size:14px;margin:8px 0 14px}.keyboard-help{border-bottom:1px solid #414141;padding-bottom:16px;margin-bottom:20px!important}.keyboard-help dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;margin:0;line-height:1.6;font-size:13px}.keyboard-help dd{margin:0;color:#bbb}.keyboard-help kbd{background:#333;border:1px solid #555;border-radius:4px;padding:3px 6px}.arcade-key-row{display:grid;grid-template-columns:60px minmax(110px,1fr) minmax(90px,1fr);gap:12px;align-items:center;margin:10px 0;font-size:13px}.key-heading{color:#aaa;margin-top:18px}
 .core-licenses{margin-top:24px;color:#aaa;font-size:12px}.core-licenses summary{cursor:pointer;min-height:32px}.core-licenses pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;border:1px solid #444;line-height:1.5}
 .display-page>label{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:60px;border-bottom:1px solid #343434}.display-page select{background:#292929;color:#eee;border:1px solid #555;border-radius:6px;padding:8px;max-width:65%}.display-page input{width:20px;height:20px}

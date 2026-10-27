@@ -1,4 +1,7 @@
+import type { ArcadeCatalog } from './catalog'
+
 export const CORE_BUILD = 'fbalpha2012-retroarch-1.22.2-a19485f4'
+interface CachedCatalog { url: string; catalog: ArcadeCatalog }
 export type ArchiveKind = 'game' | 'support'
 export interface Archive {
   id: string
@@ -23,11 +26,12 @@ let connection: Promise<IDBDatabase> | null = null
 function db(): Promise<IDBDatabase> {
   if(connection)return connection
   connection=new Promise((resolve,reject)=>{
-    const request=indexedDB.open('arcade-library',1)
+    const request=indexedDB.open('arcade-library',2)
     request.onupgradeneeded=()=>{
       const d=request.result
       if(!d.objectStoreNames.contains('archives'))d.createObjectStore('archives',{keyPath:'id'})
       if(!d.objectStoreNames.contains('saves'))d.createObjectStore('saves',{keyPath:'key'})
+      if(!d.objectStoreNames.contains('catalogs'))d.createObjectStore('catalogs',{keyPath:'url'})
     }
     request.onsuccess=()=>{
       const d=request.result
@@ -50,7 +54,7 @@ async function read<T>(store: string, key?: string): Promise<T> {
   await completion
   return result
 }
-async function write(store: string, value: Archive | Snapshot | string, remove=false) {
+async function write(store: string, value: Archive | Snapshot | CachedCatalog | string, remove=false) {
   const d=await db(),tx=d.transaction(store,'readwrite'), completion=done(tx)
   if(remove)tx.objectStore(store).delete(value as string)
   else tx.objectStore(store).put(value)
@@ -63,6 +67,8 @@ export const removeSnapshot=(key:string)=>write('saves',key,true)
 export const putArchive=(archive:Archive)=>write('archives',archive)
 export const putSnapshot=(snapshot:Snapshot)=>write('saves',snapshot)
 export const getSnapshot=(key:string)=>read<Snapshot|undefined>('saves',key)
+export const getCachedCatalog=(url:string)=>read<CachedCatalog|undefined>('catalogs',url)
+export const putCachedCatalog=(value:CachedCatalog)=>write('catalogs',value)
 export async function hashBlob(file: Blob): Promise<string> {
   if(!crypto.subtle)throw new Error('当前环境不支持文件校验')
   const hash=await crypto.subtle.digest('SHA-256',await file.arrayBuffer())
@@ -88,14 +94,6 @@ export async function importArchive(file: File, kind: ArchiveKind): Promise<Arch
 }
 export function bundleKey(game: Archive, dependencies: Archive[]): string {
   return `${CORE_BUILD}:${game.hash}:${dependencies.map(d=>`${d.name}=${d.hash}`).sort().join(',')}`
-}
-export function resolveDependencies(game: Archive, archives: Archive[]): Archive[] {
-  return game.dependencies.map(name=>{
-    if(name===game.name)throw new Error('依赖文件不能与游戏包同名')
-    const file=archives.find(a=>a.kind==='support'&&a.name===name)
-    if(!file)throw new Error(`缺少依赖文件 ${name}，请先导入`)
-    return file
-  })
 }
 export async function pickArchives(): Promise<File[]> {
   return new Promise(resolve=>{
