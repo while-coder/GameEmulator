@@ -2,7 +2,7 @@
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
-import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import {
   isTauri,
   pickRomFile,
@@ -87,12 +87,18 @@ function resetTouchLayout() {
   const orientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape'
   settings.touchLayout[orientation] = {}
 }
-function onLayoutKey(event: KeyboardEvent) {
-  if (!layoutEditing.value || event.code !== 'Escape') return
+function onShellKey(event: KeyboardEvent) {
+  if (event.code !== 'Escape') return
   event.preventDefault()
-  finishTouchLayout()
+  // Own Esc before remote navigation or the player can handle the same key again.
+  event.stopImmediatePropagation()
+  if (event.repeat || leaving.value) return
+  if (layoutEditing.value) finishTouchLayout()
+  else if (helpOpen.value) helpOpen.value = false
+  else settingsOpen.value = !settingsOpen.value
 }
-onMounted(() => window.addEventListener('keydown', onLayoutKey))
+// Register before useRemoteNav installs its capture listener.
+if (typeof window !== 'undefined') window.addEventListener('keydown', onShellKey, true)
 const settingsTab = ref<'library' | 'saves' | 'keys' | 'display' | 'audio' | 'misc'>('library')
 function openSettings(tab: typeof settingsTab.value) {
   settingsTab.value = tab
@@ -283,7 +289,7 @@ defineExpose({
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onLayoutKey)
+  window.removeEventListener('keydown', onShellKey, true)
   if (exitHintTimer) clearTimeout(exitHintTimer)
 })
 </script>
