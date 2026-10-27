@@ -4,7 +4,6 @@ import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import {
-  isTauri,
   pickRomFile,
   setLastRomName,
 } from '../emulator/platform'
@@ -14,7 +13,6 @@ import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 import { useFullscreen } from '../composables/useFullscreen'
 import NesScreen from './NesScreen.vue'
 import SettingsModal from './SettingsModal.vue'
-import ShortcutsPanel from './ShortcutsPanel.vue'
 import PlayerFooter from './PlayerFooter.vue'
 import type { SaveState } from '../emulator/runner'
 
@@ -88,13 +86,16 @@ function resetTouchLayout() {
   settings.touchLayout[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
-  if (event.code !== 'Escape') return
+  if (event.code !== 'Escape' && event.code !== 'F11') return
   event.preventDefault()
-  // Own Esc before remote navigation or the player can handle the same key again.
+  // Handle shell shortcuts before remote navigation and game input.
   event.stopImmediatePropagation()
   if (event.repeat || leaving.value) return
+  if (event.code === 'F11') {
+    void toggleFullscreen()
+    return
+  }
   if (layoutEditing.value) finishTouchLayout()
-  else if (helpOpen.value) helpOpen.value = false
   else settingsOpen.value = !settingsOpen.value
 }
 // Register before useRemoteNav installs its capture listener.
@@ -104,13 +105,12 @@ function openSettings(tab: typeof settingsTab.value) {
   settingsTab.value = tab
   settingsOpen.value = true
 }
-const helpOpen = ref(false)
 const exitHintVisible = ref(false)
 let exitArmedAt = 0
 let exitHintTimer: ReturnType<typeof setTimeout> | null = null
 
 const inputLocked = computed(
-  () => settingsOpen.value || helpOpen.value || layoutEditing.value || leaving.value,
+  () => settingsOpen.value || layoutEditing.value || leaving.value,
 )
 
 const toolbarRef = ref<HTMLElement | null>(null)
@@ -136,7 +136,6 @@ if (typeof document !== 'undefined') {
   })
 }
 
-const modKey: 'ctrl' | 'shift' = isTauri ? 'ctrl' : 'shift'
 const shellClasses = computed(() => ({
   'tv-nav': navEnabled.value,
   'is-fullscreen': isFullscreen.value,
@@ -204,10 +203,6 @@ function reset() {
   paused.value = false
 }
 
-function togglePause() {
-  paused.value = !paused.value
-}
-
 function stopRom() {
   screen.value?.stop()
   romName.value = null
@@ -223,16 +218,6 @@ function toggleAudio() {
 function onSystemAction(action: string) {
   if (action === 'open-settings') {
     settingsOpen.value = true
-  } else if (action === 'toggle-pause') {
-    if (romName.value) togglePause()
-  } else if (action === 'open-library') {
-    openSettings('library')
-  } else if (action === 'open-saves') {
-    openSettings('saves')
-  } else if (action === 'back') {
-    if (props.enableBackExit) consumeBack()
-  } else if (action === 'toggle-fullscreen') {
-    void toggleFullscreen()
   }
 }
 
@@ -241,10 +226,6 @@ function handleBack(): BackResult {
   if (loading.value || leaving.value || creatingSave.value) return 'handled'
   if (layoutEditing.value) {
     finishTouchLayout()
-    return 'handled'
-  }
-  if (helpOpen.value) {
-    helpOpen.value = false
     return 'handled'
   }
   if (settingsOpen.value) {
@@ -316,7 +297,6 @@ onBeforeUnmount(() => {
       @edit-touch-layout="editTouchLayout"
     >
       <template #actions="{ tab }">
-        <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave" @click="leaveEmulator">返回模拟器列表</SButton>
         <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
         <template v-if="tab === 'library'">
           <SButton :loading="loading" @click="openRom">{{ loading ? openLoadingLabel : '打开本地 ROM' }}</SButton>
@@ -333,7 +313,6 @@ onBeforeUnmount(() => {
         <SButton v-else-if="tab === 'audio'" @click="toggleAudio">{{ audioOn ? '静音' : '开启声音' }}</SButton>
       </template>
     </SettingsModal>
-    <ShortcutsPanel v-model:open="helpOpen" :modifier="modKey" />
 
     <main class="stage">
       <div v-if="layoutEditing" class="layout-edit-tools">
@@ -346,14 +325,14 @@ onBeforeUnmount(() => {
         :input-locked="inputLocked"
         :layout-editing="layoutEditing"
         :game-paused="paused || loading"
-        :modifier="modKey"
+
         :rom-key="romKey"
         :rom-name="romName"
         @system-action="onSystemAction"
       />
       <SEmpty v-if="!romName && !layoutEditing" class="empty-state">
         <p>通过菜单选择游戏或本地 ROM 开始游玩</p>
-        <SHint>Esc 打开设置 · F8 快速存档</SHint>
+        <SHint>Esc 开启 / 关闭设置 · Ctrl+S 快速存档</SHint>
       </SEmpty>
     </main>
 
@@ -365,7 +344,6 @@ onBeforeUnmount(() => {
       :rom-name="romName"
       :platform-label="platformLabel"
       :hide-on-touch="footerHideOnTouch"
-      @help="helpOpen = true"
     />
   </div>
 </template>

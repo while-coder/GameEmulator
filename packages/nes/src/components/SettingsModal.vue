@@ -384,11 +384,28 @@ onBeforeUnmount(() => {
           <SButton class="reset" @click="resetSettings">恢复全部默认设置</SButton>
         </div>
       </section>
+      <SHint v-if="tab === 'keys'" class="shortcut-hint">
+        <span class="keyboard-shortcuts">Esc 开启 / 关闭设置，自动暂停 / 继续游戏 · Ctrl+S 快速存档 · F11 全屏 / 窗口</span>
+        <span class="touch-shortcuts">点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。</span>
+      </SHint>
     </div>
   </SModal>
 </template>
 
 <style scoped>
+.shortcut-hint {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid #343434;
+}
+
+.touch-shortcuts { display: none; }
+@media (pointer: coarse) {
+  .keyboard-shortcuts { display: none; }
+  .touch-shortcuts { display: inline; }
+}
+
 .settings-content {
   display: flex;
   flex-direction: column;

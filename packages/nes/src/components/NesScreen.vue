@@ -31,12 +31,10 @@ const props = defineProps<{
   inputLocked?: boolean
   gamePaused?: boolean
   layoutEditing?: boolean
-  /** 应用级快捷键修饰键:桌面(Tauri)传 'ctrl',浏览器传 'shift'(默认)。 */
-  modifier?: 'ctrl' | 'shift'
   romKey?: string | null
   romName?: string | null
 }>()
-// systemAction:应用级快捷键(手柄空闲键 / 键盘),交父组件处理。
+// systemAction:设置菜单入口,交父组件处理。
 const emit = defineEmits<{ systemAction: [action: string] }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -170,53 +168,12 @@ function onKeyDown(e: KeyboardEvent) {
     if (!e.repeat) emit('systemAction', 'open-settings')
     return
   }
-  if (e.code === 'F8') {
+  if (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && e.code === 'KeyS') {
     e.preventDefault()
     if (!e.repeat) void quickSave()
     return
   }
-  // 返回键(遥控器 BACK / Backspace / GoBack):交 App 分级返回(游戏中→停止游戏回主界面)。
-  // 不区分平台:这些键在桌面游戏中本就空闲,无副作用;方向键照常落给 codeToAction(玩家)。
-  if (e.code === 'Backspace' || e.key === 'GoBack' || e.key === 'BrowserBack') {
-    e.preventDefault()
-    if (!e.repeat) emit('systemAction', 'back')
-    return
-  }
-  // 应用级快捷键:修饰键由 modifier 决定(桌面 Ctrl / 浏览器 Shift,避开浏览器占用键)。
-  // S=存档,L=读档,N=新建存档,A=存档列表,G=游戏库,P=暂停,F=全屏;Esc 打开设置,F8 快速存档。
-  const modActive = props.modifier === 'ctrl' ? e.ctrlKey : e.shiftKey
-  if (modActive) {
-    switch (e.code) {
-      case 'KeyS':
-        e.preventDefault()
-        if (!e.repeat) void quickSave()
-        return
-      case 'KeyL':
-        e.preventDefault()
-        if (!e.repeat) void quickLoad()
-        return
-      case 'KeyN':
-        e.preventDefault()
-        if (!e.repeat) void quickNewSave()
-        return
-      case 'KeyA':
-        e.preventDefault()
-        if (!e.repeat) emit('systemAction', 'open-saves')
-        return
-      case 'KeyG':
-        e.preventDefault()
-        if (!e.repeat) emit('systemAction', 'open-library')
-        return
-      case 'KeyP':
-        e.preventDefault()
-        if (!e.repeat) emit('systemAction', 'toggle-pause')
-        return
-      case 'KeyF':
-        e.preventDefault()
-        if (!e.repeat) emit('systemAction', 'toggle-fullscreen')
-        return
-    }
-  }
+  if (e.ctrlKey || e.altKey || e.metaKey) return
   if (props.gamePaused) return
   const a = codeToAction.value[e.code]
   if (!a) return
@@ -327,26 +284,6 @@ watch(
 let padRaf = 0
 const padActive: Set<number>[] = [new Set<number>(), new Set<number>()]
 
-// 手柄空闲肩键(游戏未占用)做应用级快捷键:LB(b4)=暂停/继续,RB(b5)=打开游戏库。
-// 跨所有手柄取或,独立边沿检测,避免长按重复触发。
-const sysPadPrev = { lb: false, rb: false }
-function detectSystemPadButtons(pads: (Gamepad | null)[]) {
-  let lb = false
-  let rb = false
-  for (const pad of pads) {
-    if (!pad) continue
-    const player = settings.players.find((p) => p.gamepadIndex === pad.index)
-    const bound = new Set(Object.values(player?.padmap ?? {}))
-    if (!bound.has('b4') && pad.buttons[4]?.pressed) lb = true
-    if (!bound.has('b5') && pad.buttons[5]?.pressed) rb = true
-  }
-  if (lb && !sysPadPrev.lb) emit('systemAction', 'toggle-pause')
-  if (rb && !sysPadPrev.rb) emit('systemAction', 'open-library')
-  sysPadPrev.lb = lb
-  sysPadPrev.rb = rb
-}
-
-// 切到后台时释放游戏输入。
 function onVisibilityChange() {
   if (document.hidden) releaseAllGameInput()
 }
@@ -386,7 +323,6 @@ function pollGamepads() {
   if (!runner) return
   if (props.inputLocked || document.hidden) return // 模态或后台不向游戏送输入(库内导航自行轮询)
   const pads = navigator.getGamepads ? navigator.getGamepads() : []
-  detectSystemPadButtons(pads)
   if (props.gamePaused) return
   settings.players.forEach((p, pi) => {
     const pad = p.gamepadIndex !== null ? pads[p.gamepadIndex] : null
@@ -538,7 +474,7 @@ watch(
 )
 
 // 全屏由 App 层统一管理(见 useFullscreen):对整个应用根容器全屏,
-// 键盘 mod+F 经 systemAction('toggle-fullscreen') 上抛,本组件不再自行控制全屏。
+// 本组件不处理全屏快捷键。
 
 // 暴露给父组件
 async function loadRom(bytes: Uint8Array) {

@@ -17,7 +17,7 @@ Both frontend hosts build separate `index.html` (MainView) and `nes.html` (NesVi
 - **Android/iOS App:** currently navigates the existing WebView to the independent NES document. Returning replaces that document with MainView. This resets the document's JS environment, but does **not** destroy/recreate a native WebView or retain a live MainView underneath. Native mobile view stacks remain a separate integration task; Android's minimum SDK stays 24.
 - **PWA/browser:** independent full-page navigation. The return button and browser Back lead to the launcher. Page hiding stops the NES core; browser back/forward caching and memory reclamation remain browser-controlled. Both HTML documents and core assets are precached for offline use after installation.
 
-In NES, Back closes a modal first, then stops a running game, then returns to the simulator list. An explicit “返回模拟器列表” button is available in the desktop toolbar and the settings menu on touch devices. Returning does not automatically create a save state; use quick save or a named save before leaving.
+In NES, Back closes a modal first, then stops a running game, then returns to the simulator list. An explicit “返回模拟器列表” button is available in the desktop toolbar; mobile devices use the system Back action. Returning does not automatically create a save state; use quick save or a named save before leaving.
 
 To add another simulator, give it its own package and HTML entry, add launcher metadata in `packages/shell/src/registry.ts`, and register its entrypoint in both Vite hosts and the native view manager. Keep its settings and databases under its own namespace.
 
