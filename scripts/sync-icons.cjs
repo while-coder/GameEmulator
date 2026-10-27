@@ -18,12 +18,13 @@ function generate(input, directory, sizes) {
 
 const browser = generate("icon.png", "browser-icons", [128, 256, 512]);
 const maskable = generate("icon-fullbleed.png", "maskable-icons", [512]);
-const pwa = path.join(root, "apps/pwa/public");
-fs.mkdirSync(pwa, { recursive: true });
-for (const [from, to] of [["128x128.png", "favicon.png"], ["256x256.png", "pwa-256.png"], ["512x512.png", "icon-512.png"]]) {
-  fs.copyFileSync(path.join(browser, from), path.join(pwa, to));
+// PWA 图标全部为生成产物,输出到 public/icons 并由 .gitignore 忽略。
+const pwaIcons = path.join(root, "apps/pwa/public/icons");
+fs.mkdirSync(pwaIcons, { recursive: true });
+for (const [from, to] of [["128x128.png", "favicon.png"], ["256x256.png", "icon-256.png"], ["512x512.png", "icon-512.png"]]) {
+  fs.copyFileSync(path.join(browser, from), path.join(pwaIcons, to));
 }
-fs.copyFileSync(path.join(maskable, "512x512.png"), path.join(pwa, "icon-maskable-512.png"));
+fs.copyFileSync(path.join(maskable, "512x512.png"), path.join(pwaIcons, "icon-maskable-512.png"));
 const appPublic = path.join(root, "apps/app/public");
 fs.mkdirSync(appPublic, { recursive: true });
 fs.copyFileSync(path.join(browser, "128x128.png"), path.join(appPublic, "favicon.png"));

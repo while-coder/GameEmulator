@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // 自动注入 Service Worker 注册脚本,无需改 main.ts。
       injectRegister: 'auto',
-      // public 下的图标纳入预缓存(它们不被构建引用)。
-      includeAssets: ['favicon.png', 'pwa-256.png', 'icon-512.png', 'icon-maskable-512.png'],
+      // public/icons 下的生成图标纳入预缓存(它们不被构建引用)。
+      includeAssets: ['icons/favicon.png', 'icons/icon-256.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'],
       manifest: {
         name: 'NES/FC 模拟器',
         short_name: 'NES',
@@ -28,9 +28,9 @@ export default defineConfig({
         scope: '.',
         // 声明尺寸必须与文件实际尺寸一致,否则浏览器忽略该图标,可能导致不可安装。
         icons: [
-          { src: 'pwa-256.png', sizes: '256x256', type: 'image/png', purpose: 'any' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-256.png', sizes: '256x256', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

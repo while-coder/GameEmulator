@@ -24,4 +24,6 @@ roms_catalog.json
 # Generated platform projects, icons and generation cache
 apps/app/src-tauri/gen/
 apps/app/src-tauri/native/*/icons/
+# PWA 图标由 scripts/sync-icons.cjs 生成,不纳入版本库
+apps/pwa/public/icons/
 .tmp/

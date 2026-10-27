@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b --force && vite build",
+    "dev": "node ../../scripts/sync-icons.cjs --web && vite",
+    "build": "node ../../scripts/sync-icons.cjs --web && vue-tsc -b --force && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
