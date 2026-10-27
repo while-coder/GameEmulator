@@ -101,10 +101,6 @@ function onShellKey(event: KeyboardEvent) {
 // Register before useRemoteNav installs its capture listener.
 if (typeof window !== 'undefined') window.addEventListener('keydown', onShellKey, true)
 const settingsTab = ref<'library' | 'saves' | 'keys' | 'display' | 'audio' | 'misc'>('library')
-function openSettings(tab: typeof settingsTab.value) {
-  settingsTab.value = tab
-  settingsOpen.value = true
-}
 const exitHintVisible = ref(false)
 let exitArmedAt = 0
 let exitHintTimer: ReturnType<typeof setTimeout> | null = null
@@ -283,7 +279,6 @@ onBeforeUnmount(() => {
   >
     <header ref="toolbarRef" class="desktop-toolbar" aria-label="游戏功能区">
       <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave" @click="leaveEmulator">返回模拟器列表</SButton>
-      <SButton @click="openSettings('library')">ROM 库</SButton>
       <SButton @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
       <SButton title="打开设置 (Esc)" @click="settingsOpen = true">菜单</SButton>
     </header>

@@ -277,6 +277,17 @@ onBeforeUnmount(() => {
         <SaveStatePanel v-else-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)" />
         <!-- 按键 -->
         <div v-else-if="tab === 'keys'" class="keys">
+          <section class="keyboard-shortcuts" aria-labelledby="keyboard-shortcuts-title">
+            <h3 id="keyboard-shortcuts-title">快捷键</h3>
+            <dl>
+              <dt><kbd>Esc</kbd></dt>
+              <dd>开启 / 关闭设置；打开时自动暂停游戏，关闭后继续。</dd>
+              <dt><kbd>Ctrl+S</kbd></dt>
+              <dd>快速存档，覆盖当前游戏的快速存档槽。</dd>
+              <dt><kbd>F11</kbd></dt>
+              <dd>在全屏与窗口模式之间切换。</dd>
+            </dl>
+          </section>
           <div class="touch-layout-setting">
             <span>触屏按键布局</span>
             <SButton @click="emit('editTouchLayout')">调整位置</SButton>
@@ -385,25 +396,48 @@ onBeforeUnmount(() => {
         </div>
       </section>
       <SHint v-if="tab === 'keys'" class="shortcut-hint">
-        <span class="keyboard-shortcuts">Esc 开启 / 关闭设置，自动暂停 / 继续游戏 · Ctrl+S 快速存档 · F11 全屏 / 窗口</span>
-        <span class="touch-shortcuts">点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。</span>
+        点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。
       </SHint>
     </div>
   </SModal>
 </template>
 
 <style scoped>
+.keyboard-shortcuts {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #343434;
+}
+.keyboard-shortcuts h3 { margin: 0 0 12px; font-size: 14px; }
+.keyboard-shortcuts dl {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.keyboard-shortcuts dd { margin: 0; color: #bbb; }
+.keyboard-shortcuts kbd {
+  padding: 2px 6px;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  background: #333;
+  color: #eee;
+  font-family: ui-monospace, monospace;
+}
 .shortcut-hint {
+  display: none;
   flex-shrink: 0;
   margin: 0;
   padding: 10px 16px;
   border-top: 1px solid #343434;
 }
 
-.touch-shortcuts { display: none; }
 @media (pointer: coarse) {
   .keyboard-shortcuts { display: none; }
-  .touch-shortcuts { display: inline; }
+  .shortcut-hint { display: block; }
 }
 
 .settings-content {
