@@ -28,6 +28,9 @@ importers:
 
   apps/app:
     dependencies:
+      '@game-emulator/arcade':
+        specifier: workspace:*
+        version: link:../../packages/arcade
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../../packages/nes
@@ -68,6 +71,9 @@ importers:
 
   apps/pwa:
     dependencies:
+      '@game-emulator/arcade':
+        specifier: workspace:*
+        version: link:../../packages/arcade
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../../packages/nes
@@ -93,6 +99,18 @@ importers:
       vue-tsc:
         specifier: 'catalog:'
         version: 2.2.12(typescript@5.9.3)
+
+  packages/arcade:
+    dependencies:
+      '@qingfeng346/ui-kit':
+        specifier: link:../../../ui-kit/ui-kit
+        version: link:../../../ui-kit/ui-kit
+      nostalgist:
+        specifier: 0.21.1
+        version: 0.21.1
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.39(typescript@5.9.3)
 
   packages/nes:
     dependencies:

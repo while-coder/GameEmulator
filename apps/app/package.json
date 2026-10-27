@@ -23,7 +23,8 @@
     "@while-coder/tauri-updater-vue": "git+https://github.com/while-coder/tauri-updater-kit.git#main&path:packages/vue",
     "vue": "catalog:",
     "@game-emulator/nes": "workspace:*",
-    "@game-emulator/shell": "workspace:*"
+    "@game-emulator/shell": "workspace:*",
+    "@game-emulator/arcade": "workspace:*"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.3",

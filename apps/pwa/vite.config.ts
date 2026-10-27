@@ -39,8 +39,8 @@ export default defineConfig({
         navigateFallback: null,
         // 纳入 wasm:libretro 核心(fceumm_libretro.wasm)需被 PWA 预缓存以支持离线。
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm}'],
-        // fceumm 核心 wasm 约 3MB,放宽单文件预缓存上限留足余量。
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        // NES 与街机核心均预缓存；街机 WASM 约 12 MB。
+        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
       },
     }),
   ],
@@ -56,6 +56,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         nes: fileURLToPath(new URL('./nes.html', import.meta.url)),
+        arcade: fileURLToPath(new URL('./arcade.html', import.meta.url)),
       },
     },
   },

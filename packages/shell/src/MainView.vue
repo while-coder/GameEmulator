@@ -5,7 +5,8 @@ import { emulators, type EmulatorId } from './registry'
 const props = withDefaults(defineProps<{ launch: (id: EmulatorId) => Promise<void>; active?: boolean }>(), { active: true })
 const busy = ref(false)
 const error = ref('')
-const firstCard = ref<HTMLButtonElement[] | null>(null)
+const cards = ref<HTMLButtonElement[]>([])
+let focusedIndex = 0
 async function enter(id: EmulatorId) {
   if (busy.value) return
   busy.value = true
@@ -14,27 +15,34 @@ async function enter(id: EmulatorId) {
   catch (err) { error.value = err instanceof Error ? err.message : String(err) }
   finally { busy.value = false }
 }
-function focusCard() { firstCard.value?.[0]?.focus() }
+function focusCard() { cards.value[focusedIndex]?.focus() }
+function moveFocus(step: number) {
+  const current = cards.value.findIndex(card => card === document.activeElement)
+  focusedIndex = current < 0 ? 0 : (current + step + cards.value.length) % cards.value.length
+  focusCard()
+}
 function onKey(event: KeyboardEvent) {
   if (props.active === false) return
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
     event.preventDefault()
-    focusCard()
+    moveFocus(event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1)
   }
 }
 let raf = 0
 let pressed = false
+let direction = 0
 function pollGamepads() {
   const pads = Array.from(navigator.getGamepads?.() ?? [])
   const down = pads.some((pad) => pad?.buttons[0]?.pressed)
+  const nextDirection = pads.some(pad => pad && (pad.buttons[15]?.pressed || pad.buttons[13]?.pressed || (pad.axes[0] ?? 0) > .5 || (pad.axes[1] ?? 0) > .5)) ? 1
+    : pads.some(pad => pad && (pad.buttons[14]?.pressed || pad.buttons[12]?.pressed || (pad.axes[0] ?? 0) < -.5 || (pad.axes[1] ?? 0) < -.5)) ? -1 : 0
   if (props.active !== false && !document.hidden && !busy.value) {
     if (down && !pressed) {
-      if (document.activeElement === firstCard.value?.[0]) firstCard.value[0].click()
+      if (cards.value.some(card => card === document.activeElement)) (document.activeElement as HTMLButtonElement).click()
       else focusCard()
-    } else if (pads.some((pad) => pad && [12, 13, 14, 15].some((index) => pad.buttons[index]?.pressed))) {
-      focusCard()
-    }
+    } else if (nextDirection && nextDirection !== direction) moveFocus(nextDirection)
   }
+  direction = nextDirection
   pressed = down
   raf = requestAnimationFrame(pollGamepads)
 }
@@ -59,10 +67,20 @@ defineExpose({ focusCard })
         <p class="intro">从熟悉的游戏机，开始下一场冒险。</p>
       </header>
       <section class="emulator-grid" aria-label="模拟器列表">
-        <button v-for="emulator in emulators" :key="emulator.id" ref="firstCard"
-          class="emulator-card" :disabled="busy || active === false" @click="enter(emulator.id)">
+        <button v-for="emulator in emulators" :key="emulator.id" ref="cards"
+          class="emulator-card" :disabled="busy || active === false" @focus="focusedIndex = emulators.findIndex(item => item.id === emulator.id)" @click="enter(emulator.id)">
           <span class="console-art" aria-hidden="true">
-            <svg viewBox="0 0 240 140" fill="none">
+            <svg v-if="emulator.id === 'arcade'" viewBox="0 0 240 140" fill="none">
+              <path d="M72 8h96l10 31-10 43 18 16v34H54V98l18-16-10-43L72 8Z" fill="#414955" />
+              <path d="M79 17h82l5 16H74l5-16Z" fill="#b75d44" />
+              <rect x="78" y="40" width="84" height="42" rx="4" fill="#151b24" />
+              <path d="m99 66 13-14 12 10 12-15 13 19" stroke="#7aaacf" stroke-width="3" />
+              <path d="M71 89h98l12 14H59l12-14Z" fill="#647080" />
+              <path d="M85 96v-9" stroke="#d4d6d8" stroke-width="3" /><circle cx="85" cy="85" r="5" fill="#d45359" />
+              <circle cx="137" cy="96" r="3" fill="#e0b777" /><circle cx="149" cy="96" r="3" fill="#d45359" /><circle cx="161" cy="96" r="3" fill="#8facbe" />
+              <rect x="97" y="114" width="46" height="12" rx="3" fill="#222831" />
+            </svg>
+            <svg v-else viewBox="0 0 240 140" fill="none">
               <rect x="20" y="30" width="200" height="92" rx="12" fill="#d3d3d0" />
               <path d="M20 79h200v31a12 12 0 0 1-12 12H32a12 12 0 0 1-12-12V79Z" fill="#3d4147" />
               <rect x="43" y="49" width="76" height="8" rx="2" fill="#868a8c" />

@@ -14,6 +14,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         nes: fileURLToPath(new URL('./nes.html', import.meta.url)),
+        arcade: fileURLToPath(new URL('./arcade.html', import.meta.url)),
       },
     },
   },

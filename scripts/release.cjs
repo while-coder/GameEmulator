@@ -194,7 +194,7 @@ function main() {
 
       execFileSync(process.execPath, [path.join(root, 'scripts/sync-versions.cjs')], { cwd: root, stdio: 'inherit' });
       execFileSync('git', ['add', PKG_JSON, 'apps/app/package.json', 'apps/pwa/package.json',
-        'packages/nes/package.json', 'packages/shell/package.json', 'apps/app/src-tauri/Cargo.toml', 'apps/app/src-tauri/Cargo.lock'],
+        'packages/nes/package.json', 'packages/arcade/package.json', 'packages/shell/package.json', 'apps/app/src-tauri/Cargo.toml', 'apps/app/src-tauri/Cargo.lock'],
         { cwd: root, stdio: 'inherit' });
       run(`git commit -m "chore: release v${nextVersion}"`);
     }

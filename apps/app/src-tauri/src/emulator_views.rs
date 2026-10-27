@@ -15,14 +15,17 @@ pub fn supports_emulator_webview() -> bool {
 
 #[tauri::command]
 pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Result<(), String> {
-    if caller.label() != "main" || id != "nes" {
+    if caller.label() != "main" || !["nes", "arcade"].contains(&id.as_str()) {
         return Err("不支持的模拟器入口".into());
     }
     #[cfg(desktop)]
     {
         let state = app.state::<EmulatorViews>();
         let _guard = state.0.lock().map_err(|e| e.to_string())?;
-        if app.get_webview("emulator-nes").is_some() {
+        if ["emulator-nes", "emulator-arcade"]
+            .iter()
+            .any(|label| app.get_webview(label).is_some())
+        {
             return Err("模拟器已打开".into());
         }
         let window = caller.window();
@@ -30,10 +33,13 @@ pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Resul
         let size = window.inner_size().map_err(|e| e.to_string())?;
         let view = window
             .add_child(
-                WebviewBuilder::new("emulator-nes", WebviewUrl::App("nes.html?child=1".into()))
-                    .auto_resize()
-                    .focused(false)
-                    .background_color(tauri::webview::Color(26, 26, 26, 255)),
+                WebviewBuilder::new(
+                    format!("emulator-{id}"),
+                    WebviewUrl::App(format!("{id}.html?child=1").into()),
+                )
+                .auto_resize()
+                .focused(false)
+                .background_color(tauri::webview::Color(26, 26, 26, 255)),
                 LogicalPosition::new(0.0, 0.0),
                 size,
             )
@@ -50,7 +56,7 @@ pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Resul
 
 #[tauri::command]
 pub async fn emulator_ready(app: AppHandle, caller: Webview) -> Result<(), String> {
-    if caller.label() != "emulator-nes" {
+    if !["emulator-nes", "emulator-arcade"].contains(&caller.label()) {
         return Err("无效的模拟器视图".into());
     }
     #[cfg(desktop)]
@@ -68,7 +74,7 @@ pub async fn emulator_ready(app: AppHandle, caller: Webview) -> Result<(), Strin
 
 #[tauri::command]
 pub async fn close_emulator(app: AppHandle, caller: Webview) -> Result<(), String> {
-    if !["main", "emulator-nes"].contains(&caller.label()) {
+    if !["main", "emulator-nes", "emulator-arcade"].contains(&caller.label()) {
         return Err("无效的模拟器视图".into());
     }
     #[cfg(desktop)]
@@ -77,8 +83,10 @@ pub async fn close_emulator(app: AppHandle, caller: Webview) -> Result<(), Strin
         let _guard = state.0.lock().map_err(|e| e.to_string())?;
         let main = app.get_webview("main").ok_or("主视图不存在")?;
         main.show().map_err(|e| e.to_string())?;
-        if let Some(view) = app.get_webview("emulator-nes") {
-            view.close().map_err(|e| e.to_string())?;
+        for label in ["emulator-nes", "emulator-arcade"] {
+            if let Some(view) = app.get_webview(label) {
+                view.close().map_err(|e| e.to_string())?;
+            }
         }
         main.set_focus().map_err(|e| e.to_string())?;
         app.emit_to("main", "emulator-closed", ())
