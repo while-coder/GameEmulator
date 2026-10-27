@@ -84,7 +84,7 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<ArcadeCat
   } catch (error) {
     if (signal?.aborted) throw error
     if (cached) return parseCatalog(cached.catalog, url)
-    const detail = error instanceof Error ? error.message : String(error)
+    const detail = abort.signal.aborted ? '连接超时' : error instanceof Error ? error.message : String(error)
     throw new Error(`读取游戏目录失败：${url}（${detail}）。首次使用需联网读取目录，请确认目录已发布。`)
   } finally {
     clearTimeout(timer)
@@ -103,7 +103,7 @@ function loadCatalog(source: string, signal?: AbortSignal): Promise<ArcadeCatalo
 }
 
 export async function findCatalogGame(hash: string, signal?: AbortSignal): Promise<{ game: CatalogGame; catalog: ArcadeCatalog } | undefined> {
-  const results = await Promise.allSettled(catalogUrls.map(url => loadCatalog(url, signal)))
+  const results = await Promise.allSettled(catalogUrls.map(async url => loadCatalog(url, signal)))
   signal?.throwIfAborted()
   for (const result of results) {
     if (result.status !== 'fulfilled') continue
