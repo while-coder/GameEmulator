@@ -12,7 +12,7 @@ let unlisten: UnlistenFn | undefined
 let disposed = false
 async function launch(id: EmulatorId) {
   const emulator = emulators.find((entry) => entry.id === id)!
-  if (native && await invoke<boolean>('supports_emulator_webview')) {
+  if (native && __TAURI_DESKTOP__) {
     active.value = false
     let timer: ReturnType<typeof setTimeout> | undefined
     let readyOff: UnlistenFn | undefined

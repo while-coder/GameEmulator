@@ -9,9 +9,7 @@ pub fn run() {
   builder
     .manage(emulator_views::EmulatorViews::default())
     .invoke_handler(tauri::generate_handler![
-      emulator_views::supports_emulator_webview,
       emulator_views::open_emulator,
-      emulator_views::emulator_ready,
       emulator_views::close_emulator,
     ])
     .setup(|app| {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { NesView } from '@game-emulator/nes'
 const child = new URLSearchParams(location.search).has('child')
@@ -7,8 +6,5 @@ async function leave() {
   if (child) await invoke('close_emulator')
   else location.replace(new URL('index.html', location.href).href)
 }
-onMounted(() => {
-  if (child) void invoke('emulator_ready').catch(console.error)
-})
 </script>
 <template><NesView :on-leave="leave" storage-key="nes:app:lastRom" platform-label="NES / FC" /></template>
