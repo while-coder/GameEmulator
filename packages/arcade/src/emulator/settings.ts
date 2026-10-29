@@ -12,8 +12,8 @@ export type Action = typeof ACTIONS[number]['id']
 export type Keymap = Record<Action, string>
 export const ACTION_BUTTONS = ACTIONS.slice(4, 10)
 const DEFAULT_KEYS = [
-  ['KeyW','KeyS','KeyA','KeyD','KeyU','KeyI','KeyO','KeyJ','KeyK','KeyL','Digit5','Digit1'],
-  ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','Digit6','Digit2'],
+  ['KeyW','KeyS','KeyA','KeyD','KeyU','KeyI','KeyO','KeyJ','KeyK','KeyL','Digit2','Digit1'],
+  ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','NumpadDecimal','Numpad0'],
 ]
 export function defaultKeymap(player: number): Keymap {
   return Object.fromEntries(ACTIONS.map((a,i)=>[a.id,DEFAULT_KEYS[player][i]])) as Keymap
@@ -46,5 +46,7 @@ export function bindKey(player: number, action: Action, code: string) {
   settings.players[player][action]=code
 }
 export function keyLabel(code: string) {
-  return code ? code.replace(/^Key/,'').replace(/^Digit/,'').replace(/^Numpad/,'Num ').replace('ArrowUp','↑').replace('ArrowDown','↓').replace('ArrowLeft','←').replace('ArrowRight','→') : '未绑定'
+  if (/^Digit\d$/.test(code)) return `上方数字 ${code.slice(5)}`
+  if (code === 'NumpadDecimal') return '小键盘 .'
+  return code ? code.replace(/^Key/,'').replace(/^Numpad/,'小键盘 ').replace('ArrowUp','↑').replace('ArrowDown','↓').replace('ArrowLeft','←').replace('ArrowRight','→') : '未绑定'
 }

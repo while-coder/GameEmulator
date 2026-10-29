@@ -277,7 +277,10 @@ function formatError(err: unknown): string {
 <template>
   <section class="store-panel">
       <div class="store-tools">
-        <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" />
+        <div class="search-tools">
+          <slot name="actions" />
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" />
+        </div>
         <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
         <SCheckbox v-model:checked="downloadedOnly" class="check">已下载 ({{ cachedRoms.length }})</SCheckbox>
@@ -375,6 +378,9 @@ function formatError(err: unknown): string {
   padding: 0 10px;
   font-size: 14px;
 }
+.search-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.search-tools > :deep(.s-input-wrap) { flex: 1; min-width: 0; }
+.search-tools .search { width: 100%; }
 .check {
   height: 34px;
   display: inline-flex;
@@ -625,28 +631,28 @@ function formatError(err: unknown): string {
 </style>
 
 <style scoped>
-.store-tools { grid-template-columns: minmax(140px, 1fr) repeat(2, minmax(120px, 160px)) auto; }
+.store-tools { grid-template-columns: minmax(280px, 1fr) repeat(2, minmax(120px, 160px)) auto; }
 .check { gap: 8px; white-space: nowrap; }
 @media (max-width: 720px) {
   .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .search { grid-column: 1 / -1; }
+  .search-tools { grid-column: 1 / -1; }
 }
 @media (orientation: landscape) and (max-height: 540px) {
   .store-tools {
     flex-shrink: 0;
-    grid-template-columns: minmax(100px, 1fr) minmax(90px, 120px) minmax(100px, 130px) auto;
+    grid-template-columns: minmax(220px, 1fr) minmax(90px, 120px) minmax(100px, 130px) auto;
     padding: 4px 12px;
     gap: 6px;
   }
-  .search { grid-column: auto; }
+  .search-tools { grid-column: auto; }
   .check { height: 44px; }
   .store-summary { flex-shrink: 0; }
   .store-pager { padding: 4px 12px; }
   .game-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
 }
-@media (orientation: landscape) and (max-height: 540px) and (max-width: 640px) {
-  .store-tools { grid-template-columns: minmax(0, 1fr) minmax(90px, 110px); }
-  .search { grid-column: auto; }
+@media (orientation: landscape) and (max-height: 540px) and (max-width: 760px) {
+  .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
+  .search-tools { grid-column: 1 / -1; }
 }
 </style>
 

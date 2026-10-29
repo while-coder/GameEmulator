@@ -47,8 +47,14 @@ function trackOperation<T>(operation: Promise<T>): Promise<T> {
   pendingOperations.add(operation)
   return operation.finally(() => pendingOperations.delete(operation))
 }
-function quickSave() { return trackOperation(doQuickSave()) }
-function quickLoad() { return trackOperation(doQuickLoad()) }
+let quickOperation: Promise<void> | null = null
+function runQuickOperation(action: () => Promise<void>) {
+  if (quickOperation) return quickOperation
+  quickOperation = trackOperation(action()).finally(() => { quickOperation = null })
+  return quickOperation
+}
+function quickSave() { return runQuickOperation(doQuickSave) }
+function quickLoad() { return runQuickOperation(doQuickLoad) }
 function quickNewSave() { return trackOperation(doQuickNewSave()) }
 
 
@@ -77,13 +83,15 @@ async function doQuickSave() {
     showToast('请先载入游戏')
     return
   }
-  const state = await runner.saveState()
-  if (!state) {
-    showToast('存档失败')
-    return
-  }
+  const romKey = props.romKey
+  const romName = props.romName ?? romKey
   try {
-    await putSaveState(props.romKey, QUICK_SLOT, props.romName ?? props.romKey, state)
+    const state = await runner.saveState()
+    if (!state) {
+      showToast('存档失败')
+      return
+    }
+    await putSaveState(romKey, QUICK_SLOT, romName, state)
     showToast('已存档')
   } catch (err) {
     console.error('[NES] 快速存档失败', err)
@@ -168,9 +176,12 @@ function onKeyDown(e: KeyboardEvent) {
     if (!e.repeat) emit('systemAction', 'open-settings')
     return
   }
-  if (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && e.code === 'KeyS') {
+  const saveKey = !e.shiftKey && !e.altKey && !e.metaKey && ((e.ctrlKey && e.code === 'KeyS') || (!e.ctrlKey && e.code === 'F8'))
+  const loadKey = !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey && e.code === 'F9'
+  if (saveKey || loadKey) {
     e.preventDefault()
-    if (!e.repeat) void quickSave()
+    e.stopImmediatePropagation()
+    if (!e.repeat) void (loadKey ? quickLoad() : quickSave())
     return
   }
   if (e.ctrlKey || e.altKey || e.metaKey) return

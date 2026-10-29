@@ -271,10 +271,18 @@ onBeforeUnmount(() => {
         </SButton>
       </nav>
 
-      <fieldset class="settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
+      <fieldset v-if="tab !== 'library' && tab !== 'saves'" class="settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
       <section :id="`settings-panel-${tab}`" class="body" :class="{ 'list-body': tab === 'library' || tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
-        <RomStorePanel v-if="tab === 'library'" ref="libraryPanel" v-model:open="libraryOpen" @load="emit('loadRom', $event)" />
-        <SaveStatePanel v-else-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)" />
+        <RomStorePanel v-if="tab === 'library'" ref="libraryPanel" v-model:open="libraryOpen" @load="emit('loadRom', $event)">
+          <template #actions>
+            <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
+          </template>
+        </RomStorePanel>
+        <SaveStatePanel v-else-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)">
+          <template #actions>
+            <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
+          </template>
+        </SaveStatePanel>
         <!-- 按键 -->
         <div v-else-if="tab === 'keys'" class="keys">
           <section class="keyboard-shortcuts" aria-labelledby="keyboard-shortcuts-title">
@@ -282,8 +290,10 @@ onBeforeUnmount(() => {
             <dl>
               <dt><kbd>Esc</kbd></dt>
               <dd>开启 / 关闭设置；打开时自动暂停游戏，关闭后继续。</dd>
-              <dt><kbd>Ctrl+S</kbd></dt>
+              <dt><kbd>Ctrl+S / F8</kbd></dt>
               <dd>快速存档，覆盖当前游戏的快速存档槽。</dd>
+              <dt><kbd>F9</kbd></dt>
+              <dd>读取当前游戏的快速存档。</dd>
               <dt><kbd>F11</kbd></dt>
               <dd>在全屏与窗口模式之间切换。</dd>
             </dl>
@@ -581,6 +591,8 @@ onBeforeUnmount(() => {
 .settings-content { flex: 1; overflow: hidden; }
 .settings-actions { display: flex; flex-wrap: wrap; flex-shrink: 0; gap: 8px; min-width: 0; margin: 0; padding: 8px 16px; border: none; }
 .settings-actions:empty { display: none; }
+.list-actions { display: flex; align-items: center; flex-wrap: wrap; flex: 0 0 auto; gap: 8px; min-width: 0; margin: 0; padding: 0; border: none; }
+.list-actions :deep(.s-button) { flex-shrink: 0; white-space: nowrap; }
 .tabs { flex-shrink: 0; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid #3a3a3a; }
 .tab { min-height: 44px; border-radius: 6px; }
 .tab:focus-visible { outline: 2px solid #4ea1ff; outline-offset: -2px; }
@@ -622,6 +634,8 @@ onBeforeUnmount(() => {
   }
   .settings-actions:empty { display: flex; }
   .body { grid-column: 2; grid-row: 2; padding: 8px 12px; }
+  .body.list-body { grid-row: 1 / -1; }
+  .list-body :deep(.store-tools) { padding-right: 56px; }
   .body.list-body { padding: 0; }
 }
 </style>

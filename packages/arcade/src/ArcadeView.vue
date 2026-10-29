@@ -7,10 +7,11 @@ import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import TouchControls from './components/TouchControls.vue'
 import RomStorePanel from './components/RomStorePanel.vue'
-import type { ArcadeCatalog, CatalogGame } from './store/catalog'
+import RemoteSelect from './components/RemoteSelect.vue'
+import { findCatalogGame, loadCatalogs, type ArcadeCatalog, type CatalogGame } from './store/catalog'
 import { ArcadeRunner } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action } from './emulator/settings'
-import { CORE_BUILD, bundleKey, getSnapshot, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
+import { CORE_BUILD, bundleKey, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
 import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
@@ -27,10 +28,21 @@ const menuOpen=ref(true),busy=ref(false),leaving=ref(false)
 const tab=ref<'library'|'saves'|'keys'|'display'>('library')
 const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示与声音'}] as const
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
+const catalogNames=ref(new Map<string,string>())
+const snapshotName=(snapshot:Snapshot)=>catalogNames.value.get(snapshot.gameHash.toLowerCase())||snapshot.gameName
 const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b.importedAt-a.importedAt))
 const current=shallowRef<Archive|null>(null)
 const currentDependencies=shallowRef<Archive[]>([])
 const loaded=computed(()=>!!current.value&&!!runner.value?.loaded)
+const saveFilter=ref('all')
+const saveFilterOptions=computed(()=>[
+  {value:'all',label:'全部游戏'},
+  ...(loaded.value?[{value:'current',label:'本游戏'}]:[]),
+  ...snapshots.value.map(snapshot=>({value:snapshot.gameHash,label:snapshotName(snapshot)})).sort((a,b)=>a.label.localeCompare(b.label,'zh-Hans-CN')),
+])
+const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value)).sort((a,b)=>b.savedAt-a.savedAt))
+watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
+watch([tab,loaded],()=>{saveFilter.value=loaded.value?'current':'all'})
 const enabled=computed(()=>loaded.value&&!menuOpen.value&&!busy.value&&!leaving.value)
 const input=useArcadeInput(runner,enabled)
 const player=ref(0)
@@ -95,14 +107,21 @@ async function save(){
 async function restore(snapshot:Snapshot){
   if(snapshot.coreBuild!==CORE_BUILD)throw new Error('此存档不属于当前街机核心版本')
   const game=games.value.find(g=>g.hash===snapshot.gameHash)
-  if(!game)throw new Error(`请先导入存档对应的原始游戏包 ${snapshot.gameName}`)
-  if(!current.value||bundleKey(current.value,currentDependencies.value)!==snapshot.key){await startGame(game,snapshot)}
+  if(!current.value||bundleKey(current.value,currentDependencies.value)!==snapshot.key){
+    if(game)await startGame(game,snapshot)
+    else{
+      const match=await findCatalogGame(snapshot.gameHash,downloads.signal)
+      if(!match)throw new Error(`未找到存档对应的游戏，请先导入原始游戏包 ${snapshot.gameName}`)
+      const prepared=await prepareCatalogGame(match.game,match.catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
+      await loadPreparedGame(prepared.game,prepared.dependencies,snapshot)
+    }
+  }
   await runner.value!.restore(snapshot.state)
   menuOpen.value=false;notify('已读取存档')
 }
 async function quickRestore(){
   if(!current.value)throw new Error('请先启动游戏')
-  const snapshot=await getSnapshot(bundleKey(current.value,currentDependencies.value))
+  const snapshot=(await listSnapshots()).find(snapshot=>snapshot.gameHash===current.value!.hash)
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
@@ -120,13 +139,15 @@ function nativeBack(): 'handled'{
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
-  const saveKey=event.ctrlKey&&!event.shiftKey&&!event.altKey&&!event.metaKey&&event.code==='KeyS'
-  if(event.code==='Escape'||event.code==='F11'||saveKey){
+  if(event.code==='Escape'&&event.target instanceof Element&&event.target.closest('.rs-popup'))return
+  const saveKey=!event.shiftKey&&!event.altKey&&!event.metaKey&&((event.ctrlKey&&event.code==='KeyS')||(!event.ctrlKey&&event.code==='F8'))
+  const loadKey=!event.ctrlKey&&!event.shiftKey&&!event.altKey&&!event.metaKey&&event.code==='F9'
+  if(event.code==='Escape'||event.code==='F11'||saveKey||loadKey){
     event.preventDefault();event.stopImmediatePropagation()
     if(event.repeat||busy.value||leaving.value)return
     if(event.code==='F11'){void fullscreen.toggle();return}
     if(event.code==='Escape'){capturing.value=null;menuOpen.value=!menuOpen.value;return}
-    if(!menuOpen.value)void task(save)
+    if(!menuOpen.value)void task(loadKey?quickRestore:save)
     return
   }
   if(capturing.value&&menuOpen.value){
@@ -170,6 +191,9 @@ onMounted(()=>{
   window.addEventListener('pagehide',pageHide)
   ;(window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack=nativeBack
   measure();void task(refresh)
+  void loadCatalogs(downloads.signal).then(({catalogs})=>{
+    catalogNames.value=new Map(catalogs.flatMap(catalog=>catalog.games.flatMap(game=>game.name?[[game.sha256.toLowerCase(),game.name] as const]:[])))
+  }).catch(()=>{})
 })
 onBeforeUnmount(()=>{
   downloads.abort()
@@ -212,14 +236,14 @@ const time=(value:number)=>new Date(value).toLocaleString()
             :play-cached="play" :remove="deleteGame" :import-files="importFiles" />
 
           <section v-else-if="tab==='saves'">
-            <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取当前游戏存档</SButton></div>
-            <SHint>每个游戏版本保留一个快速存档，保存时覆盖。读取时自动启动对应游戏并补齐缺失依赖；需保留原始游戏包。</SHint>
-            <p v-if="!snapshots.length" class="library-empty">还没有存档。</p>
-            <article v-for="snapshot in [...snapshots].sort((a,b)=>b.savedAt-a.savedAt)" :key="snapshot.key" class="game-row game-summary"><div><strong>{{snapshot.gameName}}</strong><small>{{time(snapshot.savedAt)}}</small></div><div class="row-actions"><SButton @click="task(()=>restore(snapshot))">读取</SButton><SButton @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
+            <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取本游戏快速存档</SButton><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" class="save-filter" /></div>
+            <SHint>每个游戏保留一个快速存档（Ctrl+S / F8 保存，F9 读取），保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
+            <p v-if="!filteredSnapshots.length" class="library-empty">{{saveFilter==='current'?'本游戏还没有存档。':'还没有存档。'}}</p>
+            <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="game-row game-summary"><div><strong>{{snapshotName(snapshot)}}</strong><small>{{time(snapshot.savedAt)}}</small></div><div class="row-actions"><SButton @click="task(()=>restore(snapshot))">{{ loaded && current?.hash !== snapshot.gameHash ? '切换并读档' : '读取' }}</SButton><SButton @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
           </section>
 
           <section v-else-if="tab==='keys'" class="keys-page">
-            <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>开启 / 关闭设置，自动暂停 / 继续游戏。</dd><dt><kbd>Ctrl+S</kbd></dt><dd>快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
+            <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>开启 / 关闭设置，自动暂停 / 继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
             <div class="arcade-actions"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
             <SHint>六键为 Y / X / L、B / A / R 两排布局，投币后按开始。手柄按连接顺序分配给两位玩家，左摇杆与十字键均可控制方向；游戏按核心默认布局映射。</SHint>
             <div class="arcade-key-row key-heading"><span>操作</span><span>键盘（点击修改）</span><span>标准手柄</span></div>

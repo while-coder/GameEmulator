@@ -9,6 +9,7 @@ import {
 } from '../emulator/platform'
 import { settings } from '../emulator/settings'
 import { sha256Hex } from '../store/romDownloader'
+import { saveCachedRom } from '../store/romLibrary'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 import { useFullscreen } from '../composables/useFullscreen'
 import NesScreen from './NesScreen.vue'
@@ -86,6 +87,7 @@ function resetTouchLayout() {
   settings.touchLayout[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
+  if (event.code === 'Escape' && event.target instanceof Element && event.target.closest('.rs-popup')) return
   if (event.code !== 'Escape' && event.code !== 'F11') return
   event.preventDefault()
   // Handle shell shortcuts before remote navigation and game input.
@@ -142,6 +144,7 @@ async function openRom() {
   const picked = await pickRomFile()
   if (!picked) return
   const key = await sha256Hex(picked.bytes)
+  await saveCachedRom({ name: picked.name, sha256: key, download_url: '' }, picked.bytes)
   await loadRomBytes(picked.name, picked.bytes, key)
   settingsOpen.value = false
 }
@@ -187,11 +190,19 @@ async function onLoadSave(payload: {
   state: SaveState
   bytes?: Uint8Array
 }) {
-  if (payload.bytes) {
-    await loadRomBytes(payload.name, payload.bytes, payload.romKey)
+  try {
+    leaveError.value = ''
+    if (payload.bytes) {
+      await loadRomBytes(payload.name, payload.bytes, payload.romKey)
+    }
+    if (!await screen.value?.applyState(payload.state)) throw new Error('读取存档失败，存档可能已损坏或与当前核心不兼容')
+  } catch (err) {
+    leaveError.value = err instanceof Error ? err.message : String(err)
+    settingsTab.value = 'saves'
+    settingsOpen.value = true
+  } finally {
+    syncPlayback()
   }
-  await screen.value?.applyState(payload.state)
-  syncPlayback()
 }
 
 function reset() {
@@ -291,16 +302,17 @@ onBeforeUnmount(() => {
       @load-save="onLoadSave"
       @edit-touch-layout="editTouchLayout"
     >
-      <template #actions="{ tab }">
+      <template #list-actions="{ tab }">
         <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
-        <template v-if="tab === 'library'">
-          <SButton :loading="loading" @click="openRom">{{ loading ? openLoadingLabel : '打开本地 ROM' }}</SButton>
-        </template>
+        <SButton v-if="tab === 'library'" :loading="loading" @click="openRom">{{ loading ? openLoadingLabel : '打开本地 ROM' }}</SButton>
         <template v-else-if="tab === 'saves'">
           <SButton :loading="creatingSave" :disabled="!romName || loading" @click="newSave">{{ creatingSave ? '保存中…' : '新建存档' }}</SButton>
           <SHint v-if="saveMessage" role="status">{{ saveMessage }}</SHint>
         </template>
-        <template v-else-if="tab === 'misc'">
+      </template>
+      <template #actions="{ tab }">
+        <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
+        <template v-if="tab === 'misc'">
           <SButton :disabled="!romName || loading" @click="reset">复位游戏</SButton>
           <SButton :disabled="!romName || loading" @click="stopRom">中止游戏</SButton>
           <SButton class="desktop-only" @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
@@ -327,7 +339,7 @@ onBeforeUnmount(() => {
       />
       <SEmpty v-if="!romName && !layoutEditing" class="empty-state">
         <p>通过菜单选择游戏或本地 ROM 开始游玩</p>
-        <SHint>Esc 开启 / 关闭设置 · Ctrl+S 快速存档</SHint>
+        <SHint>Esc 设置 · Ctrl+S / F8 快速存档 · F9 快速读档</SHint>
       </SEmpty>
     </main>
 

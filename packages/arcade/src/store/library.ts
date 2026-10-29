@@ -61,11 +61,40 @@ async function write(store: string, value: Archive | Snapshot | CachedCatalog | 
   await completion
 }
 export const listArchives=()=>read<Archive[]>('archives')
-export const listSnapshots=()=>read<Snapshot[]>('saves')
+export async function listSnapshots(): Promise<Snapshot[]> {
+  const snapshots = await read<Snapshot[]>('saves')
+  const latest = new Map<string, Snapshot>()
+  for (const snapshot of snapshots.sort((a,b)=>b.savedAt-a.savedAt)) {
+    if (!latest.has(snapshot.gameHash)) latest.set(snapshot.gameHash, snapshot)
+  }
+  return [...latest.values()]
+}
 export const removeArchive=(id:string)=>write('archives',id,true)
-export const removeSnapshot=(key:string)=>write('saves',key,true)
+export async function removeSnapshot(key: string): Promise<void> {
+  const d=await db(),tx=d.transaction('saves','readwrite'),completion=done(tx)
+  const store=tx.objectStore('saves'),request=store.getAll()
+  request.onsuccess=()=>{
+    const snapshots=request.result as Snapshot[]
+    const selected=snapshots.find(snapshot=>snapshot.key===key)
+    for(const snapshot of snapshots) {
+      if(snapshot.key===key||selected&&snapshot.gameHash===selected.gameHash)store.delete(snapshot.key)
+    }
+  }
+  await completion
+}
 export const putArchive=(archive:Archive)=>write('archives',archive)
-export const putSnapshot=(snapshot:Snapshot)=>write('saves',snapshot)
+export async function putSnapshot(snapshot: Snapshot): Promise<void> {
+  const d=await db(),tx=d.transaction('saves','readwrite'),completion=done(tx)
+  const store=tx.objectStore('saves')
+  const request=store.getAll()
+  request.onsuccess=()=>{
+    for(const previous of request.result as Snapshot[]) {
+      if(previous.gameHash===snapshot.gameHash)store.delete(previous.key)
+    }
+    store.put(snapshot)
+  }
+  await completion
+}
 export const getSnapshot=(key:string)=>read<Snapshot|undefined>('saves',key)
 export const getCachedCatalog=(url:string)=>read<CachedCatalog|undefined>('catalogs',url)
 export const putCachedCatalog=(value:CachedCatalog)=>write('catalogs',value)

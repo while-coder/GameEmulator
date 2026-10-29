@@ -36,13 +36,18 @@ const emit = defineEmits<{ load: [LoadSavePayload] }>()
 
 const records = ref<SaveStateRecord[]>([])
 const query = ref('')
-// 过滤范围:'current' 当前游戏 / 'all' 全部 / 其余为某游戏的 sha256。
-const filter = ref<'current' | 'all' | string>('all')
+const filter = ref('all')
+const savedGames = computed(() => {
+  const games = new Map<string, string>()
+  for (const record of records.value) if (!games.has(record.romKey)) games.set(record.romKey, record.name)
+  return [...games].map(([value, label]) => ({ value, label })).sort((a,b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
+})
 const filterOptions = computed(() => [
-  ...(props.currentRomKey ? [{ value: 'current', label: '当前游戏' }] : []),
   { value: 'all', label: '全部游戏' },
-  ...games.value.map(game => ({ value: game.key, label: game.name })),
+  ...(props.currentRomKey ? [{ value: 'current', label: '本游戏' }] : []),
+  ...savedGames.value,
 ])
+watch(filterOptions, options => { if (!options.some(option => option.value === filter.value)) filter.value = 'all' })
 const busyKey = ref<string | null>(null)
 const error = ref<string | null>(null)
 const progress = ref<DownloadProgress | null>(null)
@@ -78,19 +83,12 @@ async function refresh() {
   }
 }
 
-// 列表中出现过的游戏(去重),供过滤下拉展示。
-const games = computed(() => {
-  const map = new Map<string, string>()
-  for (const r of records.value) if (!map.has(r.romKey)) map.set(r.romKey, r.name)
-  return Array.from(map, ([key, name]) => ({ key, name }))
-})
-
 const filteredRecords = computed(() => {
   let list = records.value
   if (filter.value === 'current') {
     list = props.currentRomKey ? list.filter((r) => r.romKey === props.currentRomKey) : []
   } else if (filter.value !== 'all') {
-    list = list.filter((r) => r.romKey === filter.value)
+    list = list.filter(record => record.romKey === filter.value)
   }
   const q = query.value.trim().toLocaleLowerCase('zh-Hans-CN')
   if (q) {
@@ -208,14 +206,18 @@ function formatError(err: unknown): string {
 <template>
   <section class="store-panel">
       <div class="store-tools">
-        <SInput v-model:value="query" class="search" type="search" placeholder="搜索存档名、游戏名" />
-        <RemoteSelect v-model="filter" class="select" :options="filterOptions" />
+        <div class="search-tools">
+          <slot name="actions" />
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索存档名、游戏名" />
+        </div>
+        <RemoteSelect v-model="filter" class="select" :options="filterOptions" searchable aria-label="存档游戏范围" />
       </div>
 
       <div class="store-summary">
         <span>显示 {{ filteredRecords.length }} 条</span>
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
+      <SHint class="load-hint">Ctrl+S / F8 保存本游戏快速存档，F9 读取。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
 
       <div class="save-list">
         <article v-for="record in filteredRecords" :key="record.key" class="save-card">
@@ -225,7 +227,7 @@ function formatError(err: unknown): string {
                 size="small"
                 class="badge"
                 :type="isQuickSave(record) ? 'warning' : 'info'"
-                :title="isQuickSave(record) ? '快速存档(S 键覆盖式单槽)' : '普通存档'"
+                :title="isQuickSave(record) ? '快速存档（Ctrl+S / F8 保存，F9 读取）' : '普通存档'"
               >
                 {{ isQuickSave(record) ? '快速' : '普通' }}
               </STag>
@@ -260,7 +262,7 @@ function formatError(err: unknown): string {
           <div class="save-actions">
             <span v-if="busyKey === record.key" class="progress">{{ progressLabel() }}</span>
             <SButton class="btn primary" :disabled="busyKey !== null" @click="loadRecord(record)">
-              读档
+              {{ currentRomKey && currentRomKey !== record.romKey ? '切换并读档' : '读档' }}
             </SButton>
             <SButton class="btn" :disabled="busyKey !== null" @click="removeRecord(record)">
               删除
@@ -313,6 +315,10 @@ function formatError(err: unknown): string {
   font-size: 12px;
   border-bottom: 1px solid #30353d;
 }
+.search-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.search-tools > :deep(.s-input-wrap) { flex: 1; min-width: 0; }
+.search-tools .search { width: 100%; }
+.load-hint { flex-shrink: 0; margin: 0; padding: 6px 18px; font-size: 12px; line-height: 1.4; }
 .error {
   color: #ffb0a6;
   text-align: right;

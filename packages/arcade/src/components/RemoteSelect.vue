@@ -1,9 +1,9 @@
 <script setup lang="ts" generic="T">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, useAttrs } from 'vue'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 
 // 遥控/手柄友好的下拉框:
-// - 鼠标模式(navEnabled 为假):直接渲染原生 <select>,行为与体验完全不变。
+// - 鼠标模式(navEnabled 为假):默认使用原生 <select>，searchable 开启时使用可搜索弹层。
 // - 遥控模式:渲染触发按钮 —— 选中后按「确定」弹出选项列表,上下键在列表内移动,
 //   再按「确定」才切换选项(而非原生 select 那样左右键即时改值,不符合遥控操作习惯)。
 // 弹层挂 priority=20 的 useRemoteNav(高于模态的 10),打开时独占按键;BACK/确定后回落。
@@ -13,12 +13,20 @@ interface Option {
   label: string
 }
 
-const props = defineProps<{ options: Option[] }>()
+const props = defineProps<{ options: Option[]; searchable?: boolean }>()
+defineOptions({ inheritAttrs: false })
+const attrs = useAttrs()
 const model = defineModel<T>()
 
 const open = ref(false)
 const triggerRef = ref<HTMLElement | null>(null)
 const popupRef = ref<HTMLElement | null>(null)
+const searchRef = ref<HTMLInputElement | null>(null)
+const query = ref('')
+const filteredOptions = computed(() => {
+  const text = query.value.trim().toLocaleLowerCase()
+  return text ? props.options.filter(option => option.label.toLocaleLowerCase().includes(text)) : props.options
+})
 // 弹层固定定位坐标(打开时按触发按钮的矩形计算,避免被面板 overflow 裁剪)。
 const popupStyle = ref<Record<string, string>>({})
 
@@ -39,15 +47,25 @@ function openPopup(): void {
     minWidth: `${r.width}px`,
     maxHeight: `${Math.max(belowSpace, r.top) - 16}px`,
   }
+  if (props.searchable) {
+    const width = Math.min(Math.max(r.width, 260), window.innerWidth - 16)
+    style.width = `${width}px`
+    style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - width - 8))}px`
+  }
   if (belowSpace >= 220 || belowSpace >= r.top) {
     style.top = `${r.bottom + 4}px`
   } else {
     style.bottom = `${window.innerHeight - r.top + 4}px`
   }
   popupStyle.value = style
+  query.value = ''
   open.value = true
   // 弹层渲染后把焦点落到当前选中项(便于上下微调),供遥控/键盘导航起点。
   nextTick(() => {
+    if (props.searchable && !navEnabled.value) {
+      searchRef.value?.focus()
+      return
+    }
     const el =
       popupRef.value?.querySelector<HTMLElement>('.rs-option[data-selected="true"]') ??
       popupRef.value?.querySelector<HTMLElement>('.rs-option')
@@ -72,6 +90,29 @@ function pick(opt: Option): void {
   closePopup()
 }
 
+function onPopupKey(event: KeyboardEvent) {
+  if (event.isComposing) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopPropagation()
+    closePopup()
+    return
+  }
+  const options = Array.from(popupRef.value?.querySelectorAll<HTMLButtonElement>('.rs-option') ?? [])
+  if (event.key === 'Enter' && event.target === searchRef.value) {
+    event.preventDefault()
+    options[0]?.click()
+    return
+  }
+  if (navEnabled.value) return
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault()
+    const index = options.indexOf(document.activeElement as HTMLButtonElement)
+    const next = event.key === 'ArrowDown' ? (index + 1) % options.length : (index <= 0 ? options.length - 1 : index - 1)
+    options[next]?.focus()
+  }
+}
+
 // 弹层内的焦点导航:上下选、确定切换(见各选项 @click)、BACK 关闭。
 useRemoteNav({
   container: popupRef,
@@ -83,7 +124,7 @@ useRemoteNav({
 
 <template>
   <!-- 鼠标模式:原生下拉,体验不变 -->
-  <select v-if="!navEnabled" v-model="model" class="remote-select">
+  <select v-if="!navEnabled && !searchable" v-bind="attrs" v-model="model" class="remote-select">
     <option v-for="opt in options" :key="String(opt.value)" :value="opt.value">
       {{ opt.label }}
     </option>
@@ -92,9 +133,11 @@ useRemoteNav({
   <!-- 遥控模式:触发按钮 + 弹出列表 -->
   <button
     v-else
+    v-bind="attrs"
     ref="triggerRef"
     type="button"
     class="remote-select rs-trigger"
+    aria-haspopup="listbox"
     :aria-expanded="open"
     @click="toggle"
   >
@@ -104,9 +147,11 @@ useRemoteNav({
 
   <Teleport v-if="open" to="body">
     <div class="rs-backdrop" @click="closePopup" />
-    <div ref="popupRef" class="rs-popup" role="listbox" :style="popupStyle">
+    <div ref="popupRef" class="rs-popup" :style="popupStyle" @keydown="onPopupKey">
+      <input v-if="searchable" ref="searchRef" v-model="query" class="rs-search" type="search" placeholder="搜索游戏" aria-label="搜索游戏选项" />
+      <div class="rs-options" role="listbox">
       <button
-        v-for="opt in options"
+        v-for="opt in filteredOptions"
         :key="String(opt.value)"
         type="button"
         class="rs-option"
@@ -117,6 +162,8 @@ useRemoteNav({
       >
         {{ opt.label }}
       </button>
+      <p v-if="!filteredOptions.length" class="rs-empty" role="status">没有匹配的游戏</p>
+      </div>
     </div>
   </Teleport>
 </template>
@@ -133,6 +180,8 @@ useRemoteNav({
 }
 .rs-trigger {
   display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -140,6 +189,8 @@ useRemoteNav({
   text-align: left;
 }
 .rs-value {
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -166,8 +217,11 @@ useRemoteNav({
   border: 1px solid #434a54;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  overflow-y: auto;
+  overflow: hidden;
 }
+.rs-options { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; min-height: 0; }
+.rs-search { flex-shrink: 0; min-width: 0; min-height: 40px; margin-bottom: 4px; padding: 8px 10px; border: 1px solid #434a54; border-radius: 5px; background: #171a1f; color: #eee; font: inherit; }
+.rs-empty { margin: 0; padding: 12px; color: #aaa; font-size: 13px; }
 .rs-option {
   border: none;
   background: transparent;
@@ -176,7 +230,8 @@ useRemoteNav({
   border-radius: 5px;
   font-size: 14px;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 .rs-option:hover,
