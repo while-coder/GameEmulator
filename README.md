@@ -66,11 +66,18 @@ Core provenance, checksums, source links, and license details are in [CORE.md](p
 
 - `pnpm android:init` generates the Android project and applies the maintained customizations from `apps/app/src-tauri/native/android/app/` (signing, back navigation, TV support, and display names).
 - `pnpm ios:init` generates the iOS project and synchronizes its icons (requires macOS).
+- iOS uses `com.whilecode.gameemulator` through `tauri.ios.conf.json`; the SideStore source reads the same identifier. Tauri mobile project generation rejects the `while` segment in the desktop identifier as a reserved keyword.
 - Mobile dev/build scripts reapply platform preparation. Keep persistent changes in `native/`; generated projects under `src-tauri/gen/` are ignored by Git.
 - Android retains its existing `com.wandergame.nesemulator` application ID through `tauri.android.conf.json`. Signing still uses root `secrets/keystore.properties` or `ANDROID_KEYSTORE_*` / `ANDROID_KEY_*` environment variables.
 - Android in-app updates follow the ClipRoam flow: use the home screen’s “检查更新” button to grant installation permission; later launches check automatically after 5 seconds. Updates download into the app cache and open the system installer. The release workflow appends the APK URL to the `android` entry of `updater/latest.json` after both desktop manifest publication and Android release succeed. Existing APKs without this feature need one manual upgrade; subsequent packages must keep the same application ID and signing key.
 - Verify manifest publication locally with `node --test apps/app/src-tauri/native/android/manifest-update.test.cjs` (mocked GitHub CLI; no upload).
 - See [native resources](apps/app/src-tauri/native/README.md) for platform paths.
+
+## Release deployment
+
+The release workflow runs on `v*` tags. In repository **Settings → Environments → github-pages → Deployment branches and tags**, allow a **Tag** rule matching `v*` alongside any existing branch rules. Otherwise GitHub rejects the Pages job before its steps run; deployment retries cannot fix an environment protection rejection. Keep **Settings → Pages → Build and deployment → Source** set to **GitHub Actions**.
+
+When passing options to `pnpm run android:build` or `pnpm run ios:build`, append them directly (for example, `pnpm run android:build --apk --aab`). An extra `--` is forwarded to Tauri and sends the remaining options to Cargo.
 
 ## ROM catalog
 

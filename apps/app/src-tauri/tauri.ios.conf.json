@@ -1,4 +1,5 @@
 {
+  "identifier": "com.whilecode.gameemulator",
   "bundle": {
     "icon": [
       "native/ios/icons/icon.png"

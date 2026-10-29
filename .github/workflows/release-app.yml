@@ -65,7 +65,7 @@ jobs:
       version: ${{ needs.check.outputs.version }}
       asset-prefix: nes-emulator
       init-command: pnpm android:init
-      build-command: pnpm run android:build -- --apk --aab
+      build-command: pnpm run android:build --apk --aab
     secrets: inherit
 
   release-ios:
@@ -80,7 +80,7 @@ jobs:
       version: ${{ needs.check.outputs.version }}
       asset-prefix: nes-emulator
       init-command: pnpm ios:init
-      build-command: pnpm run ios:build -- --target aarch64 --no-sign --ci
+      build-command: pnpm run ios:build --target aarch64 --no-sign --ci
     secrets: inherit
 
   release-sidestore:
@@ -105,8 +105,8 @@ jobs:
           SIDESTORE_OUTPUT: apps.json
         run: |
           set -euo pipefail
-          SIDESTORE_SHA256="$(sha256sum app.ipa | cut -d' ' -f1)"
-          SIDESTORE_SIZE="$(stat -c%s app.ipa)"
+          export SIDESTORE_SHA256="$(sha256sum app.ipa | cut -d' ' -f1)"
+          export SIDESTORE_SIZE="$(stat -c%s app.ipa)"
           SIDESTORE_DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/nes-emulator_${SIDESTORE_VERSION}_ios_unsigned.ipa" \
             node scripts/sidestore-source.cjs
 

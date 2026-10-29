@@ -19,7 +19,7 @@
 const fs = require("node:fs");
 
 const REPO = "while-coder/nes-emulator";
-const BUNDLE_ID = "com.while.nesemulator";
+const BUNDLE_ID = require("../apps/app/src-tauri/tauri.ios.conf.json").identifier;
 // releases/latest/download 是 GitHub 提供的稳定地址，始终指向最新 Release 的同名资源。
 const SOURCE_URL = `https://github.com/${REPO}/releases/latest/download/apps.json`;
 const ICON_URL = `https://raw.githubusercontent.com/${REPO}/main/apps/icon/icon.png`;
