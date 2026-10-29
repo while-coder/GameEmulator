@@ -18,6 +18,14 @@ pnpm build:android-tv:release # Release APK
 
 发布签名复用根目录 `secrets/keystore.properties` 或 `ANDROID_KEYSTORE_PATH`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。未配置签名时 Release 输出为 unsigned，不能直接安装。
 
+## GitHub Actions 发布
+
+现有 `.github/workflows/release-app.yml` 在推送 `v*` 标签或手动触发时，会独立构建 Android TV 版、运行自动测试并验证 APK 签名。产物 `nes-emulator_<版本>_android-tv.apk` 同时上传到当前 GitHub Release 和 workflow artifact，与普通 Android APK 区分。
+
+复用普通 Android 发布已有的签名 secrets：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。也支持在 `BUILD_SIGNING_JSON` 中配置同名字段，JSON 中的值优先。签名缺失会使 TV 发布任务失败，不上传未签名 APK。本任务不依赖桌面构建成功，不修改普通 Android 的自动更新清单。
+
+## Android Studio
+
 直接从 Android Studio 构建前，先运行 `pnpm build:android-tv:frontend`。Gradle 自动从 `apps/icon/icon.png` 生成图标资源。根目录的 APK 构建命令会自动先构建前端。
 
 ## 运行方式

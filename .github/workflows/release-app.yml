@@ -68,6 +68,113 @@ jobs:
       build-command: pnpm run android:build --apk --aab
     secrets: inherit
 
+  release-android-tv:
+    name: Release Android TV (GeckoView)
+    needs: [check, prepare-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Prepare Android TV signing
+        env:
+          BUILD_SIGNING_JSON: ${{ secrets.BUILD_SIGNING_JSON }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const { randomUUID } = require('node:crypto');
+          const config = JSON.parse(process.env.BUILD_SIGNING_JSON || '{}');
+          if (!config || typeof config !== 'object' || Array.isArray(config)) {
+            throw new Error('BUILD_SIGNING_JSON must contain a JSON object');
+          }
+          const values = {};
+          for (const key of ['ANDROID_KEYSTORE_BASE64', 'ANDROID_KEYSTORE_PASSWORD', 'ANDROID_KEY_ALIAS', 'ANDROID_KEY_PASSWORD']) {
+            const value = config[key] || process.env[key];
+            if (typeof value !== 'string' || !value.trim()) throw new Error(`${key} is required for Android TV release signing`);
+            values[key] = value;
+            const escaped = value.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+            process.stdout.write(`::add-mask::${escaped}\n`);
+          }
+          const keystore = path.join(process.env.RUNNER_TEMP, 'android-tv-release.jks');
+          fs.writeFileSync(keystore, Buffer.from(values.ANDROID_KEYSTORE_BASE64, 'base64'), { mode: 0o600 });
+          delete values.ANDROID_KEYSTORE_BASE64;
+          values.ANDROID_KEYSTORE_PATH = keystore;
+          for (const [key, value] of Object.entries(values)) {
+            const delimiter = randomUUID();
+            fs.appendFileSync(process.env.GITHUB_ENV, `${key}<<${delimiter}\n${value}\n${delimiter}\n`);
+          }
+          NODE
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            apps/android-tv/android/**/*.gradle.kts
+            apps/android-tv/android/gradle.properties
+            apps/android-tv/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
+
+      - name: Build and test Android TV APK
+        run: |
+          pnpm build:android-tv:release
+          node --test apps/android-tv/scripts/bridge.test.cjs
+          cd apps/android-tv/android
+          sh ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: Verify and name signed APK
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+        run: |
+          set -euo pipefail
+          APK="apps/android-tv/android/app/build/outputs/apk/release/app-release.apk"
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          mkdir -p android-tv-release
+          cp "$APK" "android-tv-release/nes-emulator_${VERSION}_android-tv.apk"
+
+      - name: Upload Android TV workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-tv-${{ needs.check.outputs.version }}
+          path: android-tv-release/*.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Android TV APK to release
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.check.outputs.tag }}
+        run: gh release upload "$TAG" android-tv-release/*.apk --clobber
+
+      - name: Remove temporary keystore
+        if: ${{ always() }}
+        run: rm -f "$RUNNER_TEMP/android-tv-release.jks"
+
   release-ios:
     needs: [check, release-desktop]
     if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
