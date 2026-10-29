@@ -5,6 +5,7 @@ import retroarchLicense from './assets/cores/RETROARCH-COPYING.txt?raw'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
+import SSwitch from '@qingfeng346/ui-kit/components/SSwitch.vue'
 import TouchControls from './components/TouchControls.vue'
 import RomStorePanel from './components/RomStorePanel.vue'
 import RemoteSelect from './components/RemoteSelect.vue'
@@ -25,8 +26,13 @@ const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??nul
 const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunner|null>(null)
 const menuOpen=ref(true),busy=ref(false),leaving=ref(false)
-const tab=ref<'library'|'saves'|'keys'|'display'>('library')
-const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示与声音'}] as const
+const layoutEditing=ref(false)
+const tab=ref<'library'|'saves'|'keys'|'display'|'audio'|'misc'>('library')
+const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
+function editTouchLayout(){layoutEditing.value=true;menuOpen.value=false}
+function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false}
+function resetTouchLayout(){settings.touchLayout[window.matchMedia('(orientation: portrait)').matches?'portrait':'landscape']={}}
+function closeMenu(){if(!busy.value&&!leaving.value)menuOpen.value=false}
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
 const catalogNames=ref(new Map<string,string>())
 const snapshotName=(snapshot:Snapshot)=>catalogNames.value.get(snapshot.gameHash.toLowerCase())||snapshot.gameName
@@ -43,7 +49,7 @@ const saveFilterOptions=computed(()=>[
 const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value)).sort((a,b)=>b.savedAt-a.savedAt))
 watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
 watch([tab,loaded],()=>{saveFilter.value=loaded.value?'current':'all'})
-const enabled=computed(()=>loaded.value&&!menuOpen.value&&!busy.value&&!leaving.value)
+const enabled=computed(()=>loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
 const input=useArcadeInput(runner,enabled)
 const player=ref(0)
 const capturing=ref<Action|null>(null)
@@ -125,7 +131,7 @@ async function quickRestore(){
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-function stop(){input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=true;tab.value='library'}
+function stop(){layoutEditing.value=false;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=true;tab.value='library'}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true;stop()
@@ -133,7 +139,8 @@ async function leave(){
 }
 function nativeBack(): 'handled'{
   if(busy.value||leaving.value)return 'handled'
-  if(menuOpen.value)menuOpen.value=false
+  if(layoutEditing.value)finishTouchLayout()
+  else if(menuOpen.value)menuOpen.value=false
   else if(loaded.value)stop()
   else void leave()
   return 'handled'
@@ -146,8 +153,8 @@ function shellKey(event:KeyboardEvent){
     event.preventDefault();event.stopImmediatePropagation()
     if(event.repeat||busy.value||leaving.value)return
     if(event.code==='F11'){void fullscreen.toggle();return}
-    if(event.code==='Escape'){capturing.value=null;menuOpen.value=!menuOpen.value;return}
-    if(!menuOpen.value)void task(loadKey?quickRestore:save)
+    if(event.code==='Escape'){capturing.value=null;if(layoutEditing.value)finishTouchLayout();else menuOpen.value=!menuOpen.value;return}
+    if(!menuOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
     return
   }
   if(capturing.value&&menuOpen.value){
@@ -158,9 +165,9 @@ function shellKey(event:KeyboardEvent){
 // The shell owns these keys before menu navigation or the game sees them.
 if(typeof window!=='undefined')window.addEventListener('keydown',shellKey,true)
 const panel=ref<HTMLElement|null>(null)
-useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:()=>{menuOpen.value=false},autoFocus:true,priority:10})
-watch([menuOpen,busy,current],()=>{
-  if(menuOpen.value||busy.value)runner.value?.pause()
+useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:closeMenu,autoFocus:true,priority:10})
+watch([menuOpen,layoutEditing,busy,current],()=>{
+  if(menuOpen.value||layoutEditing.value||busy.value)runner.value?.pause()
   else runner.value?.resume()
 },{flush:'sync'})
 watch(()=>settings.muted,value=>runner.value?.setMuted(value))
@@ -178,7 +185,7 @@ function measure(){
   if(width>0&&height>0)runner.value?.resize(Math.floor(width),Math.floor(height))
 }
 watch(()=>settings.aspect,()=>nextTick(measure))
-const touchVisible=computed(()=>settings.touch!=='never')
+const touchVisible=computed(()=>layoutEditing.value||settings.touch!=='never')
 let resize:ResizeObserver|null=null,mutation:MutationObserver|null=null
 const blurCanvas=()=>canvas.value?.blur()
 function pageHide(){downloads.abort();input.releaseAll();runner.value?.dispose()}
@@ -215,27 +222,28 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <SButton class="desktop-only" @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton>
       <SButton @click="menuOpen=true">菜单</SButton>
     </header>
-    <main class="arcade-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'}">
+    <main class="arcade-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
+      <div v-if="layoutEditing" class="layout-edit-tools"><span>拖动虚线区域调整位置 · 自动保存</span><SButton @click="resetTouchLayout">重置当前方向</SButton><SButton @click="finishTouchLayout">完成</SButton></div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
-        <div v-if="!loaded" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在游戏库中选择游戏，自动下载后投币开始。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
+        <div v-if="!loaded && !layoutEditing" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在游戏库中选择游戏，自动下载后投币开始。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
       </div>
-      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'}" :disabled="!enabled" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
+      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
     <footer class="arcade-status"><span>{{current?.name??'未载入游戏'}}</span><span v-if="busy">处理中…</span><span v-else>街机 · FB Alpha 2012</span></footer>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>
 
-    <SModal v-model:show="menuOpen" title="街机 · 设置" width="1040px" fill-height class="player-modal arcade-modal" :close-on-esc="false" :body-scrollable="false">
+    <SModal v-model:show="menuOpen" title="街机 · 设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
       <div ref="panel" class="arcade-menu">
-        <nav class="arcade-tabs" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :class="{selected:tab===item.id}" @click="tab=item.id">{{item.label}}</SButton></nav>
+        <nav class="arcade-tabs" role="tablist" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :id="`arcade-tab-${item.id}`" class="arcade-tab" :class="{active:tab===item.id}" role="tab" :aria-selected="tab===item.id" :aria-controls="`arcade-panel-${item.id}`" :disabled="busy||leaving" @click="tab=item.id">{{item.label}}</SButton></nav>
         <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
         <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
-        <fieldset class="arcade-content" :class="{'library-content':tab==='library'}" :disabled="busy||leaving">
+        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content" :class="{'library-content':tab==='library'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
           <RomStorePanel v-if="tab==='library'" :archives="archives" :busy="busy||leaving" :progress="progress"
             :play="(game,catalog)=>remoteGame(game,catalog,true)" :download="(game,catalog)=>remoteGame(game,catalog,false)"
             :play-cached="play" :remove="deleteGame" :import-files="importFiles" />
 
-          <section v-else-if="tab==='saves'">
+          <section v-else-if="tab==='saves'" class="saves-page">
             <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取本游戏快速存档</SButton><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" class="save-filter" /></div>
             <SHint>每个游戏保留一个快速存档（Ctrl+S / F8 保存，F9 读取），保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
             <p v-if="!filteredSnapshots.length" class="library-empty">{{saveFilter==='current'?'本游戏还没有存档。':'还没有存档。'}}</p>
@@ -244,18 +252,24 @@ const time=(value:number)=>new Date(value).toLocaleString()
 
           <section v-else-if="tab==='keys'" class="keys-page">
             <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>开启 / 关闭设置，自动暂停 / 继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
-            <div class="arcade-actions"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
+            <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="editTouchLayout">调整位置</SButton></div>
+            <SHint class="layout-hint">拖动摇杆、六键区和两组功能键调整位置，横屏与竖屏分别保存。</SHint>
+            <div class="arcade-actions player-switch"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
             <SHint>六键为 Y / X / L、B / A / R 两排布局，投币后按开始。手柄按连接顺序分配给两位玩家，左摇杆与十字键均可控制方向；游戏按核心默认布局映射。</SHint>
             <div class="arcade-key-row key-heading"><span>操作</span><span>键盘（点击修改）</span><span>标准手柄</span></div>
             <div v-for="action in ACTIONS" :key="action.id" class="arcade-key-row"><span>{{action.label}}</span><SButton :class="{selected:capturing===action.id}" @click="capturing=action.id">{{capturing===action.id?'按下新按键…':keyLabel(settings.players[player][action.id])}}</SButton><span>{{PAD_LABELS[action.pad]}}</span></div>
             <SButton @click="settings.players[player]=defaultKeymap(player)">恢复当前玩家默认按键</SButton>
           </section>
 
+          <section v-else-if="tab==='display'" class="display-page">
+            <label>画面平滑<SSwitch v-model:value="settings.smoothing" /></label>
+            <label>宽高比<RemoteSelect v-model="settings.aspect" :options="[{value:'auto',label:'自动（跟随游戏方向）'},{value:'4:3',label:'4:3 横屏'},{value:'3:4',label:'3:4 竖屏'}]" /></label>
+          </section>
+          <section v-else-if="tab==='audio'" class="display-page">
+            <label>静音<SSwitch v-model:value="settings.muted" /></label>
+          </section>
           <section v-else class="display-page">
-            <label>画面比例<select v-model="settings.aspect"><option value="auto">自动（跟随游戏方向）</option><option value="4:3">4:3 横屏</option><option value="3:4">3:4 竖屏</option></select></label>
-            <label>画面平滑<input v-model="settings.smoothing" type="checkbox" /></label>
-            <label>静音<input v-model="settings.muted" type="checkbox" /></label>
-            <label>触屏手柄<select v-model="settings.touch"><option value="auto">自动</option><option value="always">始终显示</option><option value="never">不显示</option></select></label>
+            <label>触屏手柄<RemoteSelect v-model="settings.touch" :options="[{value:'auto',label:'默认（桌面隐藏，移动端显示）'},{value:'always',label:'显示'},{value:'never',label:'隐藏'}]" /></label>
             <div class="arcade-actions"><SButton :disabled="!loaded" @click="runner?.reset()">复位游戏</SButton><SButton :disabled="!loaded" @click="stop">中止游戏</SButton><SButton @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton></div>
             <details class="core-licenses"><summary>开源许可</summary><h4>FB Alpha 2012</h4><pre>{{fbaLicense}}</pre><h4>RetroArch</h4><pre>{{retroarchLicense}}</pre></details>
           </section>
@@ -268,6 +282,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#1a1a1a;color:#e8e8e8}*{box-sizing:border-box}html,body,#app{height:100%;margin:0}body{overflow:hidden}button,select,input{font:inherit}button{cursor:pointer}button:disabled{cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #82b1ff;outline-offset:3px}
 </style>
+
 <style scoped>
 .arcade-app{height:100dvh;display:flex;flex-direction:column;background:#1a1a1a}.is-pseudo-fullscreen{position:fixed;inset:0;z-index:2000}
 .arcade-toolbar{display:flex;align-items:center;gap:8px;padding:10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left));background:#242424;border-bottom:1px solid #343434;flex-shrink:0}.arcade-title{font-size:14px;color:#bbb;margin-right:auto}
@@ -291,5 +306,61 @@ const time=(value:number)=>new Date(value).toLocaleString()
 @media(pointer:coarse) and (orientation:portrait){
   .arcade-stage.has-touch{display:grid;grid-template-rows:repeat(2,minmax(0,1fr))}
   .arcade-touch{display:grid}
+}
+</style>
+
+<style scoped>
+.arcade-tabs { flex-wrap: wrap; gap: 4px; padding: 8px 12px; overflow: visible; border-bottom: 1px solid #3a3a3a; }
+.arcade-tabs .arcade-tab { min-height: 44px; padding: 6px 12px; border: none; border-radius: 6px; background: transparent; color: #aaa; font-size: 14px; }
+.arcade-tabs .arcade-tab.active { background: #3a3a3a; color: #fff; }
+.arcade-tabs .arcade-tab:focus-visible { outline: 2px solid #4ea1ff; outline-offset: -2px; }
+.arcade-content { padding: 16px; }
+.arcade-content section { max-width: 640px; }
+.arcade-content .saves-page { max-width: none; }
+.arcade-content.library-content { padding: 0; }
+.touch-layout-setting { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.layout-hint { display: block; margin-bottom: 12px; font-size: 12px; line-height: 1.4; }
+.player-switch { gap: 8px; margin-bottom: 12px; }
+.player-switch :deep(.s-button) { flex: 1; }
+.arcade-key-row { grid-template-columns: minmax(0, 1fr) 110px 110px; gap: 8px; margin: 0; padding: 6px 0; }
+.arcade-key-row :deep(.s-button) { min-height: 44px; }
+.display-page > label { min-height: 0; padding: 8px 0; border: none; }
+.display-page .remote-select { min-width: 160px; max-width: 65%; }
+.layout-edit-tools { position: absolute; z-index: 10; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; width: max-content; max-width: calc(100% - 24px); padding: 8px; border-radius: 8px; background: #202328ee; font-size: 13px; }
+.layout-edit-tools :deep(.s-button) { min-height: 44px; }
+@media (max-width: 480px) {
+  .arcade-tabs { gap: 2px; padding: 4px; }
+  .arcade-tabs .arcade-tab { flex: 1; padding: 6px; font-size: 13px; }
+  .arcade-key-row { grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 100px)); gap: 4px; }
+}
+@media (pointer: coarse) {
+  .arcade-tabs { gap: 4px; padding: 4px 8px; }
+  .arcade-tabs .arcade-tab { min-height: var(--player-control-height); padding: 4px 8px; }
+  .arcade-content:not(.library-content) { padding: 8px 12px; }
+  .display-page > label { min-height: calc(var(--player-control-height) + 8px); padding-block: 4px; gap: 8px; }
+  .display-page .remote-select { min-width: 0; width: 60%; max-width: 240px; }
+  .arcade-key-row { padding-block: 3px; }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .arcade-menu { display: grid; grid-template-columns: 84px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
+  .arcade-tabs { grid-column: 1; grid-row: 1 / -1; flex-direction: column; flex-wrap: nowrap; padding: 6px; overflow-y: auto; border-bottom: none; border-right: 1px solid #3a3a3a; }
+  .arcade-tabs .arcade-tab { flex: 0 0 auto; width: 100%; padding: 6px; }
+  .arcade-error { grid-column: 2; grid-row: 1; margin-right: 56px; }
+  .arcade-progress { grid-column: 2; grid-row: 2; margin-right: 56px; }
+  .arcade-content { grid-column: 2; grid-row: 3; }
+  .arcade-content:not(.library-content) { padding: 8px 56px 8px 12px; }
+  .library-content :deep(.store-tools) { padding-right: 56px; }
+}
+</style>
+
+<style>
+.arcade-modal .s-modal-body { flex: 1; }
+.arcade-modal .s-modal-header { flex-shrink: 0; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .arcade-modal.s-modal-overlay { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  .arcade-modal .s-modal-box.fill-height { position: relative; width: 100% !important; height: 100%; max-height: 100%; border: none; border-radius: 0; }
+  .arcade-modal .s-modal-header { position: absolute; top: 4px; right: 6px; z-index: 1; padding: 0; border: none; }
+  .arcade-modal .s-modal-titles { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .arcade-modal .s-icon-close { width: 44px; height: 44px; }
 }
 </style>

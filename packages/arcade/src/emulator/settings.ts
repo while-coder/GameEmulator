@@ -11,6 +11,8 @@ export const ACTIONS = [
 export type Action = typeof ACTIONS[number]['id']
 export type Keymap = Record<Action, string>
 export const ACTION_BUTTONS = ACTIONS.slice(4, 10)
+export type TouchLayoutGroup = 'dpad' | 'actions' | 'functionsLeft' | 'functionsRight'
+export type TouchLayout = Record<'portrait' | 'landscape', Partial<Record<TouchLayoutGroup, { x: number; y: number }>>>
 const DEFAULT_KEYS = [
   ['KeyW','KeyS','KeyA','KeyD','KeyU','KeyI','KeyO','KeyJ','KeyK','KeyL','Digit2','Digit1'],
   ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','NumpadDecimal','Numpad0'],
@@ -24,13 +26,24 @@ interface Settings {
   aspect: 'auto' | '4:3' | '3:4'
   touch: 'auto' | 'always' | 'never'
   muted: boolean
+  touchLayout: TouchLayout
 }
-const defaults: Settings = { players:[defaultKeymap(0),defaultKeymap(1)], smoothing:false, aspect:'auto', touch:'auto', muted:false }
+const defaults: Settings = { players:[defaultKeymap(0),defaultKeymap(1)], smoothing:false, aspect:'auto', touch:'auto', muted:false, touchLayout:{portrait:{},landscape:{}} }
 function load(): Settings {
   try {
     const value = JSON.parse(localStorage.getItem('arcade.settings') ?? 'null')
     if (!value || typeof value !== 'object') return defaults
+    const touchLayout: TouchLayout = { portrait: {}, landscape: {} }
+    for (const orientation of ['portrait', 'landscape'] as const) {
+      for (const group of ['dpad', 'actions', 'functionsLeft', 'functionsRight'] as const) {
+        const position = value.touchLayout?.[orientation]?.[group]
+        if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
+          touchLayout[orientation][group] = { x: Math.max(0, Math.min(1, position.x)), y: Math.max(0, Math.min(1, position.y)) }
+        }
+      }
+    }
     return {
+      touchLayout,
       players:defaults.players.map((base,i)=>Object.fromEntries(ACTIONS.map(a=>[a.id,typeof value.players?.[i]?.[a.id]==='string'?value.players[i][a.id]:base[a.id]])) as Keymap),
       smoothing:value.smoothing===true,
       aspect:['auto','4:3','3:4'].includes(value.aspect)?value.aspect:'auto',
