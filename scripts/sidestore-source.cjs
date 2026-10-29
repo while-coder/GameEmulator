@@ -6,7 +6,7 @@
  * apps.json 并上传到 Release。用户在 SideStore 里添加下面的 sourceURL
  * 即可订阅并一键安装/更新（SideStore 会用用户自己的 Apple ID 重签）：
  *
- *   https://github.com/while-coder/nes-emulator/releases/latest/download/apps.json
+ *   https://github.com/while-coder/GameEmulator/releases/latest/download/apps.json
  *
  * 环境变量：
  *   SIDESTORE_VERSION       版本号（必填）
@@ -18,15 +18,15 @@
  */
 const fs = require("node:fs");
 
-const REPO = "while-coder/nes-emulator";
+const REPO = "while-coder/GameEmulator";
 const BUNDLE_ID = require("../apps/app/src-tauri/tauri.ios.conf.json").identifier;
 // releases/latest/download 是 GitHub 提供的稳定地址，始终指向最新 Release 的同名资源。
 const SOURCE_URL = `https://github.com/${REPO}/releases/latest/download/apps.json`;
 const ICON_URL = `https://raw.githubusercontent.com/${REPO}/main/apps/icon/icon.png`;
-const WEBSITE = "https://while-coder.github.io/nes-emulator/";
+const WEBSITE = "https://while-coder.github.io/GameEmulator/";
 const TINT_COLOR = "#C8102E";
-const APP_NAME = "NES Emulator";
-const DEFAULT_NOTES = "NES/FC 模拟器，支持触屏手柄与即时存档。";
+const APP_NAME = "GameEmulator";
+const DEFAULT_NOTES = "多平台游戏模拟器，支持 NES/FC、街机、触屏手柄与即时存档。";
 
 const version = process.env.SIDESTORE_VERSION;
 const downloadURL = process.env.SIDESTORE_DOWNLOAD_URL;
@@ -58,7 +58,7 @@ const source = {
       name: APP_NAME,
       bundleIdentifier: BUNDLE_ID,
       developerName: "while",
-      localizedDescription: "NES/FC 模拟器，支持触屏手柄与即时存档，可离线游玩。",
+      localizedDescription: "多平台游戏模拟器，支持 NES/FC、街机、触屏手柄与即时存档，可离线游玩。",
       iconURL: ICON_URL,
       tintColor: TINT_COLOR,
       category: "games",

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
@@ -16,6 +15,7 @@ import NesScreen from './NesScreen.vue'
 import SettingsModal from './SettingsModal.vue'
 import PlayerFooter from './PlayerFooter.vue'
 import type { SaveState } from '../emulator/runner'
+import '../../../player-ui/player.css'
 
 type ToolbarMode = 'app' | 'web'
 type BackResult = 'exit' | 'handled'
@@ -62,7 +62,7 @@ const layoutEditing = ref(false)
 const leaving = ref(false)
 const leaveError = ref('')
 async function leaveEmulator() {
-  if (leaving.value || loading.value || creatingSave.value) return
+  if (leaving.value || loading.value || creatingSave.value || settingsModal.value?.busy) return
   leaving.value = true
   leaveError.value = ''
   try {
@@ -73,6 +73,10 @@ async function leaveEmulator() {
   } finally {
     leaving.value = false
   }
+}
+function openLibrary() {
+  settingsTab.value = 'library'
+  settingsOpen.value = true
 }
 function editTouchLayout() {
   layoutEditing.value = true
@@ -92,7 +96,7 @@ function onShellKey(event: KeyboardEvent) {
   event.preventDefault()
   // Handle shell shortcuts before remote navigation and game input.
   event.stopImmediatePropagation()
-  if (event.repeat || leaving.value) return
+  if (event.repeat || leaving.value || loading.value || creatingSave.value || settingsModal.value?.busy) return
   if (event.code === 'F11') {
     void toggleFullscreen()
     return
@@ -215,6 +219,8 @@ function stopRom() {
   romName.value = null
   romKey.value = null
   paused.value = false
+  settingsOpen.value = false
+  settingsTab.value = 'library'
 }
 
 function toggleAudio() {
@@ -230,7 +236,7 @@ function onSystemAction(action: string) {
 
 const EXIT_CONFIRM_MS = 2000
 function handleBack(): BackResult {
-  if (loading.value || leaving.value || creatingSave.value) return 'handled'
+  if (loading.value || leaving.value || creatingSave.value || settingsModal.value?.busy) return 'handled'
   if (layoutEditing.value) {
     finishTouchLayout()
     return 'handled'
@@ -288,9 +294,10 @@ onBeforeUnmount(() => {
     class="app"
     :class="shellClasses"
   >
-    <header ref="toolbarRef" class="desktop-toolbar" aria-label="游戏功能区">
-      <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave" @click="leaveEmulator">返回模拟器列表</SButton>
-      <SButton @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
+    <header ref="toolbarRef" class="player-toolbar" aria-label="游戏功能区">
+      <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave || settingsModal?.busy" @click="leaveEmulator">返回模拟器列表</SButton>
+      <span class="player-title">{{ title }}</span>
+      <SButton class="player-fullscreen" @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
       <SButton title="打开设置 (Esc)" @click="settingsOpen = true">菜单</SButton>
     </header>
     <SettingsModal
@@ -298,6 +305,8 @@ onBeforeUnmount(() => {
       v-model:open="settingsOpen"
       v-model:tab="settingsTab"
       :current-rom-key="romKey"
+      :audio-on="audioOn"
+      @toggle-audio="toggleAudio"
       @load-rom="(p) => loadRomBytes(p.name, p.bytes, p.key)"
       @load-save="onLoadSave"
       @edit-touch-layout="editTouchLayout"
@@ -315,13 +324,12 @@ onBeforeUnmount(() => {
         <template v-if="tab === 'misc'">
           <SButton :disabled="!romName || loading" @click="reset">复位游戏</SButton>
           <SButton :disabled="!romName || loading" @click="stopRom">中止游戏</SButton>
-          <SButton class="desktop-only" @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
+          <SButton @click="toggleFullscreen">{{ isFullscreen ? '退出全屏' : '全屏' }}</SButton>
         </template>
-        <SButton v-else-if="tab === 'audio'" @click="toggleAudio">{{ audioOn ? '静音' : '开启声音' }}</SButton>
       </template>
     </SettingsModal>
 
-    <main class="stage">
+    <main class="stage player-stage">
       <div v-if="layoutEditing" class="layout-edit-tools">
         <span>拖动虚线区域调整位置 · 自动保存</span>
         <SButton @click="resetTouchLayout">重置当前方向</SButton>
@@ -336,11 +344,13 @@ onBeforeUnmount(() => {
         :rom-key="romKey"
         :rom-name="romName"
         @system-action="onSystemAction"
-      />
-      <SEmpty v-if="!romName && !layoutEditing" class="empty-state">
-        <p>通过菜单选择游戏或本地 ROM 开始游玩</p>
-        <SHint>Esc 设置 · Ctrl+S / F8 快速存档 · F9 快速读档</SHint>
-      </SEmpty>
+      >
+        <div v-if="!romName && !layoutEditing" class="player-empty">
+          <strong>选择游戏，开始游玩</strong>
+          <span>在游戏库中选择游戏，或导入本地 ROM。</span>
+          <SButton @click="openLibrary">打开游戏库</SButton>
+        </div>
+      </NesScreen>
     </main>
 
     <Transition name="toast">
@@ -415,20 +425,6 @@ textarea,
 .app.is-fullscreen :deep(.frame) {
   border-radius: 0;
 }
-.desktop-toolbar {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  overflow-x: auto;
-  background: #242424;
-  border-bottom: 1px solid #343434;
-}
-.desktop-toolbar > :deep(.s-button) {
-  flex-shrink: 0;
-  white-space: nowrap;
-}
 .stage {
   flex: 1;
   min-height: 0;
@@ -436,7 +432,6 @@ textarea,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px;
   position: relative;
 }
 .layout-edit-tools {
@@ -458,18 +453,6 @@ textarea,
   font-size: 13px;
 }
 .layout-edit-tools :deep(.s-button) { min-height: 44px; }
-.empty-state {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 24px;
-  text-align: center;
-  color: #ccc;
-}
-.empty-state p { margin: 0; }
-.empty-state small { color: #aaa; }
 .exit-hint {
   position: fixed;
   left: 50%;
@@ -492,19 +475,5 @@ textarea,
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-}
-@media (pointer: coarse) {
-  .desktop-only { display: none; }
-  .desktop-toolbar { display: none; }
-  .stage {
-    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-  }
-  .empty-state { top: 8px; gap: 8px; padding: 8px; font-size: 13px; }
-  .empty-state small { display: none; }
-}
-@media (pointer: coarse) and (orientation: landscape) {
-  .stage {
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
 }
 </style>

@@ -13,6 +13,9 @@ export interface Archive {
   importedAt: number
   dependencies: string[]
 }
+// Persist bytes instead of file-backed Blobs: WebKit can lose the backing file
+// when a cached record is rewritten. Keep accepting Blobs from older versions.
+type StoredArchive = Omit<Archive, 'file'> & { file: ArrayBuffer | Blob }
 export interface Snapshot {
   key: string
   gameName: string
@@ -54,13 +57,18 @@ async function read<T>(store: string, key?: string): Promise<T> {
   await completion
   return result
 }
-async function write(store: string, value: Archive | Snapshot | CachedCatalog | string, remove=false) {
+async function write(store: string, value: StoredArchive | Snapshot | CachedCatalog | string, remove=false) {
   const d=await db(),tx=d.transaction(store,'readwrite'), completion=done(tx)
   if(remove)tx.objectStore(store).delete(value as string)
   else tx.objectStore(store).put(value)
   await completion
 }
-export const listArchives=()=>read<Archive[]>('archives')
+export async function listArchives(): Promise<Archive[]> {
+  return (await read<StoredArchive[]>('archives')).map(archive=>({
+    ...archive,
+    file: archive.file instanceof Blob ? archive.file : new Blob([archive.file], {type:'application/zip'}),
+  }))
+}
 export async function listSnapshots(): Promise<Snapshot[]> {
   const snapshots = await read<Snapshot[]>('saves')
   const latest = new Map<string, Snapshot>()
@@ -82,7 +90,12 @@ export async function removeSnapshot(key: string): Promise<void> {
   }
   await completion
 }
-export const putArchive=(archive:Archive)=>write('archives',archive)
+export async function putArchive(archive:Archive): Promise<void> {
+  // Read before opening the transaction; awaiting Blob IO inside it can let
+  // IndexedDB auto-commit before put() runs.
+  const file=await archive.file.arrayBuffer()
+  await write('archives',{...archive,file})
+}
 export async function putSnapshot(snapshot: Snapshot): Promise<void> {
   const d=await db(),tx=d.transaction('saves','readwrite'),completion=done(tx)
   const store=tx.objectStore('saves')

@@ -558,7 +558,7 @@ defineExpose({
           <div v-if="toast" class="toast">{{ toast }}</div>
         </transition>
       </div>
-
+      <slot />
     </div>
 
     <!-- 触屏虚拟手柄(经典分离式,支持斜向与多点触控) -->
@@ -585,6 +585,7 @@ defineExpose({
   min-width: 0;
 }
 .display-area {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;

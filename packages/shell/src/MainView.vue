@@ -62,7 +62,7 @@ defineExpose({ focusCard })
   <main class="launcher" :aria-busy="busy">
     <div class="launcher-content">
       <header>
-        <span class="eyebrow">GAME EMULATOR</span>
+        <span class="eyebrow">GameEmulator</span>
         <h1>选择模拟器</h1>
         <p class="intro">从熟悉的游戏机，开始下一场冒险。</p>
       </header>

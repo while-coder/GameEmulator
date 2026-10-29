@@ -204,7 +204,7 @@ function main() {
       console.log(`✓ 已清理旧 tag ${tag}`);
     }
 
-    run(`git tag -a "${tag}" -m "nes-emulator v${nextVersion}"`);
+    run(`git tag -a "${tag}" -m "GameEmulator v${nextVersion}"`);
     run('git push');
     run(`git push origin "${tag}"`);
 

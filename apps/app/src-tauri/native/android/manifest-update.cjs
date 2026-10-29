@@ -7,7 +7,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
-const repo = process.env.GITHUB_REPOSITORY || "while-coder/nes-emulator";
+const repo = process.env.GITHUB_REPOSITORY || "while-coder/GameEmulator";
 const tag = requiredEnv("TAG");
 const version = requiredEnv("VERSION");
 const notes = process.env.NOTES || "";

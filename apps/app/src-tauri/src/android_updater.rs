@@ -12,7 +12,7 @@ pub(crate) const UPDATE_PROGRESS_EVENT: &str = "game-emulator://update-progress"
 // Android 更新项由 CI（release-app.yml 的 publish-android-manifest 任务）在发版时
 // 写入 android 字段，客户端只读静态文件，不请求 GitHub API，避免匿名限流。
 const UPDATER_MANIFEST_URL: &str =
-    "https://github.com/while-coder/nes-emulator/releases/download/updater/latest.json";
+    "https://github.com/while-coder/GameEmulator/releases/download/updater/latest.json";
 const UPDATER_CLASS: &str = "com.wandergame.nesemulator.Updater";
 /// 下载进度节流间隔，避免大文件下载把事件总线刷爆。
 const PROGRESS_EMIT_INTERVAL: u64 = 256 * 1024;
@@ -179,7 +179,7 @@ pub(crate) async fn download_update(
     url: String,
     version: String,
 ) -> Result<String, String> {
-    if !url.starts_with("https://github.com/while-coder/nes-emulator/releases/download/")
+    if !url.starts_with("https://github.com/while-coder/GameEmulator/releases/download/")
         || !url.ends_with(".apk")
     {
         return Err("更新包地址不属于本应用的 GitHub Release".to_string());

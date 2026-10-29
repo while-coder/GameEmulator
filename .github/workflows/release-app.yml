@@ -38,7 +38,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.check.outputs.tag }}
-          title: nes-emulator v${{ needs.check.outputs.version }}
+          title: GameEmulator v${{ needs.check.outputs.version }}
           notes: ${{ needs.check.outputs.notes }}
 
   release-desktop:
@@ -49,7 +49,7 @@ jobs:
       cargo-lock-path: apps/app/src-tauri/Cargo.lock
       cargo-target-path: apps/app/src-tauri/target
       tag-name: ${{ needs.check.outputs.tag }}
-      release-name: nes-emulator v${{ needs.check.outputs.version }}
+      release-name: GameEmulator v${{ needs.check.outputs.version }}
       release-body: ${{ needs.check.outputs.notes }}
     secrets: inherit
 
@@ -63,7 +63,7 @@ jobs:
       cargo-target-path: apps/app/src-tauri/target
       tag-name: ${{ needs.check.outputs.tag }}
       version: ${{ needs.check.outputs.version }}
-      asset-prefix: nes-emulator
+      asset-prefix: GameEmulator
       init-command: pnpm android:init
       build-command: pnpm run android:build --apk --aab
     secrets: inherit
@@ -155,7 +155,7 @@ jobs:
           test -f "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           mkdir -p android-tv-release
-          cp "$APK" "android-tv-release/nes-emulator_${VERSION}_android-tv.apk"
+          cp "$APK" "android-tv-release/GameEmulator_${VERSION}_android-tv.apk"
 
       - name: Upload Android TV workflow artifact
         uses: actions/upload-artifact@v4
@@ -185,7 +185,7 @@ jobs:
       cargo-target-path: apps/app/src-tauri/target
       tag-name: ${{ needs.check.outputs.tag }}
       version: ${{ needs.check.outputs.version }}
-      asset-prefix: nes-emulator
+      asset-prefix: GameEmulator
       init-command: pnpm ios:init
       build-command: pnpm run ios:build --target aarch64 --no-sign --ci
     secrets: inherit
@@ -214,7 +214,7 @@ jobs:
           set -euo pipefail
           export SIDESTORE_SHA256="$(sha256sum app.ipa | cut -d' ' -f1)"
           export SIDESTORE_SIZE="$(stat -c%s app.ipa)"
-          SIDESTORE_DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/nes-emulator_${SIDESTORE_VERSION}_ios_unsigned.ipa" \
+          SIDESTORE_DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/GameEmulator_${SIDESTORE_VERSION}_ios_unsigned.ipa" \
             node scripts/sidestore-source.cjs
 
       - name: Upload SideStore source to release
@@ -228,7 +228,7 @@ jobs:
     if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
     uses: while-coder/workflows/.github/workflows/tauri-updater-manifest.yml@main
     with:
-      product-prefix: nes-emulator
+      product-prefix: GameEmulator
       tag-name: ${{ needs.check.outputs.tag }}
       version: ${{ needs.check.outputs.version }}
       release-notes: ${{ needs.check.outputs.notes }}
@@ -281,7 +281,7 @@ jobs:
           cache: pnpm
 
       - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
-      - run: pnpm --filter @nes-emulator/pwa run build
+      - run: pnpm --filter @game-emulator/pwa run build
 
       - uses: actions/configure-pages@v5
 

@@ -21,7 +21,7 @@
       "name": "Launch App · Android",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm --filter @nes-emulator/app android:dev",
+      "command": "pnpm --filter @game-emulator/app android:dev",
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "ui:kill"
     },

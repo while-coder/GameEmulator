@@ -1,6 +1,6 @@
 # Changelog
 
-本文件记录 Game Emulator 各端的发版说明。发版 workflow 会自动提取对应 `## <version>` 段落作为 GitHub Release notes。
+本文件记录 GameEmulator 各端的发版说明。发版 workflow 会自动提取对应 `## <version>` 段落作为 GitHub Release notes。
 
 ## 0.0.1
 

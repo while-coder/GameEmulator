@@ -1,5 +1,5 @@
 {
-  "name": "@nes-emulator/pwa",
+  "name": "@game-emulator/pwa",
   "private": true,
   "type": "module",
   "scripts": {

@@ -22,7 +22,8 @@ const { label: inputLabel } = useInputMonitor()
     <span v-if="settings.misc.showInputDebug" class="input-debug">
       按键 <b>{{ inputLabel || '—' }}</b>
     </span>
-    <span class="meta">{{ romName ?? '未载入' }} · {{ platformLabel }}</span>
+    <span>{{ romName ?? '未载入游戏' }}</span>
+    <span class="meta">{{ platformLabel }}</span>
   </footer>
 </template>
 
@@ -40,7 +41,6 @@ const { label: inputLabel } = useInputMonitor()
   font-size: 12px;
 }
 .footer .meta {
-  color: #777;
   margin-left: auto;
 }
 /* 调试:当前按下的按键 */

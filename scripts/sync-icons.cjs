@@ -16,15 +16,18 @@ function generate(input, directory, sizes) {
   return output;
 }
 
-const browser = generate("icon.png", "browser-icons", [128, 256, 512]);
-const maskable = generate("icon-fullbleed.png", "maskable-icons", [512]);
+const browser = generate("icon.png", "browser-icons", [128, 192, 512]);
+// iOS 主屏图标和 Android maskable 图标使用正式的不透明底图。
+const maskable = generate("icon-fullbleed.png", "maskable-icons", [180, 512]);
 // PWA 图标全部为生成产物,输出到 public/icons 并由 .gitignore 忽略。
 const pwaIcons = path.join(root, "apps/pwa/public/icons");
 fs.mkdirSync(pwaIcons, { recursive: true });
-for (const [from, to] of [["128x128.png", "favicon.png"], ["256x256.png", "icon-256.png"], ["512x512.png", "icon-512.png"]]) {
+// 使用新的品牌文件名，避免浏览器继续命中旧版占位图标缓存。
+for (const [from, to] of [["128x128.png", "gameemulator-favicon.png"], ["192x192.png", "gameemulator-192.png"], ["512x512.png", "gameemulator-512.png"]]) {
   fs.copyFileSync(path.join(browser, from), path.join(pwaIcons, to));
 }
-fs.copyFileSync(path.join(maskable, "512x512.png"), path.join(pwaIcons, "icon-maskable-512.png"));
+fs.copyFileSync(path.join(maskable, "180x180.png"), path.join(pwaIcons, "gameemulator-apple-touch-icon.png"));
+fs.copyFileSync(path.join(maskable, "512x512.png"), path.join(pwaIcons, "gameemulator-maskable-512.png"));
 const appPublic = path.join(root, "apps/app/public");
 fs.mkdirSync(appPublic, { recursive: true });
 fs.copyFileSync(path.join(browser, "128x128.png"), path.join(appPublic, "favicon.png"));

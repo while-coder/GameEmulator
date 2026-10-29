@@ -25,15 +25,13 @@ export class ArcadeRunner {
   }
   get loaded() { return this.instance!==null }
   get aspectRatio() { return this.rotation%2 ? 1/this.geometryAspect : this.geometryAspect }
-  resize(width:number,height:number){
-    if(this.instance&&(this.canvas.width!==width||this.canvas.height!==height))this.instance.resize({width,height})
-  }
   async load(game: Archive, dependencies: Archive[]): Promise<void> {
     this.dispose()
     const generation=++this.generation
     const abort=new AbortController();this.abort=abort
     let diagnostic=''
     let failed=false
+    let phase='加载模拟器资源'
     const emscriptenModule = {
       printErr:(message:string)=>{
         // The pinned RetroArch build reports core rotation/geometry here.
@@ -61,6 +59,7 @@ export class ArcadeRunner {
       })
       if(generation!==this.generation){instance.exit({removeCanvas:false});return}
       this.instance=instance
+      phase='启动街机核心'
       await instance.start()
       if(failed)throw new Error(diagnostic||'核心拒绝此游戏包')
       if(generation!==this.generation)return
@@ -73,7 +72,8 @@ export class ArcadeRunner {
       this.dispose()
       const detail=error instanceof Error?error.message:String(error)
       console.error('[Arcade] 核心启动失败',diagnostic,error)
-      throw new Error(`无法启动 ${game.name}。请确认游戏包为目录对应的 FBA 0.2.97.29 版本。${detail?` (${detail.slice(0,180)})`:''}`)
+      const hint=failed?'请确认游戏包为目录对应的 FBA 0.2.97.29 版本。':`${phase}失败。`
+      throw new Error(`无法启动 ${game.name}。${hint}${detail?` (${detail.slice(0,180)})`:''}`)
     }
   }
   press(player:number,action:Action){this.instance?.pressDown({button:action,player:player+1})}

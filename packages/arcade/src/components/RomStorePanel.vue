@@ -129,9 +129,9 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 </script>
 
 <template>
-  <section class="store-panel">
+  <section class="store-panel player-library">
       <div class="store-tools">
-        <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" />
+        <div class="search-tools"><SButton :disabled="busy" @click="importFiles">打开本地 ROM</SButton><SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" /></div>
         <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
         <SCheckbox v-model:checked="downloadedOnly" class="check">已下载 ({{ cachedKeys.size }})</SCheckbox>
@@ -139,7 +139,6 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 
       <div class="store-summary">
         <SButton v-if="error" :disabled="busy || catalogLoading" @click="refreshCatalog">重试目录</SButton>
-        <SButton :disabled="busy" @click="importFiles">导入游戏 ZIP</SButton>
         <span>{{ catalogLoading ? '正在同步目录 · ' : '' }}匹配 {{ totalCount }} 个{{ totalCount ? `，显示第 ${pageStart + 1}-${pageEnd} 个` : '' }}</span>
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>

@@ -1,4 +1,4 @@
-# Game Emulator
+# GameEmulator
 
 ## Directory structure
 
@@ -51,20 +51,21 @@ Core provenance, checksums, source links, and license details are in [CORE.md](p
 ## Build
 
 - `pnpm install`: install workspace dependencies.
-- `pnpm --filter @nes-emulator/pwa run build`: build the standalone Web app.
-- `pnpm --filter @nes-emulator/app run build:frontend`: build the App frontend into `apps/app/dist`.
-- `pnpm --filter @nes-emulator/app run build`: build the Tauri app shell, using `apps/app/dist`.
+- `pnpm --filter @game-emulator/pwa run build`: build the standalone Web app.
+- `pnpm --filter @game-emulator/app run build:frontend`: build the App frontend into `apps/app/dist`.
+- `pnpm --filter @game-emulator/app run build`: build the Tauri app shell, using `apps/app/dist`.
 - `pnpm dev:pwa` / `pnpm dev:app`: start the PWA / Tauri app.
 
 ## Versions and icons
 
 - Update the root `package.json` version, then run `pnpm sync:versions` to synchronize workspace package versions and the application's Rust version in `Cargo.toml` / `Cargo.lock`. Tauri reads the root version directly.
 - Run `pnpm sync:icons` after changing `apps/icon/icon.png`, `icon-fullbleed.png`, or `icons.json`. This refreshes PWA, App frontend, and native icons; macOS Dock generation requires macOS. `pnpm sync:icons --web` refreshes frontend icons only.
-- `icon.png` supplies desktop and general browser icons; `icon-fullbleed.png` supplies Android adaptive foreground, iOS, and PWA maskable icons. The artwork uses a generic gamepad for the multi-system launcher; see [icon source notes](apps/icon/README.md).
+- `icon.png` supplies desktop and general browser icons; `icon-fullbleed.png` supplies Android adaptive foreground, iOS, and PWA maskable / Apple touch icons. PWA builds generate 192px and 512px manifest icons and a 180px Apple touch icon from these sources. The artwork uses a generic gamepad for the multi-system launcher; see [icon source notes](apps/icon/README.md).
 - Native icons are generated into `apps/app/src-tauri/native/<platform>/icons/` and cached in `.tmp/native-icons/`. Both are ignored by Git. Tauri hooks and `build.rs` generate the target platform's icons automatically, including direct Cargo builds.
 
 ## Native projects
 
+- The product, installer, and release names are `GameEmulator`. Existing desktop and mobile application IDs are retained so installed versions can keep receiving updates and using their saved data.
 - `pnpm android:init` generates the Android project and applies the maintained customizations from `apps/app/src-tauri/native/android/app/` (signing, back navigation, TV support, and display names).
 - `pnpm ios:init` generates the iOS project and synchronizes its icons (requires macOS).
 - iOS uses `com.whilecode.gameemulator` through `tauri.ios.conf.json`; the SideStore source reads the same identifier. Tauri mobile project generation rejects the `while` segment in the desktop identifier as a reserved keyword.

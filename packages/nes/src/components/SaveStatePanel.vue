@@ -204,7 +204,7 @@ function formatError(err: unknown): string {
 </script>
 
 <template>
-  <section class="store-panel">
+  <section class="store-panel player-saves">
       <div class="store-tools">
         <div class="search-tools">
           <slot name="actions" />

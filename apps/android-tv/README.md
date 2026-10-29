@@ -20,7 +20,7 @@ pnpm build:android-tv:release # Release APK
 
 ## GitHub Actions 发布
 
-现有 `.github/workflows/release-app.yml` 在推送 `v*` 标签或手动触发时，会独立构建 Android TV 版、运行自动测试并验证 APK 签名。产物 `nes-emulator_<版本>_android-tv.apk` 同时上传到当前 GitHub Release 和 workflow artifact，与普通 Android APK 区分。
+现有 `.github/workflows/release-app.yml` 在推送 `v*` 标签或手动触发时，会独立构建 Android TV 版、运行自动测试并验证 APK 签名。产物 `GameEmulator_<版本>_android-tv.apk` 同时上传到当前 GitHub Release 和 workflow artifact，与普通 Android APK 区分。
 
 复用普通 Android 发布已有的签名 secrets：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。也支持在 `BUILD_SIGNING_JSON` 中配置同名字段，JSON 中的值优先。签名缺失会使 TV 发布任务失败，不上传未签名 APK。本任务不依赖桌面构建成功，不修改普通 Android 的自动更新清单。
 

@@ -17,6 +17,11 @@ import { prepareCatalogGame, prepareGame, type DependencyProgress } from './stor
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
 import { navEnabled, useRemoteNav } from './composables/useRemoteNav'
+import '../../player-ui/player.css'
+import '../../player-ui/settings.css'
+import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
+import STag from '@qingfeng346/ui-kit/components/STag.vue'
+import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 
 const props=defineProps<{onLeave:()=>void|Promise<void>}>()
 const canvas=ref<HTMLCanvasElement|null>(null)
@@ -25,10 +30,11 @@ const root=ref<HTMLElement|null>(null)
 const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??null)
 const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunner|null>(null)
-const menuOpen=ref(true),busy=ref(false),leaving=ref(false)
+const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
 const layoutEditing=ref(false)
 const tab=ref<'library'|'saves'|'keys'|'display'|'audio'|'misc'>('library')
 const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
+function openLibrary(){tab.value='library';menuOpen.value=true}
 function editTouchLayout(){layoutEditing.value=true;menuOpen.value=false}
 function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false}
 function resetTouchLayout(){settings.touchLayout[window.matchMedia('(orientation: portrait)').matches?'portrait':'landscape']={}}
@@ -40,13 +46,14 @@ const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b
 const current=shallowRef<Archive|null>(null)
 const currentDependencies=shallowRef<Archive[]>([])
 const loaded=computed(()=>!!current.value&&!!runner.value?.loaded)
+const saveQuery=ref('')
 const saveFilter=ref('all')
 const saveFilterOptions=computed(()=>[
   {value:'all',label:'全部游戏'},
   ...(loaded.value?[{value:'current',label:'本游戏'}]:[]),
   ...snapshots.value.map(snapshot=>({value:snapshot.gameHash,label:snapshotName(snapshot)})).sort((a,b)=>a.label.localeCompare(b.label,'zh-Hans-CN')),
 ])
-const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value)).sort((a,b)=>b.savedAt-a.savedAt))
+const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>(saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value))&&snapshotName(snapshot).toLocaleLowerCase().includes(saveQuery.value.trim().toLocaleLowerCase())).sort((a,b)=>b.savedAt-a.savedAt))
 watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
 watch([tab,loaded],()=>{saveFilter.value=loaded.value?'current':'all'})
 const enabled=computed(()=>loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
@@ -131,7 +138,7 @@ async function quickRestore(){
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-function stop(){layoutEditing.value=false;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=true;tab.value='library'}
+function stop(){layoutEditing.value=false;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library'}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true;stop()
@@ -164,6 +171,8 @@ function shellKey(event:KeyboardEvent){
 }
 // The shell owns these keys before menu navigation or the game sees them.
 if(typeof window!=='undefined')window.addEventListener('keydown',shellKey,true)
+const toolbar=ref<HTMLElement|null>(null)
+useRemoteNav({container:toolbar,active:computed(()=>navEnabled.value&&!menuOpen.value&&!layoutEditing.value&&!loaded.value&&!busy.value&&!leaving.value),onBack:nativeBack,autoFocus:true,priority:0})
 const panel=ref<HTMLElement|null>(null)
 useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:closeMenu,autoFocus:true,priority:10})
 watch([menuOpen,layoutEditing,busy,current],()=>{
@@ -182,11 +191,12 @@ function measure(){
   let width=container.clientWidth,height=width/aspect
   if(height>container.clientHeight){height=container.clientHeight;width=height*aspect}
   frameSize.value={width:`${Math.floor(width)}px`,height:`${Math.floor(height)}px`}
-  if(width>0&&height>0)runner.value?.resize(Math.floor(width),Math.floor(height))
+  // The core observes the canvas CSS size and manages its backing buffer in
+  // device pixels. Resizing it in CSS pixels here clips rendering on Retina.
 }
 watch(()=>settings.aspect,()=>nextTick(measure))
 const touchVisible=computed(()=>layoutEditing.value||settings.touch!=='never')
-let resize:ResizeObserver|null=null,mutation:MutationObserver|null=null
+let resize:ResizeObserver|null=null
 const blurCanvas=()=>canvas.value?.blur()
 function pageHide(){downloads.abort();input.releaseAll();runner.value?.dispose()}
 onMounted(()=>{
@@ -194,7 +204,6 @@ onMounted(()=>{
   runner.value.setMuted(settings.muted)
   canvas.value!.addEventListener('focus',blurCanvas)
   resize=new ResizeObserver(measure);resize.observe(display.value!)
-  mutation=new MutationObserver(measure);mutation.observe(canvas.value!,{attributes:true,attributeFilter:['width','height']})
   window.addEventListener('pagehide',pageHide)
   ;(window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack=nativeBack
   measure();void task(refresh)
@@ -204,7 +213,7 @@ onMounted(()=>{
 })
 onBeforeUnmount(()=>{
   downloads.abort()
-  clearTimeout(messageTimer);resize?.disconnect();mutation?.disconnect()
+  clearTimeout(messageTimer);resize?.disconnect()
   window.removeEventListener('keydown',shellKey,true);window.removeEventListener('pagehide',pageHide)
   canvas.value?.removeEventListener('focus',blurCanvas)
   delete (window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack
@@ -216,38 +225,44 @@ const time=(value:number)=>new Date(value).toLocaleString()
 
 <template>
   <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value}">
-    <header class="arcade-toolbar">
+    <header ref="toolbar" class="player-toolbar" aria-label="游戏功能区">
       <SButton :disabled="busy||leaving" @click="leave">返回模拟器列表</SButton>
-      <span class="arcade-title">街机</span>
-      <SButton class="desktop-only" @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton>
+      <span class="player-title">街机模拟器</span>
+      <SButton class="player-fullscreen" @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton>
       <SButton @click="menuOpen=true">菜单</SButton>
     </header>
-    <main class="arcade-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
+    <main class="arcade-stage player-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
       <div v-if="layoutEditing" class="layout-edit-tools"><span>拖动虚线区域调整位置 · 自动保存</span><SButton @click="resetTouchLayout">重置当前方向</SButton><SButton @click="finishTouchLayout">完成</SButton></div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
-        <div v-if="!loaded && !layoutEditing" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在游戏库中选择游戏，自动下载后投币开始。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
+        <div v-if="!loaded && !layoutEditing" class="player-empty"><strong>选择游戏，开始游玩</strong><span>在游戏库中选择游戏，或导入本地 ROM。</span><SButton @click="openLibrary">打开游戏库</SButton></div>
       </div>
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
     <footer class="arcade-status"><span>{{current?.name??'未载入游戏'}}</span><span v-if="busy">处理中…</span><span v-else>街机 · FB Alpha 2012</span></footer>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>
 
-    <SModal v-model:show="menuOpen" title="街机 · 设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
-      <div ref="panel" class="arcade-menu">
-        <nav class="arcade-tabs" role="tablist" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :id="`arcade-tab-${item.id}`" class="arcade-tab" :class="{active:tab===item.id}" role="tab" :aria-selected="tab===item.id" :aria-controls="`arcade-panel-${item.id}`" :disabled="busy||leaving" @click="tab=item.id">{{item.label}}</SButton></nav>
-        <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
-        <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
-        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content" :class="{'library-content':tab==='library'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
+    <SModal v-model:show="menuOpen" title="设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
+      <div ref="panel" class="arcade-menu player-settings">
+        <nav class="arcade-tabs player-settings-tabs" role="tablist" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :id="`arcade-tab-${item.id}`" class="arcade-tab" :class="{active:tab===item.id}" role="tab" :aria-selected="tab===item.id" :aria-controls="`arcade-panel-${item.id}`" :disabled="busy||leaving" @click="tab=item.id">{{item.label}}</SButton></nav>
+        <div v-if="error||busy" class="player-settings-notices">
+          <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
+          <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
+        </div>
+        <fieldset v-if="tab!=='library'&&tab!=='saves'" class="player-settings-actions" :disabled="busy||leaving"><template v-if="tab==='misc'"><SButton :disabled="!loaded" @click="runner?.reset()">复位游戏</SButton><SButton :disabled="!loaded" @click="stop">中止游戏</SButton><SButton @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton></template></fieldset>
+        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content player-settings-body" :class="{'library-content':tab==='library'||tab==='saves','player-settings-list':tab==='library'||tab==='saves'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
           <RomStorePanel v-if="tab==='library'" :archives="archives" :busy="busy||leaving" :progress="progress"
             :play="(game,catalog)=>remoteGame(game,catalog,true)" :download="(game,catalog)=>remoteGame(game,catalog,false)"
             :play-cached="play" :remove="deleteGame" :import-files="importFiles" />
 
-          <section v-else-if="tab==='saves'" class="saves-page">
-            <div class="arcade-actions"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SButton :disabled="!loaded" @click="task(quickRestore)">读取本游戏快速存档</SButton><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" class="save-filter" /></div>
-            <SHint>每个游戏保留一个快速存档（Ctrl+S / F8 保存，F9 读取），保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
-            <p v-if="!filteredSnapshots.length" class="library-empty">{{saveFilter==='current'?'本游戏还没有存档。':'还没有存档。'}}</p>
-            <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="game-row game-summary"><div><strong>{{snapshotName(snapshot)}}</strong><small>{{time(snapshot.savedAt)}}</small></div><div class="row-actions"><SButton @click="task(()=>restore(snapshot))">{{ loaded && current?.hash !== snapshot.gameHash ? '切换并读档' : '读取' }}</SButton><SButton @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
+          <section v-else-if="tab==='saves'" class="store-panel player-saves">
+            <div class="store-tools"><div class="search-tools"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SInput v-model:value="saveQuery" type="search" placeholder="搜索存档名、游戏名" aria-label="搜索存档" /></div><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" /></div>
+            <div class="store-summary">显示 {{filteredSnapshots.length}} 条</div>
+            <SHint class="load-hint">每个游戏保留一个快速存档（Ctrl+S / F8 保存，F9 读取），保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
+            <div class="save-list">
+              <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="save-card"><div class="save-main"><div class="save-title-row"><STag size="small" type="warning">快速</STag><h3>{{snapshotName(snapshot)}}</h3></div><p class="meta">{{snapshot.gameName}}</p><p class="meta time">{{time(snapshot.savedAt)}}</p></div><div class="save-actions"><SButton class="btn primary" @click="task(()=>restore(snapshot))">{{ loaded && current?.hash !== snapshot.gameHash ? '切换并读档' : '读档' }}</SButton><SButton class="btn" @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
+              <SEmpty v-if="!filteredSnapshots.length" :description="snapshots.length?'没有匹配的存档':'还没有任何存档'" />
+            </div>
           </section>
 
           <section v-else-if="tab==='keys'" class="keys-page">
@@ -256,7 +271,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
             <SHint class="layout-hint">拖动摇杆、六键区和两组功能键调整位置，横屏与竖屏分别保存。</SHint>
             <div class="arcade-actions player-switch"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
             <SHint>六键为 Y / X / L、B / A / R 两排布局，投币后按开始。手柄按连接顺序分配给两位玩家，左摇杆与十字键均可控制方向；游戏按核心默认布局映射。</SHint>
-            <div class="arcade-key-row key-heading"><span>操作</span><span>键盘（点击修改）</span><span>标准手柄</span></div>
+            <div class="arcade-key-row key-heading"><span>操作</span><span>键盘</span><span>手柄</span></div>
             <div v-for="action in ACTIONS" :key="action.id" class="arcade-key-row"><span>{{action.label}}</span><SButton :class="{selected:capturing===action.id}" @click="capturing=action.id">{{capturing===action.id?'按下新按键…':keyLabel(settings.players[player][action.id])}}</SButton><span>{{PAD_LABELS[action.pad]}}</span></div>
             <SButton @click="settings.players[player]=defaultKeymap(player)">恢复当前玩家默认按键</SButton>
           </section>
@@ -270,10 +285,10 @@ const time=(value:number)=>new Date(value).toLocaleString()
           </section>
           <section v-else class="display-page">
             <label>触屏手柄<RemoteSelect v-model="settings.touch" :options="[{value:'auto',label:'默认（桌面隐藏，移动端显示）'},{value:'always',label:'显示'},{value:'never',label:'隐藏'}]" /></label>
-            <div class="arcade-actions"><SButton :disabled="!loaded" @click="runner?.reset()">复位游戏</SButton><SButton :disabled="!loaded" @click="stop">中止游戏</SButton><SButton @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton></div>
             <details class="core-licenses"><summary>开源许可</summary><h4>FB Alpha 2012</h4><pre>{{fbaLicense}}</pre><h4>RetroArch</h4><pre>{{retroarchLicense}}</pre></details>
           </section>
         </fieldset>
+        <SHint v-if="tab==='keys'" class="player-settings-hint">点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。</SHint>
       </div>
     </SModal>
   </div>
@@ -285,9 +300,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 
 <style scoped>
 .arcade-app{height:100dvh;display:flex;flex-direction:column;background:#1a1a1a}.is-pseudo-fullscreen{position:fixed;inset:0;z-index:2000}
-.arcade-toolbar{display:flex;align-items:center;gap:8px;padding:10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left));background:#242424;border-bottom:1px solid #343434;flex-shrink:0}.arcade-title{font-size:14px;color:#bbb;margin-right:auto}
-.arcade-stage{display:flex;flex-direction:column;position:relative;flex:1;min-height:0;padding:12px}.arcade-display{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}.arcade-frame{background:#000;flex-shrink:0;overflow:hidden;border-radius:8px}.arcade-frame canvas{display:block;width:100%!important;height:100%!important;outline:none}
-.arcade-empty{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;text-align:center;padding:24px;color:#bbb;font-size:14px}.arcade-empty strong{font-size:22px;color:#eee}
+.arcade-stage{display:flex;flex-direction:column;position:relative;flex:1;min-height:0}.arcade-display{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}.arcade-frame{background:#000;flex-shrink:0;overflow:hidden;border-radius:4px}.arcade-frame canvas{display:block;width:100%!important;height:100%!important;outline:none}
 .arcade-status{display:flex;justify-content:space-between;gap:12px;padding:8px 16px;background:#242424;border-top:1px solid #343434;color:#aaa;font-size:12px}.arcade-touch{display:none}.arcade-touch.touch-always{display:block}.arcade-toast{position:fixed;z-index:3000;bottom:30px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:10px;background:#101114eb;color:#eee;pointer-events:none}
 .arcade-menu{display:flex;flex-direction:column;min-height:0;height:100%}.arcade-tabs{display:flex;gap:6px;padding:12px;overflow-x:auto;flex-shrink:0}.arcade-tabs :deep(button){flex-shrink:0}.selected{background:#383e4c!important;border-color:#82a4dc!important}
 .arcade-error{margin:0 12px 10px;padding:12px;background:#482c30;border:1px solid #8d545a;border-radius:6px;color:#ffccd0;line-height:1.6;font-size:13px;overflow-wrap:anywhere}.arcade-progress{padding:0 16px;color:#bbb;font-size:13px}
@@ -297,8 +310,8 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .keys-page h3{font-size:14px;margin:8px 0 14px}.keyboard-help{border-bottom:1px solid #414141;padding-bottom:16px;margin-bottom:20px!important}.keyboard-help dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;margin:0;line-height:1.6;font-size:13px}.keyboard-help dd{margin:0;color:#bbb}.keyboard-help kbd{background:#333;border:1px solid #555;border-radius:4px;padding:3px 6px}.arcade-key-row{display:grid;grid-template-columns:60px minmax(110px,1fr) minmax(90px,1fr);gap:12px;align-items:center;margin:10px 0;font-size:13px}.key-heading{color:#aaa;margin-top:18px}
 .core-licenses{margin-top:24px;color:#aaa;font-size:12px}.core-licenses summary{cursor:pointer;min-height:32px}.core-licenses pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;border:1px solid #444;line-height:1.5}
 .display-page>label{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:60px;border-bottom:1px solid #343434}.display-page select{background:#292929;color:#eee;border:1px solid #555;border-radius:6px;padding:8px;max-width:65%}.display-page input{width:20px;height:20px}
-@media(pointer:coarse){.desktop-only,.keyboard-help{display:none}.arcade-touch{display:block}.arcade-stage{padding:8px}.arcade-toolbar{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:8px}.arcade-toolbar :deep(button){min-height:44px}.arcade-status{display:none}.arcade-tabs{gap:4px;padding:8px}.arcade-content{padding-inline:10px}.game-summary{flex-wrap:wrap}.row-actions{margin-left:auto}.arcade-key-row{gap:8px;grid-template-columns:46px minmax(105px,1fr) minmax(75px,1fr)}}
-@media(pointer:coarse) and (orientation:landscape){.arcade-stage{padding:0}.arcade-toolbar{padding-block:4px}.arcade-touch{position:absolute}.arcade-frame{border-radius:0}}
+@media(pointer:coarse){.desktop-only,.keyboard-help{display:none}.arcade-touch{display:block}.arcade-status{display:none}.arcade-tabs{gap:4px;padding:8px}.arcade-content{padding-inline:10px}.game-summary{flex-wrap:wrap}.row-actions{margin-left:auto}.arcade-key-row{gap:8px;grid-template-columns:46px minmax(105px,1fr) minmax(75px,1fr)}}
+@media(pointer:coarse) and (orientation:landscape){.arcade-touch{position:absolute}.arcade-frame{border-radius:0}}
 @media(orientation:portrait){
   .arcade-stage.always-controls{display:grid;grid-template-rows:repeat(2,minmax(0,1fr))}
   .arcade-touch.touch-always{display:grid}

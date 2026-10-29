@@ -1,0 +1,57 @@
+/* Shared player navigation and standby screen for NES and arcade. */
+.player-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+  background: #242424;
+  border-bottom: 1px solid #343434;
+}
+.player-toolbar .s-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.player-title {
+  min-width: 0;
+  margin-right: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #bbb;
+  font-size: 14px;
+}
+.player-stage { padding: 16px; }
+.player-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  color: #bbb;
+  text-align: center;
+  font-size: 14px;
+}
+.player-empty strong { color: #eee; font-size: 22px; }
+@media (pointer: coarse) {
+  .player-toolbar {
+    padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+  }
+  .player-toolbar .s-button { min-height: 44px; }
+  .player-toolbar .player-fullscreen { display: none; }
+  .player-stage {
+    padding: 8px max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .player-empty { gap: 12px; padding: 12px; font-size: 13px; }
+  .player-empty strong { font-size: 18px; }
+}
+@media (pointer: coarse) and (orientation: landscape) {
+  .player-toolbar { padding-block: max(4px, env(safe-area-inset-top)) 4px; }
+  .player-stage {
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .player-empty { gap: 8px; }
+}

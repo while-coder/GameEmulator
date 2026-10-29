@@ -11,6 +11,21 @@ interface ResolveOptions {
   onProgress?: (progress: DependencyProgress) => void
 }
 
+async function verifiedCachedArchive(cached: Archive[], entry: CatalogFile): Promise<Archive | null> {
+  const local = cached.find(file => file.hash === entry.sha256.toLowerCase() && file.size === entry.file_size)
+  if (!local) return null
+  try {
+    // Detach legacy IndexedDB Blobs before rewriting the record or passing it
+    // to Nostalgist, which reads the bytes again during core preparation.
+    const file = new Blob([await local.file.arrayBuffer()], { type: 'application/zip' })
+    if (file.size !== entry.file_size || await hashBlob(file) !== entry.sha256.toLowerCase()) return null
+    return { ...local, name: entry.file_name, file }
+  } catch (error) {
+    if (error instanceof DOMException && ['NotFoundError', 'NotReadableError'].includes(error.name)) return null
+    throw error
+  }
+}
+
 async function downloadArchive(entry: CatalogFile, options: ResolveOptions, kind: 'game' | 'support' = 'support'): Promise<Archive> {
   const abort = new AbortController()
   let timeout = false
@@ -73,19 +88,17 @@ export async function prepareGame(game: Archive, options: ResolveOptions = {}): 
 export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCatalog, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {
   const plan = dependencyPlan(entry, catalog)
   const cached = await listArchives()
-  const localGame = cached.find(file => file.hash === entry.sha256.toLowerCase() && file.size === entry.file_size)
-  const game = localGame && await hashBlob(localGame.file) === entry.sha256.toLowerCase()
-    ? { ...localGame, id: `game:${entry.file_name}`, kind: 'game' as const, name: entry.file_name }
+  const localGame = await verifiedCachedArchive(cached, entry)
+  const game = localGame
+    ? { ...localGame, id: `game:${entry.file_name}`, kind: 'game' as const }
     : await downloadArchive(entry, options, 'game')
   const dependencies: Archive[] = []
   for (const entry of plan) {
     options.signal?.throwIfAborted()
-    const local = cached.find(file => file.hash === entry.sha256.toLowerCase() && file.size === entry.file_size)
+    const local = await verifiedCachedArchive(cached, entry)
     // Reuse a parent already imported as a game, as well as cached support ZIPs.
     // Verify its bytes before loading instead of relying only on the DB record.
-    const archive = local && await hashBlob(local.file) === entry.sha256.toLowerCase()
-      ? { ...local, name: entry.file_name }
-      : await downloadArchive(entry, options)
+    const archive = local ?? await downloadArchive(entry, options)
     dependencies.push(archive)
   }
   options.signal?.throwIfAborted()

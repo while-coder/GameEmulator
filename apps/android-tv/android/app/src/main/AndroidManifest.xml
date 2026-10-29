@@ -4,7 +4,7 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.hardware.gamepad" android:required="false" />
-    <application android:name=".TvApplication" android:label="Game Emulator TV"
+    <application android:name=".TvApplication" android:label="GameEmulator TV"
         android:icon="@drawable/app_icon" android:banner="@drawable/tv_banner"
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:allowBackup="false" android:networkSecurityConfig="@xml/network_security_config">

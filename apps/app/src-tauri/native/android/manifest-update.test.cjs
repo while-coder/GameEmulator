@@ -44,7 +44,7 @@ test('prefers universal APK and preserves desktop manifest fields', () => {
   assert.equal(r.uploaded.notes, r.original.notes);
   assert.deepEqual(r.uploaded.android, {
     version: '0.2.0', notes: 'Android notes',
-    url: 'https://github.com/while-coder/nes-emulator/releases/download/v0.2.0/app_universal.apk',
+    url: 'https://github.com/while-coder/GameEmulator/releases/download/v0.2.0/app_universal.apk',
   });
   assert.equal(r.cleaned, true);
 });

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '../../../player-ui/settings.css'
 import SSlider from '@qingfeng346/ui-kit/components/SSlider.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
@@ -32,16 +33,17 @@ const open = defineModel<boolean>('open', { default: false })
 
 type Tab = 'library' | 'saves' | 'keys' | 'display' | 'audio' | 'misc'
 const tab = defineModel<Tab>('tab', { default: 'library' })
-defineProps<{ currentRomKey?: string | null }>()
+withDefaults(defineProps<{ currentRomKey?: string | null; audioOn?: boolean }>(), { audioOn: true })
 const emit = defineEmits<{
   loadRom: [{ name: string; bytes: Uint8Array; key: string }]
   loadSave: [LoadSavePayload]
+  toggleAudio: []
   editTouchLayout: []
 }>()
 const libraryPanel = ref<InstanceType<typeof RomStorePanel> | null>(null)
 const savePanel = ref<InstanceType<typeof SaveStatePanel> | null>(null)
-defineExpose({ refreshSaves: () => savePanel.value?.refreshCreatedSave() })
 const busy = computed(() => libraryPanel.value?.busyKey != null || savePanel.value?.busyKey != null)
+defineExpose({ busy, refreshSaves: () => savePanel.value?.refreshCreatedSave() })
 const libraryOpen = computed({ get: () => open.value && tab.value === 'library', set: (v) => { if (!v) open.value = false } })
 const savesOpen = computed({ get: () => open.value && tab.value === 'saves', set: (v) => { if (!v) open.value = false } })
 
@@ -254,8 +256,8 @@ onBeforeUnmount(() => {
     @close="close"
     @keydown="onOverlayKey"
   >
-    <div ref="panelRef" class="settings-content">
-      <nav class="tabs" role="tablist" aria-label="设置分类">
+    <div ref="panelRef" class="settings-content player-settings">
+      <nav class="tabs player-settings-tabs" role="tablist" aria-label="设置分类">
         <SButton
           v-for="t in TABS"
           :key="t.key"
@@ -271,8 +273,8 @@ onBeforeUnmount(() => {
         </SButton>
       </nav>
 
-      <fieldset v-if="tab !== 'library' && tab !== 'saves'" class="settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
-      <section :id="`settings-panel-${tab}`" class="body" :class="{ 'list-body': tab === 'library' || tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
+      <fieldset v-if="tab !== 'library' && tab !== 'saves'" class="settings-actions player-settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
+      <section :id="`settings-panel-${tab}`" class="body player-settings-body" :class="{ 'list-body': tab === 'library' || tab === 'saves', 'player-settings-list': tab === 'library' || tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
         <RomStorePanel v-if="tab === 'library'" ref="libraryPanel" v-model:open="libraryOpen" @load="emit('loadRom', $event)">
           <template #actions>
             <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
@@ -325,7 +327,7 @@ onBeforeUnmount(() => {
             点击下方按键后输入新绑定（Esc 取消）；连发 A/B 为按住自动连按。
           </SHint>
           <div class="key-head">
-            <span class="key-name"></span>
+            <span class="key-name">操作</span>
             <span class="col-head">键盘</span>
             <span class="col-head">手柄</span>
           </div>
@@ -378,6 +380,7 @@ onBeforeUnmount(() => {
 
         <!-- 音频 -->
         <div v-else-if="tab === 'audio'" class="form">
+          <label class="row"><span>静音</span><SSwitch :value="!audioOn" @update:value="emit('toggleAudio')" /></label>
           <label class="row">
             <span>音量 {{ volumePct }}%</span>
             <SSlider v-model:value="volumePct" :min="0" :max="100" aria-label="音量" />
@@ -405,7 +408,7 @@ onBeforeUnmount(() => {
           <SButton class="reset" @click="resetSettings">恢复全部默认设置</SButton>
         </div>
       </section>
-      <SHint v-if="tab === 'keys'" class="shortcut-hint">
+      <SHint v-if="tab === 'keys'" class="shortcut-hint player-settings-hint">
         点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。
       </SHint>
     </div>

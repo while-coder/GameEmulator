@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { ACTION_BUTTONS, settings, type Action, type TouchLayoutGroup } from '../emulator/settings'
 const props=defineProps<{disabled:boolean;editing?:boolean}>()
 const emit=defineEmits<{press:[action:Action,source:string];release:[action:Action,source:string];menu:[];save:[]}>()
@@ -99,7 +100,7 @@ onBeforeUnmount(()=>{endLayoutDrag();observer?.disconnect();window.removeEventLi
     @pointerup.capture="endLayoutDrag" @pointercancel.capture="endLayoutDrag" @lostpointercapture="endLayoutDrag" @click.capture="suppressEditClick">
     <div class="touch-functions">
       <div class="function-group functions-left" aria-label="菜单和快存" data-layout-group="functionsLeft" :style="positionStyle('functionsLeft')">
-      <button @click="emit('menu')">菜单</button><button :disabled="!editing && disabled" @click="emit('save')">快存</button>
+      <SButton aria-label="打开设置菜单" @click="emit('menu')">菜单</SButton><SButton aria-label="快速存档" :disabled="!editing && disabled" @click="emit('save')">快存</SButton>
       </div>
       <div class="function-group functions-right" aria-label="投币和开始" data-layout-group="functionsRight" :style="positionStyle('functionsRight')">
       <button v-for="a in (['select','start'] as const)" :key="a" :disabled="!editing && disabled" @pointerdown="buttonDown($event,a)" @pointerup="up" @pointercancel="up" @lostpointercapture="up">{{a==='select'?'投币':'开始'}}</button>

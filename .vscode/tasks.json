@@ -17,7 +17,7 @@
       "command": "pnpm",
       "args": [
         "--filter",
-        "@nes-emulator/pwa",
+        "@game-emulator/pwa",
         "dev"
       ],
       "options": {

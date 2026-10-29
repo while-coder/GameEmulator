@@ -1,5 +1,5 @@
 {
-  "name": "@nes-emulator/app",
+  "name": "@game-emulator/app",
   "private": true,
   "type": "module",
   "scripts": {

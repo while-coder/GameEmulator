@@ -129,7 +129,7 @@ defineExpose({ handleBack })
     <dialog ref="dialog" class="android-update" aria-labelledby="android-update-title" @cancel.prevent="dismiss" @keydown.stop>
       <template v-if="status === 'permission'">
         <h2 id="android-update-title">允许应用内更新</h2>
-        <p>请在系统设置中允许 Game Emulator 安装未知应用，返回后将继续检查更新。</p>
+        <p>请在系统设置中允许 GameEmulator 安装未知应用，返回后将继续检查更新。</p>
         <div class="actions"><button @click="dismiss">稍后</button><button class="primary" @click="requestPermission">前往授权</button></div>
       </template>
       <template v-else-if="status === 'available'">
