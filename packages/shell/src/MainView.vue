@@ -99,7 +99,7 @@ defineExpose({ focusCard })
         </button>
       </section>
       <p v-if="error" class="launch-error" role="alert">进入失败：{{ error }}</p>
-      <footer>更多模拟器将陆续加入</footer>
+      <footer>更多模拟器将陆续加入<slot name="footer" /></footer>
     </div>
   </main>
 </template>

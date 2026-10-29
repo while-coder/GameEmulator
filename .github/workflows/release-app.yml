@@ -127,6 +127,24 @@ jobs:
       release-notes: ${{ needs.check.outputs.notes }}
     secrets: inherit
 
+  publish-android-manifest:
+    name: Update updater manifest (android)
+    needs: [check, publish-manifest, release-android]
+    if: ${{ !cancelled() && needs.publish-manifest.result == 'success' && needs.release-android.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Write Android APK into updater manifest
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.check.outputs.tag }}
+          VERSION: ${{ needs.check.outputs.version }}
+          NOTES: ${{ needs.check.outputs.notes }}
+        run: node apps/app/src-tauri/native/android/manifest-update.cjs
+
   deploy-pages:
     name: Deploy Pages
     needs: [check, prepare-release]

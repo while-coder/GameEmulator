@@ -9,6 +9,7 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig({
   plugins: [vue()],
   define: {
+    __TAURI_ANDROID__: JSON.stringify(process.env.TAURI_ENV_PLATFORM === 'android'),
     __TAURI_DESKTOP__: JSON.stringify(['windows', 'win32', 'linux', 'darwin'].includes(process.env.TAURI_ENV_PLATFORM ?? process.platform)),
   },
   base: './',

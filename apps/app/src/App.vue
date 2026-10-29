@@ -4,10 +4,15 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { MainView, emulators, type EmulatorId } from '@game-emulator/shell'
 import { UpdaterDialog } from '@while-coder/tauri-updater-vue'
+import AndroidUpdater from './AndroidUpdater.vue'
 
 const native = '__TAURI_INTERNALS__' in window
+const desktop = __TAURI_DESKTOP__
+const android = native && __TAURI_ANDROID__
 const main = ref<InstanceType<typeof MainView> | null>(null)
 const active = ref(true)
+const androidUpdater = ref<InstanceType<typeof AndroidUpdater> | null>(null)
+const updateModal = ref(false)
 let unlisten: UnlistenFn | undefined
 let disposed = false
 async function launch(id: EmulatorId) {
@@ -38,7 +43,7 @@ async function launch(id: EmulatorId) {
   }
 }
 onMounted(async () => {
-  ;(window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack = () => 'exit'
+  ;(window as Window & { __handleAndroidBack?: () => string }).__handleAndroidBack = () => androidUpdater.value?.handleBack() ? 'handled' : 'exit'
   if (native) {
     const off = await listen('emulator-closed', () => {
       active.value = true
@@ -56,6 +61,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <UpdaterDialog />
-  <MainView ref="main" :launch="launch" :active="active" />
+  <UpdaterDialog v-if="desktop" />
+  <MainView ref="main" :launch="launch" :active="active && !updateModal">
+    <template v-if="android" #footer>
+      <AndroidUpdater ref="androidUpdater" @modal-change="updateModal = $event" />
+    </template>
+  </MainView>
 </template>

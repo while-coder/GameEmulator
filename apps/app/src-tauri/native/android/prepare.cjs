@@ -9,7 +9,7 @@ function prepareAndroid(android = path.resolve(__dirname, "../../gen/android")) 
   }
   fs.cpSync(path.join(__dirname, "app"), path.join(android, "app"), { recursive: true });
   syncIcons(android);
-  console.log("已配置 Android 签名、返回键、TV 支持、显示名和启动图标");
+  console.log("已配置 Android 签名、返回键、TV 支持、应用内更新、显示名和启动图标");
 }
 
 module.exports = { prepareAndroid };
