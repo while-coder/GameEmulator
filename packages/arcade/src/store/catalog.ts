@@ -9,6 +9,7 @@ export interface CatalogFile {
 }
 export interface CatalogGame extends CatalogFile {
   name?: string
+  name_en?: string
   genre?: string
   publisher?: string
   tags?: string[]
@@ -22,8 +23,8 @@ export interface ArcadeCatalog {
 }
 
 export const DEFAULT_CATALOG_URLS = [
-  'https://raw.githubusercontent.com/while-coder/arcade-roms/main/catalogs/cps.json',
-  'https://raw.githubusercontent.com/while-coder/arcade-roms/main/catalogs/neogeo.json',
+  'https://da2.diandian.info/files/arcade-roms/catalog.json',
+  'https://da2.diandian.info/files/neogeo-roms/catalog.json',
 ]
 const configuredUrls = String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').trim()
 const catalogUrls = [...new Set(configuredUrls ? configuredUrls.split(/[\s,]+/).filter(Boolean) : DEFAULT_CATALOG_URLS)]

@@ -38,12 +38,16 @@ onBeforeUnmount(releaseAll)
 <template>
   <div class="touch-controls" @contextmenu.prevent>
     <div class="touch-functions">
+      <div class="function-group functions-left" aria-label="菜单和快存">
       <button @click="emit('menu')">菜单</button><button :disabled="disabled" @click="emit('save')">快存</button>
+      </div>
+      <div class="function-group functions-right" aria-label="投币和开始">
       <button v-for="a in (['select','start'] as const)" :key="a" :disabled="disabled" @pointerdown="buttonDown($event,a)" @pointerup="up" @pointercancel="up" @lostpointercapture="up">{{a==='select'?'投币':'开始'}}</button>
+      </div>
     </div>
     <div class="touch-play">
       <div class="stick" role="group" aria-label="八方向摇杆" @pointerdown="stickDown" @pointermove="stickMove" @pointerup="up" @pointercancel="up" @lostpointercapture="up">
-        <span class="stick-cross"/><span class="stick-knob" :style="{transform:`translate(${stick.x}px,${stick.y}px)`}" />
+        <span class="stick-guide" aria-hidden="true"/><span class="stick-knob" aria-hidden="true" :style="{transform:`translate(${stick.x}px,${stick.y}px)`}" />
       </div>
       <div class="six-buttons">
         <button v-for="action in ACTION_BUTTONS" :key="action.id" :disabled="disabled" @pointerdown="buttonDown($event,action.id)" @pointerup="up" @pointercancel="up" @lostpointercapture="up">{{action.label}}</button>
@@ -52,15 +56,35 @@ onBeforeUnmount(releaseAll)
   </div>
 </template>
 <style scoped>
-.touch-controls{width:100%;padding:10px 8px max(10px,env(safe-area-inset-bottom));user-select:none;touch-action:none}
-.touch-functions{display:flex;justify-content:center;gap:10px;margin-bottom:14px}
-.touch-functions button{min-width:48px;min-height:44px;border-radius:8px;background:#303238;color:#eee;border:1px solid #51545c;font:inherit;touch-action:none}
-.touch-play{display:flex;align-items:center;justify-content:space-between;gap:18px}
-.stick{position:relative;display:grid;place-items:center;width:128px;height:128px;border-radius:50%;background:#292b30;border:1px solid #51545c;touch-action:none;flex-shrink:0}
-.stick-cross{width:88px;height:88px;background:#3d4148;clip-path:polygon(33% 0,66% 0,66% 33%,100% 33%,100% 66%,66% 66%,66% 100%,33% 100%,33% 66%,0 66%,0 33%,33% 33%)}
-.stick-knob{position:absolute;width:48px;height:48px;border-radius:50%;background:#737985;box-shadow:0 3px 8px #0008;pointer-events:none}
-.six-buttons{display:grid;grid-template-columns:repeat(3,48px);gap:10px}
-.six-buttons button{width:48px;height:48px;border-radius:50%;background:#9e4146;color:#fff;border:1px solid #d4777b;font-size:16px;font-weight:600;touch-action:none}
-button:active{filter:brightness(1.25)}button:disabled{opacity:.4}
-@media(orientation:landscape) and (pointer:coarse){.touch-controls{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;padding-inline:16px}.touch-functions{position:absolute;top:8px;left:50%;transform:translateX(-50%);pointer-events:auto}.touch-play{width:100%}.stick,.six-buttons{pointer-events:auto}.stick{width:112px;height:112px}.six-buttons{grid-template-columns:repeat(3,44px);gap:8px}.six-buttons button{width:44px;height:44px}}
+.touch-controls{
+  position:absolute;inset:0;z-index:5;box-sizing:border-box;pointer-events:none;user-select:none;
+  -webkit-user-select:none;-webkit-touch-callout:none;
+  --pad-size:clamp(132px,20vw,168px);
+  --action-size:clamp(44px,6vw,60px);
+  --button-gap:clamp(8px,2vw,12px);
+  --left-inset:max(8px,env(safe-area-inset-left));
+  --right-inset:max(8px,env(safe-area-inset-right));
+  --bottom-inset:max(56px,env(safe-area-inset-bottom));
+}
+.touch-functions,.touch-play{display:contents}
+.function-group{position:absolute;display:flex;gap:8px}
+.functions-left{left:var(--left-inset);bottom:calc(var(--bottom-inset) + var(--pad-size) + 32px);width:var(--pad-size)}
+.functions-right{right:var(--right-inset);bottom:calc(var(--bottom-inset) + var(--action-size)*2 + var(--button-gap) + 32px);width:calc(var(--action-size)*3 + var(--button-gap)*2)}
+.function-group button{flex:1;min-width:0;height:44px;border:0;border-radius:15px;background:rgba(58,58,58,.85);color:#eee;font:inherit;font-size:12px;pointer-events:auto;touch-action:none}
+.functions-left button{background:rgba(47,107,216,.85);touch-action:manipulation}
+.stick{position:absolute;left:var(--left-inset);bottom:var(--bottom-inset);display:grid;place-items:center;width:var(--pad-size);height:var(--pad-size);border-radius:50%;background:radial-gradient(circle,#343434 0 48%,#252525 49% 100%);border:2px solid #555;box-shadow:inset 0 2px 10px #0008;touch-action:none;pointer-events:auto}
+.stick-guide{position:absolute;inset:12%;border:1px dashed #737373;border-radius:50%;pointer-events:none}
+.stick-knob{position:absolute;width:44%;height:44%;border:1px solid #999;border-radius:50%;background:radial-gradient(circle at 35% 30%,#858585,#454545);box-shadow:0 4px 10px #0009;pointer-events:none}
+.six-buttons{position:absolute;right:var(--right-inset);bottom:var(--bottom-inset);display:grid;grid-template-columns:repeat(3,var(--action-size));gap:var(--button-gap)}
+.six-buttons button{width:var(--action-size);height:var(--action-size);border-radius:50%;background:#c0392b;color:#fff;border:0;font-size:clamp(16px,3vw,22px);font-weight:700;touch-action:none;pointer-events:auto}
+button:active{filter:brightness(1.3)}button:disabled{opacity:.45}
+button:focus-visible{outline:2px solid #4ea1ff;outline-offset:2px}
+@media(orientation:portrait){
+  .touch-controls{position:relative;inset:auto;width:100%;height:100%;min-height:0;padding:12px max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));grid-template-columns:minmax(0,1fr) auto;grid-template-rows:44px max(var(--pad-size),calc(var(--action-size)*2 + var(--button-gap)));align-content:center;gap:16px;--pad-size:clamp(132px,36vw,180px);--action-size:clamp(44px,12vw,60px)}
+  .function-group,.stick,.six-buttons{position:relative;inset:auto}
+  .functions-left{grid-area:1 / 1;width:var(--pad-size);justify-self:start}
+  .functions-right{grid-area:1 / 2;justify-self:end}
+  .stick{grid-area:2 / 1;align-self:center;justify-self:start}
+  .six-buttons{grid-area:2 / 2;align-self:center;justify-self:end}
+}
 </style>

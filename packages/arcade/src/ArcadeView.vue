@@ -191,7 +191,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <SButton class="desktop-only" @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton>
       <SButton @click="menuOpen=true">菜单</SButton>
     </header>
-    <main class="arcade-stage">
+    <main class="arcade-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'}">
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
         <div v-if="!loaded" class="arcade-empty"><strong>街机时光，随时开始</strong><span>在游戏库中选择游戏，自动下载后投币开始。</span><SButton @click="menuOpen=true">打开游戏库</SButton></div>
@@ -260,4 +260,12 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .display-page>label{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:60px;border-bottom:1px solid #343434}.display-page select{background:#292929;color:#eee;border:1px solid #555;border-radius:6px;padding:8px;max-width:65%}.display-page input{width:20px;height:20px}
 @media(pointer:coarse){.desktop-only,.keyboard-help{display:none}.arcade-touch{display:block}.arcade-stage{padding:8px}.arcade-toolbar{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:8px}.arcade-toolbar :deep(button){min-height:44px}.arcade-status{display:none}.arcade-tabs{gap:4px;padding:8px}.arcade-content{padding-inline:10px}.game-summary{flex-wrap:wrap}.row-actions{margin-left:auto}.arcade-key-row{gap:8px;grid-template-columns:46px minmax(105px,1fr) minmax(75px,1fr)}}
 @media(pointer:coarse) and (orientation:landscape){.arcade-stage{padding:0}.arcade-toolbar{padding-block:4px}.arcade-touch{position:absolute}.arcade-frame{border-radius:0}}
+@media(orientation:portrait){
+  .arcade-stage.always-controls{display:grid;grid-template-rows:repeat(2,minmax(0,1fr))}
+  .arcade-touch.touch-always{display:grid}
+}
+@media(pointer:coarse) and (orientation:portrait){
+  .arcade-stage.has-touch{display:grid;grid-template-rows:repeat(2,minmax(0,1fr))}
+  .arcade-touch{display:grid}
+}
 </style>

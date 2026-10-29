@@ -81,7 +81,7 @@ const sortedMatched = computed(() => {
   const games = libraryGames.value.filter(game =>
     (!downloadedOnly.value || cachedKeys.value.has(romKey(game))) &&
     (!genre.value || game.genre === genre.value) &&
-    (!q || [game.name, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])].join(' ').toLocaleLowerCase().includes(q)),
+    (!q || [game.name, game.name_en, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])].join(' ').toLocaleLowerCase().includes(q)),
   )
   const name = (g: RomEntry) => g.name || g.file_name
   switch (sort.value) {
