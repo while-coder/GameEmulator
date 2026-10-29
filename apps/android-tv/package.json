@@ -1,0 +1,26 @@
+{
+  "name": "@game-emulator/android-tv",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build:frontend": "vue-tsc -b --force && vite build",
+    "build": "node scripts/build.cjs assembleDebug",
+    "build:release": "node scripts/build.cjs assembleRelease",
+    "install:device": "node scripts/build.cjs installDebug",
+    "test": "node --test scripts/bridge.test.cjs && node scripts/build.cjs testDebugUnitTest"
+  },
+  "dependencies": {
+    "vue": "catalog:",
+    "@game-emulator/shell": "workspace:*",
+    "@game-emulator/nes": "workspace:*",
+    "@game-emulator/arcade": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

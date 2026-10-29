@@ -26,6 +26,34 @@ importers:
 
   .: {}
 
+  apps/android-tv:
+    dependencies:
+      '@game-emulator/arcade':
+        specifier: workspace:*
+        version: link:../../packages/arcade
+      '@game-emulator/nes':
+        specifier: workspace:*
+        version: link:../../packages/nes
+      '@game-emulator/shell':
+        specifier: workspace:*
+        version: link:../../packages/shell
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.39(typescript@5.9.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 5.2.4(vite@6.4.3(terser@5.48.0))(vue@3.5.39(typescript@5.9.3))
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: 'catalog:'
+        version: 6.4.3(terser@5.48.0)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 2.2.12(typescript@5.9.3)
+
   apps/app:
     dependencies:
       '@game-emulator/arcade':

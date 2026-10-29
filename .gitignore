@@ -3,11 +3,19 @@ apps/app/src-tauri/target/
 
 # Node
 node_modules/
+.pnpm-store/
 apps/app/node_modules/
 packages/*/node_modules/
 apps/pwa/node_modules/
 apps/app/dist/
 apps/pwa/dist/
+apps/android-tv/dist/
+apps/android-tv/node_modules/
+apps/android-tv/android/.gradle/
+apps/android-tv/android/.kotlin/
+apps/android-tv/android/build/
+apps/android-tv/android/app/build/
+apps/android-tv/android/local.properties
 
 # TypeScript 增量构建产物
 **/tsconfig.tsbuildinfo

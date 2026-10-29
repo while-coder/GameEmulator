@@ -7,6 +7,7 @@
 - `packages/nes/`: independent NES UI, input, settings, ROM library, save states, and libretro core assets.
 - `packages/arcade/`: independent arcade UI, local ZIP library, BIOS/parent dependencies, two-player input, snapshots, and pinned FB Alpha 2012 core.
 - `apps/app/`: thin Tauri app host for desktop, Android, and iOS. Native view creation/destruction stays here; each emulator owns its player UI.
+- `apps/android-tv/`: standalone Kotlin/GeckoView Android TV host with a bundled browser engine; reuses the emulator packages. See [build and device notes](apps/android-tv/README.md).
 - `apps/icon/`: shared icon artwork and Tauri icon generation manifest.
 - `scripts/`: repository-level helper scripts.
 
