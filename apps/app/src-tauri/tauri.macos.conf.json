@@ -1,5 +1,13 @@
 {
   "bundle": {
+    "resources": {
+      "native/macos/locales/en.lproj/InfoPlist.strings": "en.lproj/InfoPlist.strings",
+      "native/macos/locales/zh-Hans.lproj/InfoPlist.strings": "zh-Hans.lproj/InfoPlist.strings",
+      "native/macos/locales/zh-Hant.lproj/InfoPlist.strings": "zh-Hant.lproj/InfoPlist.strings"
+    },
+    "macOS": {
+      "infoPlist": "native/macos/Info.plist"
+    },
     "icon": [
       "native/macos/icons/32x32.png",
       "native/macos/icons/icon.icns"

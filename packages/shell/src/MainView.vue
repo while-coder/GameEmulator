@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { emulators, type EmulatorId } from './registry'
+import { appName } from './branding'
 
 const props = withDefaults(defineProps<{ launch: (id: EmulatorId) => Promise<void>; active?: boolean }>(), { active: true })
 const busy = ref(false)
@@ -62,7 +63,7 @@ defineExpose({ focusCard })
   <main class="launcher" :aria-busy="busy">
     <div class="launcher-content">
       <header>
-        <span class="eyebrow">GameEmulator</span>
+        <span class="eyebrow">{{ appName }}</span>
         <h1>选择模拟器</h1>
         <p class="intro">从熟悉的游戏机，开始下一场冒险。</p>
       </header>

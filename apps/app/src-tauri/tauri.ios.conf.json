@@ -1,6 +1,9 @@
 {
   "identifier": "com.whilecode.gameemulator",
   "bundle": {
+    "iOS": {
+      "infoPlist": "native/ios/Info.plist"
+    },
     "icon": [
       "native/ios/icons/icon.png"
     ]

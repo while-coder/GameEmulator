@@ -1,5 +1,7 @@
 import { createApp, type Component } from 'vue'
-export function mountShell(component: Component) {
+import { configureAppBranding } from './branding'
+export function mountShell(component: Component, tv = false) {
+  configureAppBranding(tv)
   document.documentElement.dataset.theme = 'dark'
   return createApp(component).mount('#app')
 }
