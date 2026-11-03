@@ -232,7 +232,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <SButton @click="menuOpen=true">菜单</SButton>
     </header>
     <main class="arcade-stage player-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
-      <div v-if="layoutEditing" class="layout-edit-tools"><span>拖动虚线区域调整位置 · 自动保存</span><SButton @click="resetTouchLayout">重置当前方向</SButton><SButton @click="finishTouchLayout">完成</SButton></div>
+      <div v-if="layoutEditing" class="layout-edit-tools"><span>拖动控件调整位置 · 大小与显隐自动保存</span><SButton @click="resetTouchLayout">重置当前方向</SButton><SButton @click="finishTouchLayout">完成</SButton></div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
         <div v-if="!loaded && !layoutEditing" class="player-empty"><strong>选择游戏，开始游玩</strong><span>在游戏库中选择游戏，或导入本地 ROM。</span><SButton @click="openLibrary">打开游戏库</SButton></div>
@@ -267,8 +267,8 @@ const time=(value:number)=>new Date(value).toLocaleString()
 
           <section v-else-if="tab==='keys'" class="keys-page">
             <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>开启 / 关闭设置，自动暂停 / 继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
-            <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="editTouchLayout">调整位置</SButton></div>
-            <SHint class="layout-hint">拖动摇杆、六键区和两组功能键调整位置，横屏与竖屏分别保存。</SHint>
+            <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="editTouchLayout">编辑布局</SButton></div>
+            <SHint class="layout-hint">摇杆可调整大小，每个动作按钮可独立移动、缩放或隐藏；横屏与竖屏分别保存。</SHint>
             <div class="arcade-actions player-switch"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
             <SHint>六键为 Y / X / L、B / A / R 两排布局，投币后按开始。手柄按连接顺序分配给两位玩家，左摇杆与十字键均可控制方向；游戏按核心默认布局映射。</SHint>
             <div class="arcade-key-row key-heading"><span>操作</span><span>键盘</span><span>手柄</span></div>
@@ -313,6 +313,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 @media(pointer:coarse){.desktop-only,.keyboard-help{display:none}.arcade-touch{display:block}.arcade-status{display:none}.arcade-tabs{gap:4px;padding:8px}.arcade-content{padding-inline:10px}.game-summary{flex-wrap:wrap}.row-actions{margin-left:auto}.arcade-key-row{gap:8px;grid-template-columns:46px minmax(105px,1fr) minmax(75px,1fr)}}
 @media(pointer:coarse) and (orientation:landscape){.arcade-touch{position:absolute}.arcade-frame{border-radius:0}}
 @media(orientation:portrait){
+  .arcade-stage{grid-template-columns:minmax(0,1fr)}
   .arcade-stage.always-controls{display:grid;grid-template-rows:repeat(2,minmax(0,1fr))}
   .arcade-touch.touch-always{display:grid}
 }

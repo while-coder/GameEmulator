@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { emulators, type EmulatorId } from './registry'
 import { appName } from './branding'
+import '../../player-ui/interaction.css'
 
 const props = withDefaults(defineProps<{ launch: (id: EmulatorId) => Promise<void>; active?: boolean }>(), { active: true })
 const busy = ref(false)

@@ -1,3 +1,4 @@
+import { readTouchControl, type TouchControlLayout } from '../../../player-ui/touchLayout'
 /**
  * 全局设置:按键映射(分玩家)、显示效果、音频、杂项。
  *
@@ -16,9 +17,9 @@ import { Button } from './runner'
 export type Aspect = '1:1' | '8:7' | '4:3'
 /** 触屏手柄显示策略。 */
 export type TouchPadMode = 'auto' | 'always' | 'never'
-export type TouchLayoutGroup = 'dpad' | 'actions' | 'functionsLeft' | 'functionsRight'
+export type TouchLayoutGroup = 'dpad' | 'actions' | 'functionsLeft' | 'functionsRight' | 'a' | 'b' | 'turboA' | 'turboB'
 export type TouchLayoutOrientation = 'portrait' | 'landscape'
-export type TouchLayout = Record<TouchLayoutOrientation, Partial<Record<TouchLayoutGroup, { x: number; y: number }>>>
+export type TouchLayout = Record<TouchLayoutOrientation, Partial<Record<TouchLayoutGroup, TouchControlLayout>>>
 
 /** 逻辑手柄按钮(与玩家无关);设置与运行时输入派发均以此为单位。 */
 export enum PadButton {
@@ -233,14 +234,9 @@ function merge(base: Settings, saved: unknown): Settings {
   const profiles = Object.values(legacy)
   const touchLayout: TouchLayout = { portrait: {}, landscape: {} }
   for (const orientation of ['portrait', 'landscape'] as const) {
-    for (const group of ['dpad', 'actions', 'functionsLeft', 'functionsRight'] as const) {
-      const position = s.touchLayout?.[orientation]?.[group]
-      if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
-        touchLayout[orientation][group] = {
-          x: Math.max(0, Math.min(1, position.x)),
-          y: Math.max(0, Math.min(1, position.y)),
-        }
-      }
+    for (const group of ['dpad', 'actions', 'functionsLeft', 'functionsRight', 'a', 'b', 'turboA', 'turboB'] as const) {
+      const position = readTouchControl(s.touchLayout?.[orientation]?.[group])
+      if (position) touchLayout[orientation][group] = position
     }
   }
   return {

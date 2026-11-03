@@ -302,9 +302,9 @@ onBeforeUnmount(() => {
           </section>
           <div class="touch-layout-setting">
             <span>触屏按键布局</span>
-            <SButton @click="emit('editTouchLayout')">调整位置</SButton>
+            <SButton @click="emit('editTouchLayout')">编辑布局</SButton>
           </div>
-          <SHint class="tip">拖动摇杆、A/B 和两组功能键调整位置，横屏与竖屏分别保存。</SHint>
+          <SHint class="tip">摇杆可调整大小，A/B 和连发键可独立移动、缩放或隐藏；横屏与竖屏分别保存。</SHint>
           <!-- 玩家切换 -->
           <div class="player-switch">
             <SButton

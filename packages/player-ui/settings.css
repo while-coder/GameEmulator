@@ -147,7 +147,8 @@
 
 .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) { margin: 0 0 20px; padding-bottom: 16px; border-bottom: 1px solid #343434; }
 .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) h3 { margin: 0 0 12px; font-size: 14px; }
-.player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) dl { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; margin: 0; font-size: 13px; line-height: 1.6; }
+.player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 12px; margin: 0; font-size: 13px; line-height: 1.6; }
+.player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) kbd { display: inline-block; white-space: nowrap; }
 .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) dd { margin: 0; color: #bbb; }
 .player-modal .player-settings .save-actions .btn { min-height: 34px; padding: 6px 12px; border: 1px solid #434a54; border-radius: 6px; background: #303640; color: #eee; font-size: 13px; }
 .player-modal .player-settings .save-actions .primary { border-color: #2f6f9f; background: #2f6f9f; }

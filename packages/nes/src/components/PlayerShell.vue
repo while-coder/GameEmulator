@@ -331,7 +331,7 @@ onBeforeUnmount(() => {
 
     <main class="stage player-stage">
       <div v-if="layoutEditing" class="layout-edit-tools">
-        <span>拖动虚线区域调整位置 · 自动保存</span>
+        <span>拖动控件调整位置 · 大小与显隐自动保存</span>
         <SButton @click="resetTouchLayout">重置当前方向</SButton>
         <SButton @click="finishTouchLayout">完成</SButton>
       </div>
@@ -383,17 +383,7 @@ body {
   color: #e8e8e8;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-}
-input,
-textarea,
-[contenteditable='true'] {
-  user-select: text;
-  -webkit-user-select: text;
-  -webkit-touch-callout: default;
 }
 .tv-nav :focus-visible,
 .tv-nav button:focus,

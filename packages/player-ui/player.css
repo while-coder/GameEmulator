@@ -1,3 +1,7 @@
+@import './interaction.css';
+
+@import './interaction.css';
+
 /* Shared player navigation and standby screen for NES and arcade. */
 .player-toolbar {
   display: flex;

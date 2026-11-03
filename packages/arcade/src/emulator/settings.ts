@@ -1,3 +1,4 @@
+import { readTouchControl, type TouchControlLayout } from '../../../player-ui/touchLayout'
 import { reactive, watch } from 'vue'
 export const GAMEPAD_AXIS_THRESHOLD = 0.5
 export const ACTIONS = [
@@ -10,9 +11,9 @@ export const ACTIONS = [
 ] as const
 export type Action = typeof ACTIONS[number]['id']
 export type Keymap = Record<Action, string>
-export const ACTION_BUTTONS = ACTIONS.slice(4, 10)
-export type TouchLayoutGroup = 'dpad' | 'actions' | 'functionsLeft' | 'functionsRight'
-export type TouchLayout = Record<'portrait' | 'landscape', Partial<Record<TouchLayoutGroup, { x: number; y: number }>>>
+export const ACTION_BUTTONS = [ACTIONS[4], ACTIONS[5], ACTIONS[6], ACTIONS[7], ACTIONS[8], ACTIONS[9]] as const
+export type TouchLayoutGroup = 'dpad' | 'actions' | 'functionsLeft' | 'functionsRight' | 'y' | 'x' | 'l' | 'b' | 'a' | 'r'
+export type TouchLayout = Record<'portrait' | 'landscape', Partial<Record<TouchLayoutGroup, TouchControlLayout>>>
 const DEFAULT_KEYS = [
   ['KeyW','KeyS','KeyA','KeyD','KeyU','KeyI','KeyO','KeyJ','KeyK','KeyL','Digit2','Digit1'],
   ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','NumpadDecimal','Numpad0'],
@@ -35,11 +36,9 @@ function load(): Settings {
     if (!value || typeof value !== 'object') return defaults
     const touchLayout: TouchLayout = { portrait: {}, landscape: {} }
     for (const orientation of ['portrait', 'landscape'] as const) {
-      for (const group of ['dpad', 'actions', 'functionsLeft', 'functionsRight'] as const) {
-        const position = value.touchLayout?.[orientation]?.[group]
-        if (position && Number.isFinite(position.x) && Number.isFinite(position.y)) {
-          touchLayout[orientation][group] = { x: Math.max(0, Math.min(1, position.x)), y: Math.max(0, Math.min(1, position.y)) }
-        }
+      for (const group of ['dpad', 'actions', 'functionsLeft', 'functionsRight', 'y', 'x', 'l', 'b', 'a', 'r'] as const) {
+        const position = readTouchControl(value.touchLayout?.[orientation]?.[group])
+        if (position) touchLayout[orientation][group] = position
       }
     }
     return {

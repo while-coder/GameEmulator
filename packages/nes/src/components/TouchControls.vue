@@ -1,91 +1,18 @@
 <script setup lang="ts">
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 /** 固定底座八方向摇杆，保留 NES 数字方向、斜向与多点触控。 */
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PadButton, settings, type TouchLayoutGroup } from '../emulator/settings'
+
+import TouchLayoutEditor from '../../../player-ui/TouchLayoutEditor.vue'
+import { useTouchLayout } from '../../../player-ui/useTouchLayout'
 
 const props = defineProps<{ disabled?: boolean; menuDisabled?: boolean; canSave?: boolean; editing?: boolean }>()
 const emit = defineEmits<{ press: [PadButton]; release: [PadButton]; menu: []; quickSave: [] }>()
 
-const controlsRef = ref<HTMLElement | null>(null)
-const orientation = ref<'portrait' | 'landscape'>('landscape')
-const groupSizes = reactive<Record<string, { width: number; height: number }>>({})
-const layout = computed(() => settings.touchLayout[orientation.value])
-let layoutObserver: ResizeObserver | null = null
-let drag: { pointerId: number; group: TouchLayoutGroup; element: HTMLElement; offsetX: number; offsetY: number } | null = null
-
-function measureLayout() {
-  orientation.value = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape'
-  for (const el of controlsRef.value?.querySelectorAll<HTMLElement>('[data-layout-group]') ?? []) {
-    groupSizes[el.dataset.layoutGroup!] = { width: el.offsetWidth, height: el.offsetHeight }
-  }
-}
-function positionStyle(group: TouchLayoutGroup) {
-  const position = layout.value[group]
-  const size = groupSizes[group]
-  if (!position || !size) return undefined
-  return {
-    position: 'absolute' as const,
-    // 竖屏默认的网格区域与 place-self 会改变绝对定位的坐标基准。
-    gridArea: 'auto',
-    placeSelf: 'auto',
-    margin: '0',
-    left: `clamp(${size.width / 2}px, ${position.x * 100}%, calc(100% - ${size.width / 2}px))`,
-    top: `clamp(${size.height / 2}px, ${position.y * 100}%, calc(100% - ${size.height / 2}px))`,
-    right: 'auto', bottom: 'auto', transform: 'translate(-50%, -50%)',
-  }
-}
-function startLayoutDrag(event: PointerEvent) {
-  if (!props.editing || event.button !== 0) return
-  event.preventDefault()
-  event.stopPropagation()
-  if (drag) return
-  const element = (event.target as HTMLElement).closest<HTMLElement>('[data-layout-group]')
-  if (!element) return
-  releaseAll()
-  const rect = element.getBoundingClientRect()
-  drag = { pointerId: event.pointerId, group: element.dataset.layoutGroup as TouchLayoutGroup, element,
-    offsetX: event.clientX - rect.left - rect.width / 2,
-    offsetY: event.clientY - rect.top - rect.height / 2 }
-  element.setPointerCapture(event.pointerId)
-}
-function moveLayoutDrag(event: PointerEvent) {
-  if (!drag || event.pointerId !== drag.pointerId) return
-  event.preventDefault()
-  event.stopPropagation()
-  const bounds = controlsRef.value!.getBoundingClientRect()
-  if (!bounds.width || !bounds.height) return
-  const rect = drag.element.getBoundingClientRect()
-  const x = Math.max(rect.width / 2, Math.min(bounds.width - rect.width / 2, event.clientX - bounds.left - drag.offsetX))
-  const y = Math.max(rect.height / 2, Math.min(bounds.height - rect.height / 2, event.clientY - bounds.top - drag.offsetY))
-  layout.value[drag.group] = { x: x / bounds.width, y: y / bounds.height }
-}
-function endLayoutDrag() {
-  if (!drag) return
-  const previous = drag
-  drag = null
-  releaseCapture(previous.element, previous.pointerId)
-}
-function suppressEditClick(event: MouseEvent) {
-  if (!props.editing) return
-  event.preventDefault()
-  event.stopPropagation()
-}
-watch(() => props.editing, () => { endLayoutDrag(); releaseAll() })
-onMounted(() => {
-  measureLayout()
-  layoutObserver = new ResizeObserver(measureLayout)
-  if (controlsRef.value) {
-    layoutObserver.observe(controlsRef.value)
-    for (const el of controlsRef.value.querySelectorAll('[data-layout-group]')) layoutObserver.observe(el)
-  }
-  window.addEventListener('resize', endLayoutDrag)
-})
-onBeforeUnmount(() => {
-  endLayoutDrag()
-  layoutObserver?.disconnect()
-  window.removeEventListener('resize', endLayoutDrag)
-})
+const editableControls: { id: TouchLayoutGroup; label: string }[] = [{ id: 'dpad', label: '摇杆' }, { id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'turboA', label: '连A' }, { id: 'turboB', label: '连B' }]
+const { controlsRef, detached, selected, selectedLayout, positionStyle, startLayoutDrag, moveLayoutDrag,
+  endLayoutDrag, suppressEditClick, resizeSelected, toggleSelected } = useTouchLayout(settings, props, editableControls, releaseAll)
 
 // 触点角度(0=右,逆时针)round 到最近 45° -> 该扇区激活的方向集合。
 const SECTORS: PadButton[][] = [
@@ -148,6 +75,7 @@ const BUTTON_HOTZONE = 6
 /** 按下点是否落在任一实体按键(A/B/连发/Select/Start/菜单)的热区内。 */
 function overButton(clientX: number, clientY: number): boolean {
   for (const el of controlsRef.value?.querySelectorAll<HTMLElement>('.akey, .fkey') ?? []) {
+    if (getComputedStyle(el).visibility === 'hidden') continue
     const r = el.getBoundingClientRect()
     if (clientX >= r.left - BUTTON_HOTZONE && clientX <= r.right + BUTTON_HOTZONE
       && clientY >= r.top - BUTTON_HOTZONE && clientY <= r.bottom + BUTTON_HOTZONE) return true
@@ -156,7 +84,7 @@ function overButton(clientX: number, clientY: number): boolean {
 }
 
 function onDpadDown(e: PointerEvent) {
-  if (props.disabled || settings.misc.touchPad === 'never' || dirPointerId !== null || e.button !== 0) return
+  if (props.editing || props.disabled || settings.misc.touchPad === 'never' || dirPointerId !== null || e.button !== 0) return
   // 布局重叠时按键优先:落点在按键热区内(含穿透到摇杆的)不驱动方向。
   if (overButton(e.clientX, e.clientY)) return
   e.preventDefault()
@@ -179,7 +107,7 @@ function onDpadUp(e: PointerEvent) {
 }
 
 function onBtnDown(e: PointerEvent, pad: PadButton) {
-  if (props.disabled || settings.misc.touchPad === 'never' || e.button !== 0 || buttonPointers.has(e.pointerId)) return
+  if (props.editing || props.disabled || settings.misc.touchPad === 'never' || e.button !== 0 || buttonPointers.has(e.pointerId)) return
   const element = e.currentTarget as HTMLElement
   e.preventDefault()
   element.setPointerCapture(e.pointerId)
@@ -195,7 +123,7 @@ function onBtnUp(e: PointerEvent) {
   releaseCapture(pointer.element, e.pointerId)
 }
 function onPointerEnd(e: PointerEvent) {
-  if (drag?.pointerId === e.pointerId) endLayoutDrag()
+  endLayoutDrag(e)
   onDpadUp(e)
   onBtnUp(e)
 }
@@ -232,6 +160,8 @@ onBeforeUnmount(() => {
   <div ref="controlsRef" class="touch-controls" :class="editing ? 'always editing' : settings.misc.touchPad"
     @pointerdown.capture="startLayoutDrag" @pointermove.capture="moveLayoutDrag"
     @lostpointercapture="endLayoutDrag" @click.capture="suppressEditClick">
+    <TouchLayoutEditor v-if="editing" :controls="editableControls" :selected="selected" :scale="selectedLayout?.scale ?? 1" :hidden="selectedLayout?.hidden ?? false"
+      @select="selected = $event" @resize="resizeSelected" @toggle="toggleSelected" />
     <!-- 左：固定底座与可回中的摇杆 -->
     <div
       ref="dpadRef"
@@ -288,11 +218,12 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- 右：A/B 平排，每列上方为对应的连发键 -->
-    <div class="actions" data-layout-group="actions" :style="positionStyle('actions')">
+    <div class="actions" :class="{detached}" :style="positionStyle('actions')">
       <div class="col col-b">
         <button
           :disabled="!editing && disabled"
           class="akey turbo"
+          data-layout-group="turboB" data-layout-button :style="positionStyle('turboB')"
           @pointerdown="onBtnDown($event, PadButton.TurboB)"
           @pointerup="onBtnUp"
           @pointercancel="onBtnUp"
@@ -304,6 +235,7 @@ onBeforeUnmount(() => {
         <button
           :disabled="!editing && disabled"
           class="akey ab b"
+          data-layout-group="b" data-layout-button :style="positionStyle('b')"
           @pointerdown="onBtnDown($event, PadButton.B)"
           @pointerup="onBtnUp"
           @pointercancel="onBtnUp"
@@ -317,6 +249,7 @@ onBeforeUnmount(() => {
         <button
           :disabled="!editing && disabled"
           class="akey turbo"
+          data-layout-group="turboA" data-layout-button :style="positionStyle('turboA')"
           @pointerdown="onBtnDown($event, PadButton.TurboA)"
           @pointerup="onBtnUp"
           @pointercancel="onBtnUp"
@@ -328,6 +261,7 @@ onBeforeUnmount(() => {
         <button
           :disabled="!editing && disabled"
           class="akey ab a"
+          data-layout-group="a" data-layout-button :style="positionStyle('a')"
           @pointerdown="onBtnDown($event, PadButton.A)"
           @pointerup="onBtnUp"
           @pointercancel="onBtnUp"
@@ -352,6 +286,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .touch-controls {
+  min-width: 0;
   display: none;
   pointer-events: none;
   user-select: none;
@@ -576,4 +511,10 @@ onBeforeUnmount(() => {
   background: #d98324;
   font-size: clamp(11px, 3vw, 13px);
 }
+</style>
+
+<style scoped>
+.detached, .detached .col { display: contents; }
+.editing [data-layout-button] { pointer-events: auto; }
+.editing [data-layout-button]:focus-visible { outline: 3px solid #fff; }
 </style>
