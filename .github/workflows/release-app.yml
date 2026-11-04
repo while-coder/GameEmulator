@@ -223,6 +223,43 @@ jobs:
           TAG: ${{ needs.check.outputs.tag }}
         run: gh release upload "$TAG" apps.json --clobber
 
+  publish-sidestore:
+    name: Update shared SideStore source and icon
+    needs: [check, release-ios]
+    if: ${{ !cancelled() && needs.release-ios.result == 'success' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-sidestore
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Read SideStore app metadata
+        run: node apps/app/src-tauri/native/ios/sidestore-info.cjs > "$RUNNER_TEMP/gameemulator-sidestore.json"
+
+      - name: Update store/sidestore.json and app icon
+        uses: while-coder/workflows/.github/actions/update-sidestore@main
+        with:
+          app-info: ${{ runner.temp }}/gameemulator-sidestore.json
+          icon-path: apps/icon/icon.png
+          asset-name: GameEmulator_${{ needs.check.outputs.version }}_ios_unsigned.ipa
+          tag: ${{ needs.check.outputs.tag }}
+          version: ${{ needs.check.outputs.version }}
+          release-repository: while-coder/GameEmulator
+          store-repository: while-coder/store
+          source-url: https://while-coder.github.io/store/sidestore.json
+          notes: ${{ needs.check.outputs.notes }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORE_TOKEN: ${{ fromJSON(secrets.BUILD_SIGNING_JSON || '{}').STORE_TOKEN }}
+
   publish-manifest:
     needs: [check, release-desktop]
     if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}

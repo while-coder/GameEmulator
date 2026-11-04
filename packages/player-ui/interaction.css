@@ -1,8 +1,11 @@
 /* Prevent native long-press selection and callouts from interrupting controls. */
 * {
+  /* Apply inside nested scroll containers too; controls can use touch-action: none. */
+  touch-action: pan-x pan-y;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-user-drag: none;
 }
 
 input,
@@ -11,5 +14,4 @@ textarea,
 [contenteditable='true'] * {
   -webkit-user-select: text;
   user-select: text;
-  -webkit-touch-callout: default;
 }

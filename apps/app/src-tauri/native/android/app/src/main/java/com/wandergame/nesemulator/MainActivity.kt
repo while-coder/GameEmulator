@@ -17,6 +17,13 @@ class MainActivity : TauriActivity() {
   // 返回 "exit" 才在原生侧 finish() Activity。绕开 @tauri-apps/plugin-process 的 exit() 在 Android 上不稳的问题。
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
+    webView.settings.apply {
+      setSupportZoom(false)
+      builtInZoomControls = false
+      displayZoomControls = false
+    }
+    webView.isLongClickable = false
+    webView.setOnLongClickListener { true }
     onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
       override fun handleOnBackPressed() {
         webView.evaluateJavascript(

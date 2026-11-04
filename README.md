@@ -24,6 +24,8 @@ GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白�
 - **移动版**：Android、iOS。
 - **电视版**：独立 Android TV 应用。
 
+iOS SideStore 统一订阅源：[while-coder Store](https://while-coder.github.io/store/sidestore.json)。iOS Release 成功后，工作流会同步应用版本和 `apps/icon/icon.png` 到 `while-coder/store`，同时保留 Release 中的独立 `apps.json` 源。CI 需要在 `BUILD_SIGNING_JSON` 中配置 `STORE_TOKEN`，并授予该令牌对 `while-coder/store` 的 Contents 读写权限。
+
 桌面版和 Tauri Android 版在启动后自动检查更新，发现新版本时提示下载和安装；检查失败时不打断使用。Android 版也可在首页点击“检查更新”，并按提示授予安装权限。iOS、网页版和独立 Android TV 版不使用此应用内更新流程。
 
 Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自 `CHANGELOG.md` 中对应版本的段落；点击“知道了”后，同一版本不再重复展示。Tauri 应用发现新版本时优先显示更新提示。PWA 在加载新版页面后展示对应版本的内容，离线时也可查看已缓存版本的说明。
