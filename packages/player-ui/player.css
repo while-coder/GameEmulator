@@ -1,8 +1,53 @@
 @import './interaction.css';
 
-@import './interaction.css';
-
 /* Shared player navigation and standby screen for NES and arcade. */
+.layout-edit-tools {
+  position: absolute;
+  z-index: 10;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 520px;
+  max-width: calc(100% - 24px);
+  max-height: calc(100% - 16px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #454545;
+  border-radius: 10px;
+  background: #242424f5;
+  color: #bbb;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 6px 20px #0005;
+}
+.layout-edit-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.layout-edit-tools[data-layout-toolbar] :is(.s-button, .layout-button) {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #343434;
+  color: #eee;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1;
+  white-space: nowrap;
+}
+.layout-edit-tools[data-layout-toolbar] .layout-done { border-color: #2f6bd8; background: #2f6bd8; color: #fff; }
 .player-toolbar {
   display: flex;
   flex: 0 0 auto;

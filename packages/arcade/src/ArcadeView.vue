@@ -232,7 +232,13 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <SButton @click="menuOpen=true">菜单</SButton>
     </header>
     <main class="arcade-stage player-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
-      <div v-if="layoutEditing" class="layout-edit-tools"><span>拖动控件调整位置 · 大小与显隐自动保存</span><SButton @click="resetTouchLayout">重置当前方向</SButton><SButton @click="finishTouchLayout">完成</SButton></div>
+      <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
+        <div class="layout-edit-header">
+          <span>拖动调整位置 · 自动保存</span>
+          <SButton @click="resetTouchLayout">重置当前方向</SButton>
+          <SButton class="layout-done" @click="finishTouchLayout">完成</SButton>
+        </div>
+      </div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
         <div v-if="!loaded && !layoutEditing" class="player-empty"><strong>选择游戏，开始游玩</strong><span>在游戏库中选择游戏，或导入本地 ROM。</span><SButton @click="openLibrary">打开游戏库</SButton></div>
@@ -340,8 +346,6 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .arcade-key-row :deep(.s-button) { min-height: 44px; }
 .display-page > label { min-height: 0; padding: 8px 0; border: none; }
 .display-page .remote-select { min-width: 160px; max-width: 65%; }
-.layout-edit-tools { position: absolute; z-index: 10; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; width: max-content; max-width: calc(100% - 24px); padding: 8px; border-radius: 8px; background: #202328ee; font-size: 13px; }
-.layout-edit-tools :deep(.s-button) { min-height: 44px; }
 @media (max-width: 480px) {
   .arcade-tabs { gap: 2px; padding: 4px; }
   .arcade-tabs .arcade-tab { flex: 1; padding: 6px; font-size: 13px; }
