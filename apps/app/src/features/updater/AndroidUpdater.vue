@@ -7,7 +7,7 @@ import { appName } from '@game-emulator/shell'
 // Same flow as ClipRoam: install permission -> static manifest -> APK -> system installer.
 type Status = 'idle' | 'checking' | 'permission' | 'latest' | 'available' | 'downloading' | 'installer' | 'error'
 interface UpdateInfo { version: string; notes: string; url: string }
-const emit = defineEmits<{ modalChange: [visible: boolean] }>()
+const emit = defineEmits<{ modalChange: [visible: boolean]; autoCheckFinished: [] }>()
 const status = ref<Status>('idle')
 const update = ref<UpdateInfo | null>(null)
 const message = ref('')
@@ -110,7 +110,7 @@ function handleBack() {
 function formatSize(bytes: number) { return `${(bytes / 1024 / 1024).toFixed(1)} MB` }
 
 onMounted(() => {
-  timer = setTimeout(() => void check(true), 5000)
+  timer = setTimeout(() => void check(true).finally(() => emit('autoCheckFinished')), 0)
   window.addEventListener('focus', resume)
   document.addEventListener('visibilitychange', resume)
 })
