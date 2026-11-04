@@ -3,13 +3,13 @@ import type { TouchControlLayout } from './touchLayout'
 
 export function useTouchLayout<K extends string>(
   settings: { touchLayout: Record<'portrait' | 'landscape', Partial<Record<K, TouchControlLayout>>> },
-  props: { editing?: boolean },
+  props: { editing?: boolean; layout?: Record<'portrait' | 'landscape', Partial<Record<K, TouchControlLayout>>> },
   controls: { id: K; label: string }[],
   releaseAll: () => void,
 ) {
   const controlsRef = ref<HTMLElement | null>(null)
   const orientation = ref<'portrait' | 'landscape'>('landscape')
-  const layout = computed(() => settings.touchLayout[orientation.value])
+  const layout = computed(() => (props.layout ?? settings.touchLayout)[orientation.value])
   const selected = ref<string>('dpad')
   const selectedLayout = computed(() => layout.value[selected.value as K])
   const sizes = reactive<Record<string, { width: number; height: number }>>({})
@@ -31,6 +31,7 @@ export function useTouchLayout<K extends string>(
   async function initializeButtons() {
     if (!props.editing) return
     await nextTick()
+    if (!props.editing) return
     const root = controlsRef.value
     if (!root || !root.clientWidth || !root.clientHeight) return
     const positions: [K, TouchControlLayout][] = []

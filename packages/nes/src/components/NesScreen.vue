@@ -22,6 +22,7 @@ import {
   syncGamepadAssignments,
   TURBO_TARGET,
   type Aspect,
+  type TouchLayout,
 } from '../emulator/settings'
 
 
@@ -31,6 +32,7 @@ const props = defineProps<{
   inputLocked?: boolean
   gamePaused?: boolean
   layoutEditing?: boolean
+  touchLayoutDraft?: TouchLayout
   romKey?: string | null
   romName?: string | null
 }>()
@@ -564,6 +566,7 @@ defineExpose({
     <!-- 触屏虚拟手柄(经典分离式,支持斜向与多点触控) -->
     <TouchControls
       :editing="layoutEditing"
+      :layout="touchLayoutDraft"
       :disabled="inputLocked || gamePaused"
       :menu-disabled="inputLocked"
       :can-save="!!romKey && !inputLocked"

@@ -6,7 +6,7 @@ import {
   pickRomFile,
   setLastRomName,
 } from '../emulator/platform'
-import { settings } from '../emulator/settings'
+import { settings, type TouchLayout } from '../emulator/settings'
 import { sha256Hex } from '../store/romDownloader'
 import { saveCachedRom } from '../store/romLibrary'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
@@ -59,6 +59,7 @@ const loading = ref(false)
 const paused = ref(false)
 const settingsOpen = ref(false)
 const layoutEditing = ref(false)
+const touchLayoutDraft = ref<TouchLayout>()
 const leaving = ref(false)
 const leaveError = ref('')
 async function leaveEmulator() {
@@ -79,16 +80,22 @@ function openLibrary() {
   settingsOpen.value = true
 }
 function editTouchLayout() {
+  touchLayoutDraft.value = JSON.parse(JSON.stringify(settings.touchLayout))
   layoutEditing.value = true
   settingsOpen.value = false
 }
 function finishTouchLayout() {
   settingsOpen.value = true
   layoutEditing.value = false
+  touchLayoutDraft.value = undefined
+}
+function saveTouchLayout() {
+  if (touchLayoutDraft.value) settings.touchLayout = touchLayoutDraft.value
+  finishTouchLayout()
 }
 function resetTouchLayout() {
   const orientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape'
-  settings.touchLayout[orientation] = {}
+  if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
   if (event.code === 'Escape' && event.target instanceof Element && event.target.closest('.rs-popup')) return
@@ -332,15 +339,17 @@ onBeforeUnmount(() => {
     <main class="stage player-stage">
       <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
         <div class="layout-edit-header">
-          <span>拖动调整位置 · 自动保存</span>
+          <span>拖动调整位置 · 保存后生效</span>
           <SButton @click="resetTouchLayout">重置当前方向</SButton>
-          <SButton class="layout-done" @click="finishTouchLayout">完成</SButton>
+          <SButton @click="finishTouchLayout">返回</SButton>
+          <SButton class="layout-done" @click="saveTouchLayout">保存</SButton>
         </div>
       </div>
       <NesScreen
         ref="screen"
         :input-locked="inputLocked"
         :layout-editing="layoutEditing"
+        :touch-layout-draft="touchLayoutDraft"
         :game-paused="paused || loading"
 
         :rom-key="romKey"

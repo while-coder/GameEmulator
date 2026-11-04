@@ -2,12 +2,12 @@
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 /** 固定底座八方向摇杆，保留 NES 数字方向、斜向与多点触控。 */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { PadButton, settings, type TouchLayoutGroup } from '../emulator/settings'
+import { PadButton, settings, type TouchLayout, type TouchLayoutGroup } from '../emulator/settings'
 
 import TouchLayoutEditor from '../../../player-ui/TouchLayoutEditor.vue'
 import { useTouchLayout } from '../../../player-ui/useTouchLayout'
 
-const props = defineProps<{ disabled?: boolean; menuDisabled?: boolean; canSave?: boolean; editing?: boolean }>()
+const props = defineProps<{ disabled?: boolean; menuDisabled?: boolean; canSave?: boolean; editing?: boolean; layout?: TouchLayout }>()
 const emit = defineEmits<{ press: [PadButton]; release: [PadButton]; menu: []; quickSave: [] }>()
 
 const editableControls: { id: TouchLayoutGroup; label: string }[] = [{ id: 'dpad', label: '摇杆' }, { id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'turboA', label: '连A' }, { id: 'turboB', label: '连B' }]

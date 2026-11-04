@@ -11,7 +11,7 @@ import RomStorePanel from './components/RomStorePanel.vue'
 import RemoteSelect from './components/RemoteSelect.vue'
 import { findCatalogGame, loadCatalogs, type ArcadeCatalog, type CatalogGame } from './store/catalog'
 import { ArcadeRunner } from './emulator/runner'
-import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action } from './emulator/settings'
+import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action, type TouchLayout } from './emulator/settings'
 import { CORE_BUILD, bundleKey, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
 import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
@@ -32,12 +32,14 @@ const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunner|null>(null)
 const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
 const layoutEditing=ref(false)
+const touchLayoutDraft=ref<TouchLayout>()
 const tab=ref<'library'|'saves'|'keys'|'display'|'audio'|'misc'>('library')
 const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
 function openLibrary(){tab.value='library';menuOpen.value=true}
-function editTouchLayout(){layoutEditing.value=true;menuOpen.value=false}
-function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false}
-function resetTouchLayout(){settings.touchLayout[window.matchMedia('(orientation: portrait)').matches?'portrait':'landscape']={}}
+function editTouchLayout(){touchLayoutDraft.value=JSON.parse(JSON.stringify(settings.touchLayout));layoutEditing.value=true;menuOpen.value=false}
+function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false;touchLayoutDraft.value=undefined}
+function saveTouchLayout(){if(touchLayoutDraft.value)settings.touchLayout=touchLayoutDraft.value;finishTouchLayout()}
+function resetTouchLayout(){if(touchLayoutDraft.value)touchLayoutDraft.value[window.matchMedia('(orientation: portrait)').matches?'portrait':'landscape']={}}
 function closeMenu(){if(!busy.value&&!leaving.value)menuOpen.value=false}
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
 const catalogNames=ref(new Map<string,string>())
@@ -138,7 +140,7 @@ async function quickRestore(){
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-function stop(){layoutEditing.value=false;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library'}
+function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library'}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true;stop()
@@ -234,16 +236,17 @@ const time=(value:number)=>new Date(value).toLocaleString()
     <main class="arcade-stage player-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
       <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
         <div class="layout-edit-header">
-          <span>拖动调整位置 · 自动保存</span>
+          <span>拖动调整位置 · 保存后生效</span>
           <SButton @click="resetTouchLayout">重置当前方向</SButton>
-          <SButton class="layout-done" @click="finishTouchLayout">完成</SButton>
+          <SButton @click="finishTouchLayout">返回</SButton>
+          <SButton class="layout-done" @click="saveTouchLayout">保存</SButton>
         </div>
       </div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
         <div v-if="!loaded && !layoutEditing" class="player-empty"><strong>选择游戏，开始游玩</strong><span>在游戏库中选择游戏，或导入本地 ROM。</span><SButton @click="openLibrary">打开游戏库</SButton></div>
       </div>
-      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
+      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
     <footer class="arcade-status"><span>{{current?.name??'未载入游戏'}}</span><span v-if="busy">处理中…</span><span v-else>街机 · FB Alpha 2012</span></footer>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
-import { ACTION_BUTTONS, settings, type Action, type TouchLayoutGroup } from '../emulator/settings'
+import { ACTION_BUTTONS, settings, type Action, type TouchLayout, type TouchLayoutGroup } from '../emulator/settings'
 import TouchLayoutEditor from '../../../player-ui/TouchLayoutEditor.vue'
 import { useTouchLayout } from '../../../player-ui/useTouchLayout'
 
-const props=defineProps<{disabled:boolean;editing?:boolean}>()
+const props=defineProps<{disabled:boolean;editing?:boolean;layout?:TouchLayout}>()
 const emit=defineEmits<{press:[action:Action,source:string];release:[action:Action,source:string];menu:[];save:[]}>()
 const pointers=new Map<number,Set<Action>>()
 const stick=ref({x:0,y:0})
