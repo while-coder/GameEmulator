@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { ACTION_BUTTONS, settings, type Action, type TouchLayout, type TouchLayoutGroup } from '../emulator/settings'
 import TouchLayoutEditor from '../../../player-ui/TouchLayoutEditor.vue'
@@ -8,6 +8,7 @@ import { useTouchLayout } from '../../../player-ui/useTouchLayout'
 const props=defineProps<{disabled:boolean;editing?:boolean;layout?:TouchLayout}>()
 const emit=defineEmits<{press:[action:Action,source:string];release:[action:Action,source:string];menu:[];save:[]}>()
 const pointers=new Map<number,Set<Action>>()
+const pointerElements=new Map<number,HTMLElement>()
 const stick=ref({x:0,y:0})
 let stickPointer:number|null=null
 function update(id:number,actions:Set<Action>){
@@ -17,27 +18,59 @@ function update(id:number,actions:Set<Action>){
   pointers.set(id,actions)
 }
 function buttonDown(event:PointerEvent,action:Action){
-  if(props.disabled||props.editing)return
-  event.preventDefault();(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+  if(props.disabled||props.editing||event.button!==0)return
+  const element=event.currentTarget as HTMLElement
+  event.preventDefault();element.setPointerCapture(event.pointerId)
+  pointerElements.set(event.pointerId,element)
   update(event.pointerId,new Set([action]))
 }
 function stickMove(event:PointerEvent){
   if(props.disabled||props.editing||stickPointer!==event.pointerId)return
+  if(event.buttons===0){up(event);return}
   const rect=(event.currentTarget as HTMLElement).getBoundingClientRect()
   const x=Math.max(-1,Math.min(1,(event.clientX-rect.left-rect.width/2)/(rect.width/2))),y=Math.max(-1,Math.min(1,(event.clientY-rect.top-rect.height/2)/(rect.height/2)))
   const actions=new Set<Action>();if(x<-.25)actions.add('left');if(x>.25)actions.add('right');if(y<-.25)actions.add('up');if(y>.25)actions.add('down')
   stick.value={x:x*24,y:y*24};update(event.pointerId,actions)
 }
 function stickDown(event:PointerEvent){
-  if(props.disabled||props.editing||stickPointer!==null)return
+  if(props.disabled||props.editing||stickPointer!==null||event.button!==0)return
+  const element=event.currentTarget as HTMLElement
+  event.preventDefault();element.setPointerCapture(event.pointerId)
+  pointerElements.set(event.pointerId,element)
   stickPointer=event.pointerId
-  event.preventDefault();(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
   pointers.set(event.pointerId,new Set());stickMove(event)
 }
-function up(event:PointerEvent){update(event.pointerId,new Set());pointers.delete(event.pointerId);if(stickPointer===event.pointerId){stickPointer=null;stick.value={x:0,y:0}}}
-function releaseAll(){for(const id of pointers.keys())update(id,new Set());pointers.clear();stickPointer=null;stick.value={x:0,y:0}}
-watch(()=>props.disabled,releaseAll)
-onBeforeUnmount(releaseAll)
+function releasePointer(id:number){
+  if(pointers.has(id)){update(id,new Set());pointers.delete(id)}
+  if(stickPointer===id){stickPointer=null;stick.value={x:0,y:0}}
+  const element=pointerElements.get(id)
+  pointerElements.delete(id)
+  if(element?.hasPointerCapture(id))element.releasePointerCapture(id)
+}
+function up(event:PointerEvent){releasePointer(event.pointerId)}
+function onPointerEnd(event:PointerEvent){endLayoutDrag(event);up(event)}
+function releaseAll(){
+  endLayoutDrag()
+  for(const id of pointers.keys())releasePointer(id)
+  stickPointer=null;stick.value={x:0,y:0}
+}
+function onVisibilityChange(){if(document.hidden)releaseAll()}
+watch(()=>props.disabled,releaseAll,{flush:'sync'})
+onMounted(()=>{
+  window.addEventListener('pointerup',onPointerEnd,true)
+  window.addEventListener('pointercancel',onPointerEnd,true)
+  window.addEventListener('blur',releaseAll)
+  window.addEventListener('resize',releaseAll)
+  document.addEventListener('visibilitychange',onVisibilityChange)
+})
+onBeforeUnmount(()=>{
+  releaseAll()
+  window.removeEventListener('pointerup',onPointerEnd,true)
+  window.removeEventListener('pointercancel',onPointerEnd,true)
+  window.removeEventListener('blur',releaseAll)
+  window.removeEventListener('resize',releaseAll)
+  document.removeEventListener('visibilitychange',onVisibilityChange)
+})
 
 const editableControls: { id: TouchLayoutGroup; label: string }[] = [{ id: 'dpad', label: '摇杆' }, ...ACTION_BUTTONS.map(action => ({ id: action.id, label: action.label }))]
 const { controlsRef, detached, selected, selectedLayout, positionStyle, startLayoutDrag, moveLayoutDrag,
