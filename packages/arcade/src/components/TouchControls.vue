@@ -11,6 +11,7 @@ const pointers=new Map<number,Set<Action>>()
 const pointerElements=new Map<number,HTMLElement>()
 const stick=ref({x:0,y:0})
 let stickPointer:number|null=null
+const SECTORS:Action[][]=[['right'],['right','down'],['down'],['down','left'],['left'],['left','up'],['up'],['up','right']]
 function update(id:number,actions:Set<Action>){
   const old=pointers.get(id)??new Set<Action>(),source=`touch:${id}`
   old.forEach(a=>{if(!actions.has(a))emit('release',a,source)})
@@ -28,12 +29,24 @@ function stickMove(event:PointerEvent){
   if(props.disabled||props.editing||stickPointer!==event.pointerId)return
   if(event.buttons===0){up(event);return}
   const rect=(event.currentTarget as HTMLElement).getBoundingClientRect()
-  const x=Math.max(-1,Math.min(1,(event.clientX-rect.left-rect.width/2)/(rect.width/2))),y=Math.max(-1,Math.min(1,(event.clientY-rect.top-rect.height/2)/(rect.height/2)))
-  const actions=new Set<Action>();if(x<-.25)actions.add('left');if(x>.25)actions.add('right');if(y<-.25)actions.add('up');if(y>.25)actions.add('down')
-  stick.value={x:x*24,y:y*24};update(event.pointerId,actions)
+  const dx=event.clientX-rect.left-rect.width/2,dy=event.clientY-rect.top-rect.height/2
+  const distance=Math.hypot(dx,dy),scale=distance>24?24/distance:1
+  // 按角度划分八方向，避免相同角度因推远而误触斜方向。
+  const sector=(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8
+  stick.value={x:dx*scale,y:dy*scale}
+  update(event.pointerId,new Set(distance<rect.width*.125?[]:SECTORS[sector]))
+}
+function overButton(event:PointerEvent){
+  for(const element of controlsRef.value?.querySelectorAll<HTMLButtonElement>('button')??[]){
+    if(getComputedStyle(element).visibility==='hidden')continue
+    const rect=element.getBoundingClientRect()
+    if(rect.width>0&&rect.height>0&&event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom)return true
+  }
+  return false
 }
 function stickDown(event:PointerEvent){
   if(props.disabled||props.editing||stickPointer!==null||event.button!==0)return
+  if(overButton(event))return
   const element=event.currentTarget as HTMLElement
   event.preventDefault();element.setPointerCapture(event.pointerId)
   pointerElements.set(event.pointerId,element)
@@ -48,6 +61,13 @@ function releasePointer(id:number){
   if(element?.hasPointerCapture(id))element.releasePointerCapture(id)
 }
 function up(event:PointerEvent){releasePointer(event.pointerId)}
+function onPointerDown(event:PointerEvent){
+  // 新触摸前清掉已失去捕获的旧触点，保留其他仍按住的手指。
+  for(const [id,element] of pointerElements){
+    if(id===event.pointerId||!element.hasPointerCapture(id))releasePointer(id)
+  }
+}
+function onPointerMove(event:PointerEvent){if(event.buttons===0)up(event)}
 function onPointerEnd(event:PointerEvent){endLayoutDrag(event);up(event)}
 function releaseAll(){
   endLayoutDrag()
@@ -57,6 +77,8 @@ function releaseAll(){
 function onVisibilityChange(){if(document.hidden)releaseAll()}
 watch(()=>props.disabled,releaseAll,{flush:'sync'})
 onMounted(()=>{
+  window.addEventListener('pointerdown',onPointerDown,true)
+  window.addEventListener('pointermove',onPointerMove,true)
   window.addEventListener('pointerup',onPointerEnd,true)
   window.addEventListener('pointercancel',onPointerEnd,true)
   window.addEventListener('blur',releaseAll)
@@ -65,6 +87,8 @@ onMounted(()=>{
 })
 onBeforeUnmount(()=>{
   releaseAll()
+  window.removeEventListener('pointerdown',onPointerDown,true)
+  window.removeEventListener('pointermove',onPointerMove,true)
   window.removeEventListener('pointerup',onPointerEnd,true)
   window.removeEventListener('pointercancel',onPointerEnd,true)
   window.removeEventListener('blur',releaseAll)
@@ -125,6 +149,10 @@ const { controlsRef, detached, selected, selectedLayout, positionStyle, startLay
 .stick-knob{position:absolute;width:44%;height:44%;border:1px solid #999;border-radius:50%;background:radial-gradient(circle at 35% 30%,#858585,#454545);box-shadow:0 4px 10px #0009;pointer-events:none}
 .six-buttons{position:absolute;right:var(--right-inset);bottom:var(--bottom-inset);display:grid;grid-template-columns:repeat(3,var(--action-size));gap:var(--button-gap)}
 .six-buttons button{width:var(--action-size);height:var(--action-size);border-radius:50%;background:#c0392b;color:#fff;border:0;font-size:clamp(16px,3vw,22px);font-weight:700;touch-action:none;pointer-events:auto}
+/* 按键保持在摇杆之上；独立拖动后的按键也保留该层级。 */
+.stick{z-index:1}
+.function-group,.six-buttons{z-index:2}
+.six-buttons button{position:relative;z-index:2}
 button:active{filter:brightness(1.3)}button:disabled{opacity:.45}
 button:focus-visible{outline:2px solid #4ea1ff;outline-offset:2px}
 .touch-controls.editing{pointer-events:auto}
