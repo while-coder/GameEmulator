@@ -220,16 +220,18 @@ export class NesRunner {
 
   /** 暂停帧循环(可恢复)。 */
   pause(): void {
-    if (this.instance && this.running) {
+    if (this.instance) {
       this.instance.pause()
+      this.instance.getEmscripten().Module._cmd_pause()
       this.running = false
     }
   }
 
   /** 从暂停状态恢复运行。 */
   resume(): void {
-    if (this.instance && !this.running) {
+    if (this.instance) {
       this.instance.resume()
+      this.instance.getEmscripten().Module._cmd_unpause()
       this.running = true
     }
   }
@@ -257,16 +259,26 @@ export class NesRunner {
 
   /**
    * 从存档快照恢复引擎状态。需先载入对应 ROM(同一卡带)。
-   * 返回是否成功(状态损坏或格式不符时返回 false,不影响当前运行)。
+   * 返回是否成功调用读档接口;核心仍负责校验快照内容。
    */
   async loadState(state: SaveState): Promise<boolean> {
     if (!this.instance) return false
+    if (!state.byteLength) return false
+    const instance = this.instance
     try {
-      await this.instance.loadState(new Blob([state as BlobPart]))
+      await instance.loadState(new Blob([state as BlobPart]))
       return true
     } catch (err) {
       console.error('[NES] 读取存档失败', err)
       return false
+    } finally {
+      // RetroArch 读档会自行改变暂停状态,Nostalgist 的状态标记不会同步。
+      // 用明确命令恢复调用方期望的状态,避免下一次 PAUSE_TOGGLE 反而暂停游戏。
+      if (this.instance === instance) {
+        const module = instance.getEmscripten().Module
+        if (this.running) module._cmd_unpause()
+        else module._cmd_pause()
+      }
     }
   }
 

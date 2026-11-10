@@ -23,7 +23,7 @@
     "ios:init": "pnpm --filter @game-emulator/app run ios:init",
     "sync:versions": "node scripts/sync-versions.cjs",
     "sync:icons": "node scripts/sync-icons.cjs",
-    "debug:app": "cargo build --manifest-path apps/app/src-tauri/Cargo.toml"
+    "debug:app": "node scripts/debug-app.cjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

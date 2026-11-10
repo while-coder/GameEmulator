@@ -78,8 +78,8 @@ export class ArcadeRunner {
   }
   press(player:number,action:Action){this.instance?.pressDown({button:action,player:player+1})}
   release(player:number,action:Action){this.instance?.pressUp({button:action,player:player+1})}
-  pause(){if(this.instance&&!this.paused){this.instance.pause();this.paused=true}}
-  resume(){if(this.instance&&this.paused){this.instance.resume();this.paused=false}}
+  pause(){if(this.instance){this.instance.pause();this.instance.getEmscripten().Module._cmd_pause();this.paused=true}}
+  resume(){if(this.instance){this.instance.resume();this.instance.getEmscripten().Module._cmd_unpause();this.paused=false}}
   reset(){this.instance?.restart()}
   setMuted(value:boolean){
     this.desiredMute=value
@@ -92,7 +92,18 @@ export class ArcadeRunner {
   }
   async restore(state:Blob){
     if(!this.instance)throw new Error('请先启动游戏')
-    await this.instance.loadState(state)
+    if(!state.size)throw new Error('存档为空，无法读取')
+    const instance=this.instance
+    try{
+      await instance.loadState(state)
+    }finally{
+      // Loading can change RetroArch's pause state without updating Nostalgist.
+      if(this.instance===instance){
+        const module=instance.getEmscripten().Module
+        if(this.paused)module._cmd_pause()
+        else module._cmd_unpause()
+      }
+    }
   }
   dispose(){
     this.generation++

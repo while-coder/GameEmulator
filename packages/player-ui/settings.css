@@ -82,6 +82,7 @@
 .player-modal :is(.player-library, .player-saves) .store-tools {
   display: grid;
   flex-shrink: 0;
+  align-items: center;
   grid-template-columns: minmax(280px, 1fr) repeat(2, minmax(120px, 160px)) auto;
   gap: 10px;
   padding: 12px 18px;
@@ -91,6 +92,12 @@
 .player-modal :is(.player-library, .player-saves) .search-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .player-modal :is(.player-library, .player-saves) .search-tools > .s-input-wrap { flex: 1; min-width: 0; }
 .player-modal :is(.player-library, .player-saves) .search-tools .s-button { flex-shrink: 0; white-space: nowrap; }
+/* SInput wraps its input; size both layers alongside buttons and selects. */
+.player-modal :is(.player-library, .player-saves) .store-tools :is(.s-button, .s-input-wrap, .s-input, .remote-select, .check) {
+  box-sizing: border-box;
+  height: var(--player-control-height, 34px);
+  min-height: var(--player-control-height, 34px);
+}
 .player-modal :is(.player-library, .player-saves) .store-summary { display: flex; flex-shrink: 0; align-items: center; gap: 12px; min-height: 34px; padding: 8px 18px; border-bottom: 1px solid #30353d; color: #9da5b3; font-size: 12px; }
 .player-modal .player-saves .load-hint { flex-shrink: 0; margin: 0; padding: 6px 18px; font-size: 12px; line-height: 1.4; }
 .player-modal .player-saves .save-list { flex: 1; min-height: 0; overflow: auto; padding: 12px 18px 18px; }
