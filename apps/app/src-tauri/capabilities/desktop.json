@@ -1,10 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "desktop",
-  "description": "Desktop-only updater capability",
+  "description": "Desktop updater and native window fullscreen capability",
   "windows": ["main"],
   "platforms": ["linux", "macOS", "windows"],
   "permissions": [
-    "updater:default"
+    "updater:default",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-set-fullscreen"
   ]
 }

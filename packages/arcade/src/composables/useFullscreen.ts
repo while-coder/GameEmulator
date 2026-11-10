@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { inject, onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 
 // ===== 全屏:整个应用铺满,兼顾原生 Fullscreen API 与 CSS 伪全屏回退 =====
 // 目标元素通常是 App 根容器(工具栏+画面+footer),这样任何状态下 UI 都可操作、可退出。
@@ -28,6 +28,9 @@ export interface FullscreenApi {
 }
 
 export function useFullscreen(target: Ref<HTMLElement | null>): FullscreenApi {
+  const desktop = inject<FullscreenApi | null>('playerFullscreen', null)
+  if (desktop) return desktop
+
   const isFullscreen = ref(false)
   // 原生 API 是否可用:SSR 期先假定可用,onMounted 时按目标元素探测修正。
   const usePseudo = ref(false)

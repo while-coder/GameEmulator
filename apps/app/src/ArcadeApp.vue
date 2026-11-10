@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { invoke } from '@tauri-apps/api/core'
 import { ArcadeView } from '@game-emulator/arcade'
+import { provideDesktopFullscreen } from './useDesktopFullscreen'
+provideDesktopFullscreen()
 const child = new URLSearchParams(location.search).has('child')
 async function leave() {
   if (child) await invoke('close_emulator')

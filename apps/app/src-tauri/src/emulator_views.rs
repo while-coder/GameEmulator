@@ -73,6 +73,7 @@ pub async fn close_emulator(app: AppHandle, caller: Webview) -> Result<(), Strin
         let state = app.state::<EmulatorViews>();
         let _guard = state.0.lock().map_err(|e| e.to_string())?;
         let main = app.get_webview("main").ok_or("主视图不存在")?;
+        main.window().set_fullscreen(false).map_err(|e| e.to_string())?;
         main.show().map_err(|e| e.to_string())?;
         for label in ["emulator-nes", "emulator-arcade"] {
             if let Some(view) = app.get_webview(label) {
