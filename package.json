@@ -14,6 +14,7 @@
     "build:android-tv:release": "pnpm --filter @game-emulator/android-tv run build:release",
     "android-tv:install": "pnpm --filter @game-emulator/android-tv run install:device",
     "test:android-tv": "pnpm --filter @game-emulator/android-tv run test",
+    "test:remote-navigation": "node --test scripts/remote-navigation.test.cjs",
     "android:init": "pnpm --filter @game-emulator/app run android:init",
     "android:dev": "pnpm --filter @game-emulator/app run android:dev",
     "android:build": "pnpm --filter @game-emulator/app run android:build",

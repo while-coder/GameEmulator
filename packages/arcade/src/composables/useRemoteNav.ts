@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { GAMEPAD_AXIS_THRESHOLD } from '../emulator/settings'
+import { createNavigationRepeatGuard, finishTextEditing, focusNavigationElement, isTextEntry, isTextNavigationIdle, pickNeighbor, resumeTextEditing } from '../../../player-ui/remoteNavigation'
 
 // ===== Android TV 遥控器 / 手柄的统一 UI 焦点导航 =====
 // 几何空间导航:DPAD 方向上,在容器内的可聚焦元素中按真实矩形找最近邻并 .focus()。
@@ -106,41 +107,6 @@ function focusableIn(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(isFocusable)
 }
 
-/** 几何最近邻:在 dir 方向的候选中,按主轴距离 + 副轴错位(同行/同列加权)取最小。 */
-function pickNeighbor(from: DOMRect, cands: HTMLElement[], dir: Dir): HTMLElement | null {
-  const fromCx = from.left + from.width / 2
-  const fromCy = from.top + from.height / 2
-  let best: HTMLElement | null = null
-  let bestCost = Infinity
-  for (const el of cands) {
-    const r = el.getBoundingClientRect()
-    const cx = r.left + r.width / 2
-    const cy = r.top + r.height / 2
-    let main: number // 主轴(必须为正,即确实在该方向)
-    let off: number // 副轴错位
-    let overlap: boolean // 副轴是否有投影重叠(同行/同列)
-    if (dir === 'up' || dir === 'down') {
-      main = dir === 'up' ? fromCy - cy : cy - fromCy
-      off = Math.abs(cx - fromCx)
-      overlap = r.left < from.right && r.right > from.left
-    } else {
-      main = dir === 'left' ? fromCx - cx : cx - fromCx
-      off = Math.abs(cy - fromCy)
-      overlap = r.top < from.bottom && r.bottom > from.top
-    }
-    if (main <= 1) continue // 不在该方向(含自身)
-    // 非重叠的副轴错位惩罚只比重叠略高(0.5 vs 0.3),而不是 2x:
-    // 否则当源宽(如搜索框)而目标的可聚焦按钮偏右侧时,远处但水平重叠的元素(如居中的翻页按钮)
-    // 会击败近邻一行的按钮(卡片操作按钮),DPad 跳到不直观的远处。
-    const cost = main + (overlap ? off * 0.3 : off * 0.5)
-    if (cost < bestCost) {
-      bestCost = cost
-      best = el
-    }
-  }
-  return best
-}
-
 /** 原生控件在 DPAD 左右键下的调值;消费返回 true(不再移动焦点)。 */
 function adjustControl(el: HTMLElement, dir: 'left' | 'right'): boolean {
   const delta = dir === 'right' ? 1 : -1
@@ -167,19 +133,8 @@ function activate(el: HTMLElement): void {
     el.dispatchEvent(new Event('change', { bubbles: true }))
     return
   }
+  if (isTextEntry(el)) resumeTextEditing(el)
   el.click()
-}
-
-/** 焦点是否落在文本输入上(左右键、退格让位原生编辑/光标)。 */
-function isTextEntry(el: Element | null): boolean {
-  if (!(el instanceof HTMLElement)) return false
-  if (el.isContentEditable) return true
-  if (el instanceof HTMLTextAreaElement) return true
-  if (el instanceof HTMLInputElement) {
-    const t = el.type
-    return t === 'text' || t === 'search' || t === 'number' || t === 'password' || t === 'email' || t === 'url'
-  }
-  return false
 }
 
 /** 是否多行文本输入(textarea / contenteditable):此时上下键也是光标移动,不参与导航。 */
@@ -241,13 +196,15 @@ function pollPads(): void {
   padPrev.back = back
 }
 
+const allowNavigationRepeat = createNavigationRepeatGuard()
+
 function onKeyDown(e: KeyboardEvent): void {
   const top = topInstance()
   if (!top) return
   const active = document.activeElement
   // 单行文本框(search/text/...)只挡住左右(光标)、退格、回车;上下让位给导航,否则 TV 上焦点会卡在输入框/select 里。
-  const typing = isTextEntry(active)
-  const multilineTyping = isMultilineTextEntry(active)
+  const typing = isTextEntry(active) && !isTextNavigationIdle(active)
+  const multilineTyping = typing && isMultilineTextEntry(active)
 
   // OK/确定键:各家 TV/机顶盒遥控器键值不统一 —— 标准 Enter,部分设备报 'Select'/'Accept',
   // Android DPAD_CENTER 常为 keyCode 23(WebView 里 e.key 未必是 'Enter')。统一在此识别,
@@ -263,22 +220,22 @@ function onKeyDown(e: KeyboardEvent): void {
     case 'ArrowUp':
       if (multilineTyping) return
       e.preventDefault()
-      top.move('up')
+      if (allowNavigationRepeat(e)) top.move('up')
       return
     case 'ArrowDown':
       if (multilineTyping) return
       e.preventDefault()
-      top.move('down')
+      if (allowNavigationRepeat(e)) top.move('down')
       return
     case 'ArrowLeft':
       if (typing) return
       e.preventDefault()
-      top.move('left')
+      if (allowNavigationRepeat(e)) top.move('left')
       return
     case 'ArrowRight':
       if (typing) return
       e.preventDefault()
-      top.move('right')
+      if (allowNavigationRepeat(e)) top.move('right')
       return
     case 'Escape':
     case 'Backspace':
@@ -291,6 +248,10 @@ function onKeyDown(e: KeyboardEvent): void {
   }
 }
 
+function onTextInputDismissed(event: Event): void {
+  if (topInstance() && navEnabled.value && finishTextEditing()) event.preventDefault()
+}
+
 function ensureGlobalListeners(): void {
   if (listening) return
   if (typeof window === 'undefined') return
@@ -298,6 +259,7 @@ function ensureGlobalListeners(): void {
   // 用 capture 阶段:在元素默认行为(<select> 上下切选项 / 文本框光标移动)之前 preventDefault,
   // 否则即便我们调用了 move() 把焦点移走,select 的选项也已经被切到下一项,左右键调值会"双重生效"。
   window.addEventListener('keydown', onKeyDown, true)
+  window.addEventListener('tv-text-input-dismissed', onTextInputDismissed)
   rafId = requestAnimationFrame(pollPads)
 }
 
@@ -307,6 +269,7 @@ function teardownGlobalListeners(): void {
   if (instances.length > 0) return
   listening = false
   window.removeEventListener('keydown', onKeyDown, true)
+  window.removeEventListener('tv-text-input-dismissed', onTextInputDismissed)
   if (rafId) cancelAnimationFrame(rafId)
   rafId = 0
 }
@@ -326,14 +289,12 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
     if (cands.length === 0) return
     const current = active instanceof HTMLElement && container.contains(active) ? active : null
     if (!current) {
-      cands[0].focus()
-      cands[0].scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      focusNavigationElement(cands[0])
       return
     }
     const next = pickNeighbor(current.getBoundingClientRect(), cands, dir)
     if (next) {
-      next.focus()
-      next.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      focusNavigationElement(next)
     }
   }
 
@@ -346,13 +307,13 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
   }
 
   function back(): void {
+    if (finishTextEditing()) return
     opts.onBack?.()
   }
 
   function focusElement(el: HTMLElement | null): void {
     if (el && isFocusable(el)) {
-      el.focus()
-      el.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      focusNavigationElement(el)
     }
   }
 

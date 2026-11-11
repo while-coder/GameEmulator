@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { finishTextEditing } from '../../../player-ui/remoteNavigation'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
@@ -98,6 +99,11 @@ function resetTouchLayout() {
   if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
+  if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    return
+  }
   if (event.code === 'Escape' && event.target instanceof Element && event.target.closest('.rs-popup')) return
   if (event.code !== 'Escape' && event.code !== 'F11') return
   event.preventDefault()

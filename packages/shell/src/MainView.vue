@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { emulators, type EmulatorId } from './registry'
 import { appName } from './branding'
 import '../../player-ui/interaction.css'
+import { createNavigationRepeatGuard, focusNavigationElement, pickNeighbor, type NavigationDirection } from '../../player-ui/remoteNavigation'
 
 const props = withDefaults(defineProps<{ launch: (id: EmulatorId) => Promise<void>; active?: boolean }>(), { active: true })
 const busy = ref(false)
@@ -17,27 +18,34 @@ async function enter(id: EmulatorId) {
   catch (err) { error.value = err instanceof Error ? err.message : String(err) }
   finally { busy.value = false }
 }
-function focusCard() { cards.value[focusedIndex]?.focus() }
-function moveFocus(step: number) {
-  const current = cards.value.findIndex(card => card === document.activeElement)
-  focusedIndex = current < 0 ? 0 : (current + step + cards.value.length) % cards.value.length
-  focusCard()
+function focusCard() {
+  const card = cards.value[focusedIndex]
+  if (card && !card.disabled) focusNavigationElement(card)
 }
+function moveFocus(dir: NavigationDirection) {
+  const current = cards.value.find(card => card === document.activeElement)
+  if (!current) { focusCard(); return }
+  const next = pickNeighbor(current.getBoundingClientRect(), cards.value.filter(card => !card.disabled), dir)
+  if (next) focusNavigationElement(next)
+}
+const allowNavigationRepeat = createNavigationRepeatGuard()
 function onKey(event: KeyboardEvent) {
-  if (props.active === false) return
+  if (props.active === false || busy.value || event.defaultPrevented) return
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
     event.preventDefault()
-    moveFocus(event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1)
+    if (allowNavigationRepeat(event)) moveFocus(event.key.slice(5).toLowerCase() as NavigationDirection)
   }
 }
 let raf = 0
 let pressed = false
-let direction = 0
+let direction: NavigationDirection | null = null
 function pollGamepads() {
   const pads = Array.from(navigator.getGamepads?.() ?? [])
   const down = pads.some((pad) => pad?.buttons[0]?.pressed)
-  const nextDirection = pads.some(pad => pad && (pad.buttons[15]?.pressed || pad.buttons[13]?.pressed || (pad.axes[0] ?? 0) > .5 || (pad.axes[1] ?? 0) > .5)) ? 1
-    : pads.some(pad => pad && (pad.buttons[14]?.pressed || pad.buttons[12]?.pressed || (pad.axes[0] ?? 0) < -.5 || (pad.axes[1] ?? 0) < -.5)) ? -1 : 0
+  const nextDirection: NavigationDirection | null = pads.some(pad => pad && (pad.buttons[15]?.pressed || (pad.axes[0] ?? 0) > .5)) ? 'right'
+    : pads.some(pad => pad && (pad.buttons[14]?.pressed || (pad.axes[0] ?? 0) < -.5)) ? 'left'
+    : pads.some(pad => pad && (pad.buttons[13]?.pressed || (pad.axes[1] ?? 0) > .5)) ? 'down'
+    : pads.some(pad => pad && (pad.buttons[12]?.pressed || (pad.axes[1] ?? 0) < -.5)) ? 'up' : null
   if (props.active !== false && !document.hidden && !busy.value) {
     if (down && !pressed) {
       if (cards.value.some(card => card === document.activeElement)) (document.activeElement as HTMLButtonElement).click()

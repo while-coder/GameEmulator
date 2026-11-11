@@ -14,6 +14,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import org.json.JSONObject
 import org.mozilla.geckoview.AllowOrDeny
 import org.mozilla.geckoview.GeckoResult
@@ -59,6 +61,16 @@ class MainActivity : ComponentActivity() {
         }
         view = GeckoView(this)
         setContentView(view)
+        // BACK may be consumed by the IME before the Activity sees it.
+        var imeWasVisible = false
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val visible = insets.isVisible(WindowInsetsCompat.Type.ime())
+            if (imeWasVisible && !visible) {
+                port?.postMessage(JSONObject().put("type", "imeHidden"))
+            }
+            imeWasVisible = visible
+            insets
+        }
         session = GeckoSession()
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny> {

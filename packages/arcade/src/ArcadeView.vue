@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { finishTextEditing } from '../../player-ui/remoteNavigation'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import fbaLicense from './assets/cores/FBA-LICENSE.txt?raw'
 import retroarchLicense from './assets/cores/RETROARCH-COPYING.txt?raw'
@@ -155,6 +156,11 @@ function nativeBack(): 'handled'{
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
+  if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    return
+  }
   if(event.code==='Escape'&&event.target instanceof Element&&event.target.closest('.rs-popup'))return
   const saveKey=!event.shiftKey&&!event.altKey&&!event.metaKey&&((event.ctrlKey&&event.code==='KeyS')||(!event.ctrlKey&&event.code==='F8'))
   const loadKey=!event.ctrlKey&&!event.shiftKey&&!event.altKey&&!event.metaKey&&event.code==='F9'
