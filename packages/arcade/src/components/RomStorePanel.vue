@@ -11,9 +11,12 @@ import type { Archive } from '../store/library'
 import type { DependencyProgress } from '../store/dependencies'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
+import { usePlayHistory } from '../../../player-ui/usePlayHistory'
+import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
 type RomEntry = CatalogGame & { local?: Archive; catalog?: ArcadeCatalog }
 const props = defineProps<{
+  active?: boolean
   archives: Archive[]
   busy: boolean
   progress: DependencyProgress | null
@@ -67,13 +70,16 @@ const genreOptions = computed(() => [
   { value: '', label: '全部类型' },
   ...[...new Set(libraryGames.value.map(g => g.genre).filter((g): g is string => !!g))].sort().map(value => ({ value, label: value })),
 ])
-type SortMode = 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
+const { history } = usePlayHistory('arcade')
+
+type SortMode = 'recent' | 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: 'default', label: '默认排序' }, { value: 'name-asc', label: '名称 A→Z' },
+  { value: 'recent', label: '最近游玩' },
+  { value: 'default', label: '目录顺序' }, { value: 'name-asc', label: '名称 A→Z' },
   { value: 'name-desc', label: '名称 Z→A' }, { value: 'size-asc', label: '体积 小→大' },
   { value: 'size-desc', label: '体积 大→小' }, { value: 'publisher', label: '按厂商' },
 ]
-const sort = ref<SortMode>('default'), page = ref(1)
+const sort = ref<SortMode>('recent'), page = ref(1)
 const PAGE_SIZE = 50
 const sortedMatched = computed(() => {
   const q = query.value.trim().toLocaleLowerCase()
@@ -83,6 +89,7 @@ const sortedMatched = computed(() => {
     (!q || [game.name, game.name_en, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])].join(' ').toLocaleLowerCase().includes(q)),
   )
   const name = (g: RomEntry) => g.name || g.file_name
+  if (sort.value === 'recent') return sortRecentlyPlayed(games, romKey, history.value)
   switch (sort.value) {
     case 'name-asc': return games.sort((a, b) => name(a).localeCompare(name(b), 'zh-Hans-CN'))
     case 'name-desc': return games.sort((a, b) => name(b).localeCompare(name(a), 'zh-Hans-CN'))
@@ -99,6 +106,7 @@ const pageEnd = computed(() => Math.min(pageStart.value + PAGE_SIZE, totalCount.
 const visibleGames = computed(() => sortedMatched.value.slice(pageStart.value, pageEnd.value))
 watch([query, genre, sort, downloadedOnly], () => { page.value = 1 })
 watch(totalPages, value => { page.value = Math.min(page.value, value) })
+watch(() => props.active, active => { if (active && sort.value === 'recent') page.value = 1 })
 function goPage(target: number) { page.value = Math.max(1, Math.min(target, totalPages.value)) }
 async function act(game: RomEntry, action: () => Promise<void>) {
   if (props.busy || busyKey.value) return
@@ -133,9 +141,9 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
         <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedKeys.size }})</SCheckbox>
       </div>
 
-      <div class="store-summary">
+      <div v-if="catalogLoading || error" class="store-summary">
         <SButton v-if="error" :disabled="busy || catalogLoading" @click="refreshCatalog">重试目录</SButton>
-        <span>{{ catalogLoading ? '正在同步目录 · ' : '' }}匹配 {{ totalCount }} 个{{ totalCount ? `，显示第 ${pageStart + 1}-${pageEnd} 个` : '' }}</span>
+        <span v-if="catalogLoading" role="status">正在加载游戏目录…</span>
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
 
@@ -145,7 +153,7 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
           :key="romKey(game)"
           class="game-card"
         >
-          <button class="game-launch" :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <button class="game-launch" :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :title="`${game.name || game.file_name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
           <GamePreview :game-key="romKey(game)" :name="game.name || game.file_name" :system="game.system || 'ARCADE'" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
@@ -154,10 +162,11 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
               <h3>{{ game.name || game.file_name }}</h3>
 
             </div>
-            <p class="meta">{{ metaLine(game) }}</p>
-            <div v-if="game.tags?.length" class="tags">
-              <STag v-for="tag in game.tags.slice(0, 2)" :key="tag" size="small">{{ tag }}</STag>
-            </div>
+            <p v-if="game.genre || history[romKey(game)]?.totalPlayTimeMs" class="meta game-play-meta">
+              <span>{{ game.genre }}</span>
+              <span v-if="history[romKey(game)]?.totalPlayTimeMs" class="play-time">已玩 {{ formatPlayTime(history[romKey(game)].totalPlayTimeMs) }}</span>
+            </p>
+
           </div>
 
           <div v-if="busyKey === romKey(game) || game.local" class="game-actions">
@@ -166,11 +175,13 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
             </span>
             <SButton
               v-if="game.local"
-              class="btn"
+              class="btn cache-remove"
+              title="移除下载缓存"
+              :aria-label="`移除 ${game.name || game.file_name} 的下载缓存`"
               :disabled="busy || busyKey !== null"
               @click.stop="removeCached(game)"
             >
-              删除
+              ×
             </SButton>
           </div>
         </article>
@@ -178,12 +189,15 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
         <SEmpty v-if="visibleGames.length === 0" class="empty" :description="catalogLoading ? '正在加载 ROM 目录…' : '没有匹配的 ROM'" />
       </div>
 
-      <div v-if="totalPages > 1" class="store-pager">
-        <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(1)">« 首页</SButton>
-        <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(page - 1)">上一页</SButton>
-        <span class="page-info">{{ page }} / {{ totalPages }}</span>
-        <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(page + 1)">下一页</SButton>
-        <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(totalPages)">末页 »</SButton>
+      <div class="store-pager">
+        <span class="library-count" aria-live="polite">显示 {{ totalCount ? pageStart + 1 : 0 }}–{{ pageEnd }} / 共 {{ totalCount }} 款</span>
+        <nav v-if="totalPages > 1" class="pager-controls" aria-label="游戏库分页">
+          <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(1)">首页</SButton>
+          <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(page - 1)">上一页</SButton>
+          <span class="page-info" aria-label="当前页">{{ page }} / {{ totalPages }}</span>
+          <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(page + 1)">下一页</SButton>
+          <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(totalPages)">尾页</SButton>
+        </nav>
       </div>
   </section>
 </template>
@@ -201,7 +215,6 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 }
 .store-tools {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(120px, 170px) minmax(120px, 170px);
   gap: 10px;
   padding: 12px 18px;
   border-bottom: 1px solid #30353d;
@@ -378,9 +391,6 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 }
 
 @media (max-width: 720px) {
-  .store-tools {
-    grid-template-columns: 1fr;
-  }
   .store-summary {
     align-items: flex-start;
     flex-direction: column;
@@ -404,7 +414,6 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
   .store-tools {
     padding: 6px 12px;
     gap: 6px;
-    grid-template-columns: minmax(120px, 1fr) minmax(80px, 130px) minmax(80px, 130px);
   }
   .search,
   .select {
@@ -467,28 +476,10 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 </style>
 
 <style scoped>
-.store-tools { grid-template-columns: minmax(140px, 1fr) repeat(2, minmax(120px, 160px)) auto; }
-.check { gap: 8px; white-space: nowrap; }
-@media (max-width: 720px) {
-  .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .search { grid-column: 1 / -1; }
-}
 @media (orientation: landscape) and (max-height: 540px) {
-  .store-tools {
-    flex-shrink: 0;
-    grid-template-columns: minmax(100px, 1fr) minmax(90px, 120px) minmax(100px, 130px) auto;
-    padding: 4px 12px;
-    gap: 6px;
-  }
-  .search { grid-column: auto; }
-  .check { height: 44px; }
   .store-summary { flex-shrink: 0; }
   .store-pager { padding: 4px 12px; }
   .game-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
-}
-@media (orientation: landscape) and (max-height: 540px) and (max-width: 640px) {
-  .store-tools { grid-template-columns: minmax(0, 1fr) minmax(90px, 110px); }
-  .search { grid-column: auto; }
 }
 </style>
 

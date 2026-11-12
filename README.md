@@ -35,3 +35,7 @@ Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自
 游戏库优先显示目录中的 `screenshot_url`，否则根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图；截图按需加载。执行 `node scripts/sync-game-screenshots.cjs` 可根据本地 `games/*/catalog.json` 更新截图映射（需要联网）。
 
 游戏目录的 `download_url` 可保存相对于 `rom_url_base` 的路径（例如 `2020bb.zip`），游戏和依赖文件在读取目录时统一解析为完整地址；旧的完整 URL 仍然兼容。未指定 `rom_url_base` 时，相对路径按 `catalog.json` 所在目录解析。
+
+NES / FC 与街机（含 Neo Geo）使用一致的存档方式：暂停菜单「保存进度」或存档页「新建存档」会新增普通存档，可保留多份、重命名和单独删除；Ctrl+S / F8 覆盖本游戏、当前内核的快速存档，F9 仅读取快速存档。旧街机存档按快速存档保留，原生与 WASM 存档仍分别保存并校验兼容性。
+
+游戏库默认按「最近游玩」排序，并在卡片显示累计游玩时长。仅成功启动后记录历史，暂停、设置和后台时间不计入；返回游戏库、切换游戏或退出时保存，游玩中每 15 秒更新一次。记录独立于 ROM 缓存，删除下载缓存后仍保留；排序菜单也可切换回目录顺序。

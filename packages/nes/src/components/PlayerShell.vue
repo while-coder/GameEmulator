@@ -2,6 +2,7 @@
 import { finishTextEditing } from '../../../player-ui/remoteNavigation'
 import { useSettingsTab } from '../../../player-ui/useSettingsTab'
 import PauseMenu from '../../../player-ui/PauseMenu.vue'
+import { usePlaySession } from '../../../player-ui/usePlayHistory'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
@@ -56,6 +57,7 @@ const fullscreenRoot = computed(() => appRef.value?.ownerDocument.documentElemen
 const { isFullscreen, usePseudo, toggle: toggleFullscreen, exit: exitFullscreen } = useFullscreen(fullscreenRoot)
 const romName = ref<string | null>(null)
 const romKey = ref<string | null>(null)
+const playingRomKey = ref<string | null>(null)
 const audioOn = ref(true)
 const loading = ref(false)
 const paused = ref(false)
@@ -127,6 +129,11 @@ function resetTouchLayout() {
   if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
+  if (event.code === 'Escape' && settingsModal.value?.cancelRename?.()) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    return
+  }
   if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -157,6 +164,8 @@ let exitHintTimer: ReturnType<typeof setTimeout> | null = null
 const inputLocked = computed(
   () => settingsOpen.value || pauseOpen.value || layoutEditing.value || leaving.value,
 )
+
+usePlaySession('nes', playingRomKey, computed(() => !!playingRomKey.value && !inputLocked.value && !paused.value && !loading.value))
 
 const toolbarRef = ref<HTMLElement | null>(null)
 useRemoteNav({
@@ -189,8 +198,10 @@ const shellClasses = computed(() => ({
 
 async function loadRomBytes(name: string, bytes: Uint8Array, key: string) {
   loading.value = true
+  playingRomKey.value = null
   try {
     await screen.value?.loadRom(bytes)
+    playingRomKey.value = key
     romName.value = name
     romKey.value = key
     paused.value = false
@@ -226,10 +237,12 @@ async function onLoadSave(payload: {
   romKey: string
   name: string
   state: SaveState
+  coreBuild?: string
   bytes?: Uint8Array
 }) {
   try {
     leaveError.value = ''
+    if (payload.coreBuild !== screen.value?.getSaveNamespace()) throw new Error('此存档不属于当前 NES 核心版本，原存档已保留')
     if (payload.bytes) {
       await loadRomBytes(payload.name, payload.bytes, payload.romKey)
     }
@@ -244,6 +257,7 @@ async function onLoadSave(payload: {
 }
 
 function stopRom() {
+  playingRomKey.value = null
   screen.value?.stop()
   romName.value = null
   romKey.value = null
@@ -273,6 +287,7 @@ function handleBack(): BackResult {
     return 'handled'
   }
   if (settingsOpen.value) {
+    if (settingsModal.value?.cancelRename?.()) return 'handled'
     settingsOpen.value = false
     return 'handled'
   }
@@ -330,16 +345,14 @@ onBeforeUnmount(() => {
     :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName && !layoutEditing }]"
   >
     <header v-show="libraryVisible || layoutEditing" ref="toolbarRef" class="player-toolbar" aria-label="游戏功能区">
-      <SButton v-if="enableBackExit" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="leaveEmulator">返回模拟器列表</SButton>
+      <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="leaveEmulator">‹ 返回</SButton>
       <span class="player-title">{{ title }}</span>
       <span class="library-header-line" aria-hidden="true"></span>
       <SButton title="打开设置 (Esc)" :disabled="libraryBusy" @click="openMenu">⚙ 设置</SButton>
     </header>
     <section v-show="libraryVisible" class="library-browser" aria-label="游戏库">
-      <div class="library-heading"><span>选择游戏，自动下载并开始游玩</span></div>
       <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
       <RomStorePanel ref="libraryPanel" v-model:open="libraryOpen" :launch="launchGame" />
-      <div class="library-help">方向键 / 手柄选择 · 确认开始 <span>Esc 菜单 · F11 全屏</span></div>
     </section>
     <SettingsModal
       ref="settingsModal"

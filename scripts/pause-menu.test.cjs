@@ -19,7 +19,7 @@ function shell(kind) {
     settingsTab: ref('audio'), tab: ref('audio'), saveMessage: ref(''),
     busy: ref(false), leaving: ref(false), creatingSave: ref(false), loading: ref(false),
     libraryBusy: ref(false), settingsModal: ref(null), layoutEditing: ref(false),
-    navEnabled: ref(false), capturing: ref(null), Element: class {},
+    navEnabled: ref(false), capturing: ref(null), editingKey: ref(null), Element: class {},
   }
   runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context)
   const press = () => {

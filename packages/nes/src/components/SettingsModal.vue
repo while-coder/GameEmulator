@@ -40,7 +40,7 @@ const emit = defineEmits<{
 }>()
 const savePanel = ref<InstanceType<typeof SaveStatePanel> | null>(null)
 const busy = computed(() => savePanel.value?.busyKey != null)
-defineExpose({ busy, refreshSaves: () => savePanel.value?.refreshCreatedSave() })
+defineExpose({ busy, cancelRename: () => savePanel.value?.cancelRename() ?? false, refreshSaves: () => savePanel.value?.refreshCreatedSave() })
 const savesOpen = computed({ get: () => open.value && tab.value === 'saves', set: (v) => { if (!v) open.value = false } })
 
 watch(tab, () => {

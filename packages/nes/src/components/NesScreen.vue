@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Button, createNesRunner, type NesRunnerApi, type SaveState } from '../emulator/runner'
 import TouchControls from './TouchControls.vue'
+import { nextSaveLabel } from '../../../shared/saveSlots'
 import {
   createSaveState,
   getSaveState,
@@ -115,8 +116,8 @@ async function doQuickNewSave(): Promise<boolean> {
       return false
     }
     const list = await listSaveStates(props.romKey)
-    const count = list.filter((r) => r.kind === 'normal' || (!r.kind && r.slot !== QUICK_SLOT)).length
-    await createSaveState(props.romKey, props.romName ?? props.romKey, `存档 ${count + 1}`, state, runner.saveNamespace)
+    const label = nextSaveLabel(list.filter(record => record.coreBuild === runner?.saveNamespace))
+    await createSaveState(props.romKey, props.romName ?? props.romKey, label, state, runner.saveNamespace)
     showToast('已新建存档')
     return true
   } catch (err) {
@@ -553,6 +554,7 @@ defineExpose({
   quickLoad,
   quickNewSave,
   captureState,
+  getSaveNamespace: () => runner?.saveNamespace,
   applyState,
 })
 </script>

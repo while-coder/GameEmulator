@@ -1,4 +1,6 @@
 import type { ArcadeCatalog } from './catalog'
+import { newSaveSlot, saveKindOf, type SaveKind } from '../../../shared/saveSlots'
+export { saveKindOf } from '../../../shared/saveSlots'
 
 export const CORE_BUILD = 'fbalpha2012-retroarch-1.22.2-a19485f4'
 interface CachedCatalog { url: string; catalog: ArcadeCatalog }
@@ -18,6 +20,9 @@ export interface Archive {
 type StoredArchive = Omit<Archive, 'file'> & { file: ArrayBuffer | Blob }
 export interface Snapshot {
   key: string
+  kind?: SaveKind
+  label?: string
+  bundleKey?: string
   gameName: string
   gameHash: string
   dependencies: {name:string;hash:string}[]
@@ -71,12 +76,31 @@ export async function listArchives(): Promise<Archive[]> {
 }
 export async function listSnapshots(): Promise<Snapshot[]> {
   const snapshots = await read<Snapshot[]>('saves')
-  const latest = new Map<string, Snapshot>()
-  for (const snapshot of snapshots.sort((a,b)=>b.savedAt-a.savedAt)) {
-    const group = `${snapshot.coreBuild}:${snapshot.gameHash}`
-    if (!latest.has(group)) latest.set(group, snapshot)
+  const quickGroups = new Set<string>()
+  return snapshots.sort((a,b)=>b.savedAt-a.savedAt).filter(snapshot=>{
+    if(saveKindOf(snapshot)==='normal')return true
+    const group=`${snapshot.coreBuild}:${snapshot.gameHash}`
+    if(quickGroups.has(group))return false
+    quickGroups.add(group)
+    return true
+  })
+}
+export function snapshotBundleKey(snapshot: Snapshot): string {
+  return snapshot.bundleKey ?? snapshot.key
+}
+export async function createSnapshot(snapshot: Snapshot, label: string): Promise<Snapshot> {
+  const record: Snapshot = { ...snapshot, key: `${snapshotBundleKey(snapshot)}:${newSaveSlot()}`, bundleKey: snapshotBundleKey(snapshot), kind: 'normal', label }
+  await putSnapshot(record)
+  return record
+}
+export async function renameSnapshot(key: string, label: string): Promise<void> {
+  const d=await db(),tx=d.transaction('saves','readwrite'),completion=done(tx)
+  const store=tx.objectStore('saves'),request=store.getAll()
+  request.onsuccess=()=>{
+    const selected=(request.result as Snapshot[]).find(snapshot=>snapshot.key===key)
+    if(selected)store.put({...selected,label})
   }
-  return [...latest.values()]
+  await completion
 }
 export const removeArchive=(id:string)=>write('archives',id,true)
 export async function removeSnapshot(key: string): Promise<void> {
@@ -86,7 +110,7 @@ export async function removeSnapshot(key: string): Promise<void> {
     const snapshots=request.result as Snapshot[]
     const selected=snapshots.find(snapshot=>snapshot.key===key)
     for(const snapshot of snapshots) {
-      if(snapshot.key===key||selected&&snapshot.gameHash===selected.gameHash&&snapshot.coreBuild===selected.coreBuild)store.delete(snapshot.key)
+      if(snapshot.key===key||selected&&saveKindOf(selected)==='quick'&&saveKindOf(snapshot)==='quick'&&snapshot.gameHash===selected.gameHash&&snapshot.coreBuild===selected.coreBuild)store.delete(snapshot.key)
     }
   }
   await completion
@@ -103,7 +127,7 @@ export async function putSnapshot(snapshot: Snapshot): Promise<void> {
   const request=store.getAll()
   request.onsuccess=()=>{
     for(const previous of request.result as Snapshot[]) {
-      if(previous.gameHash===snapshot.gameHash&&previous.coreBuild===snapshot.coreBuild)store.delete(previous.key)
+      if(saveKindOf(snapshot)==='quick'&&saveKindOf(previous)==='quick'&&previous.gameHash===snapshot.gameHash&&previous.coreBuild===snapshot.coreBuild)store.delete(previous.key)
     }
     store.put(snapshot)
   }

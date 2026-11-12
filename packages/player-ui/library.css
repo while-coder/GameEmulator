@@ -10,18 +10,38 @@
   color: var(--library-text);
   padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
 }
-:is(.app, .arcade-app).library-home .player-toolbar { padding: 12px 0 20px; background: transparent; border: 0; gap: 16px; }
-:is(.app, .arcade-app).library-home .player-title { flex-shrink: 0; color: var(--library-text); font-size: clamp(20px, 2.5vw, 32px); font-weight: 700; margin: 0; }
+:is(.app, .arcade-app).library-home .player-toolbar { padding: 6px 0 10px; background: transparent; border: 0; gap: 12px; }
+:is(.app, .arcade-app).library-home .player-title { flex-shrink: 0; color: var(--library-text); font-size: clamp(18px, 2vw, 24px); font-weight: 700; margin: 0; }
 .library-header-line { flex: 1; height: 1px; background: #353a43; }
 :is(.app, .arcade-app).library-home .s-button { background: #282c33; color: #d9dde5; border-color: #414751; font-weight: 500; }
 :is(.app, .arcade-app).library-home .s-button:hover:not(:disabled) { background: #333a45; border-color: #65758a; }
 .library-home :is(button, input, [tabindex]):focus-visible { outline: 3px solid var(--library-accent); outline-offset: 3px; }
 .library-browser { display: flex; flex: 1; flex-direction: column; min-height: 0; }
-.library-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 16px; padding: 8px 0 14px; border-bottom: 1px solid var(--library-border); color: var(--library-text); }
-.library-heading > span { color: var(--library-muted); font-size: 13px; }
 :is(.app, .arcade-app).library-home .store-panel { background: transparent; color: var(--library-text); }
-:is(.app, .arcade-app).library-home .store-tools { padding: 16px 4px; border-color: var(--library-border); }
-.library-home .store-tools { --library-control-height: 44px; align-items: center; }
+:is(.app, .arcade-app).library-home .store-tools { padding: 2px 4px 6px; border-color: var(--library-border); }
+/* One toolbar grid for both systems, including the library inside settings. */
+.player-library.store-panel .store-tools {
+  display: grid;
+  flex-shrink: 0;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(120px, 160px)) auto;
+  gap: 10px;
+}
+.player-library .store-tools .search-tools { grid-column: auto; }
+@media (max-width: 720px) {
+  .player-library.store-panel .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; gap: 6px; }
+  .player-library .store-tools .search-tools { grid-column: 1 / -1; }
+}
+@media (orientation: landscape) and (max-height: 540px) and (min-width: 761px) {
+  .player-library.store-panel .store-tools { grid-template-columns: minmax(0, 1fr) minmax(90px, 120px) minmax(100px, 130px) auto; gap: 6px; }
+  .player-library .store-tools .search-tools { grid-column: auto; }
+}
+@media (orientation: landscape) and (max-height: 540px) and (max-width: 760px) {
+  .player-library.store-panel .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; gap: 6px; }
+  .player-library .store-tools .search-tools { grid-column: 1 / -1; }
+}
+.player-library .store-tools .search-tools .search { width: 100%; }
+.library-home .store-tools { --library-control-height: 36px; }
 .library-home .store-tools .search-tools { display: flex; align-items: center; min-width: 0; }
 .library-home .store-tools .search-tools > .s-input-wrap { flex: 1; min-width: 0; }
 .library-home .store-tools :is(.s-input-wrap, .s-input, .remote-select, .check) {
@@ -34,9 +54,9 @@
 .library-home input { color: var(--library-text); }
 .library-home input::placeholder { color: #8d96a4; }
 .library-home :is(.check, .store-summary, .page-info) { color: var(--library-muted); }
-:is(.app, .arcade-app).library-home .store-summary { padding: 10px 4px; border-color: var(--library-border); }
-:is(.app, .arcade-app).library-home .game-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: start; gap: 20px 18px; padding: 8px 5px 24px; }
-:is(.app, .arcade-app).library-home .game-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin: 0; padding: 12px; border: 1px solid #3a404a; border-radius: 12px; background: #252930; box-shadow: 0 3px 10px #0002; }
+:is(.app, .arcade-app).library-home .store-summary { padding: 6px 4px; border-color: var(--library-border); }
+:is(.app, .arcade-app).library-home .game-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); align-content: start; gap: 12px; padding: 6px 4px 12px; }
+:is(.app, .arcade-app).library-home .game-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin: 0; padding: 12px; border: 1px solid #3a404a; border-radius: 9px; background: #252930; box-shadow: 0 3px 10px #0002; }
 .player-library .game-card { position: relative; isolation: isolate; }
 .player-library .game-card:hover { border-color: #657d9b; }
 .player-library .game-launch { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; color: inherit; cursor: pointer; }
@@ -46,36 +66,37 @@
 .player-library .game-actions button { pointer-events: auto; }
 :is(.app, .arcade-app).library-home .game-main { flex: 1; width: 100%; padding: 2px; background: transparent; border: 0; }
 :is(.app, .arcade-app).library-home .game-title-row { flex-wrap: wrap; gap: 8px; }
-:is(.app, .arcade-app).library-home .game-title-row h3 { color: var(--library-text); font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
+:is(.app, .arcade-app).library-home .game-title-row h3 { color: var(--library-text); font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
 :is(.app, .arcade-app).library-home .meta { color: var(--library-muted); line-height: 1.5; }
 :is(.app, .arcade-app).library-home .game-actions { flex-wrap: wrap; width: 100%; gap: 6px; justify-content: flex-end; }
 :is(.app, .arcade-app).library-home .progress { color: var(--library-accent); }
 :is(.app, .arcade-app).library-home .store-pager { flex-wrap: wrap; background: transparent; border-color: var(--library-border); }
-.library-help { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 16px 0; border-top: 1px solid var(--library-border); color: var(--library-muted); font-size: 13px; }
 .library-progress { color: var(--library-accent); padding: 12px; }
 .game-playing .player-stage { padding: 0; background: #111317; }
 .game-playing .frame, .game-playing .arcade-frame { border-radius: 0; }
 .play-menu-button { position: absolute; z-index: 15; top: max(14px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); border: 1px solid #657080; border-radius: 8px; padding: 8px 12px; background: #222831de; color: #e8eaed; font: inherit; font-size: 13px; cursor: pointer; opacity: .45; }
 .play-menu-button:hover, .play-menu-button:focus-visible { opacity: 1; }
-@media (min-width: 1600px) { :is(.app, .arcade-app).library-home .game-list { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (max-width: 1000px) { :is(.app, .arcade-app).library-home .game-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
-@media (max-width: 700px) { .library-home { padding-inline: 12px; } :is(.app, .arcade-app).library-home .game-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } :is(.app, .arcade-app).library-home .player-toolbar { flex-wrap: wrap; gap: 8px; } :is(.app, .arcade-app).library-home .player-title { order: -1; flex: 1 0 70%; } .library-header-line { display: none; } :is(.app, .arcade-app).library-home .game-card { padding: 9px; } :is(.app, .arcade-app).library-home .game-actions .s-button { padding-inline: 8px; } }
-@media (max-width: 380px) { :is(.app, .arcade-app).library-home .game-list { grid-template-columns: minmax(0, 1fr); } }
-@media (orientation: landscape) and (max-height: 540px) { :is(.app, .arcade-app).library-home .player-toolbar { padding-block: 4px; } .library-heading { padding-block: 4px; } .library-help { padding-block: 8px; } :is(.app, .arcade-app).library-home .store-tools { padding-block: 8px; } }
+@media (max-width: 700px) {
+  .library-home { padding-inline: 10px; }
+  :is(.app, .arcade-app).library-home .game-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  :is(.app, .arcade-app).library-home .player-toolbar { gap: 8px; }
+  .library-header-line { display: none; }
+}
+@media (orientation: landscape) and (max-height: 540px) { :is(.app, .arcade-app).library-home .player-toolbar { padding-block: 4px; } :is(.app, .arcade-app).library-home .store-tools { padding-block: 4px; } }
 
 /* Keep canvas dimensions valid while its library is visible during core startup. */
 .app, .arcade-app { position: relative; }
 .app .player-stage.player-preparing, .arcade-app .player-stage.player-preparing { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
 @media (max-width: 700px) {
-  :is(.app, .arcade-app).library-home .player-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-  :is(.app, .arcade-app).library-home .player-title { grid-column: 1; grid-row: 1; }
-  :is(.app, .arcade-app).library-home .player-toolbar > .s-button:last-child { grid-column: 2; grid-row: 1; }
-  :is(.app, .arcade-app).library-home .player-toolbar > .s-button:first-child { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
+  :is(.app, .arcade-app).library-home .player-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+  :is(.app, .arcade-app).library-home .player-title { grid-column: 2; grid-row: 1; }
+  :is(.app, .arcade-app).library-home .player-toolbar > .s-button:last-child { grid-column: 3; grid-row: 1; }
+  :is(.app, .arcade-app).library-home .player-toolbar > .library-back { grid-column: 1; grid-row: 1; justify-self: start; }
 }
 
 .player-library .store-tools .check {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 44px; height: 44px; padding: 0 14px; border: 1px solid #454e5c;
+  min-height: var(--library-control-height, 36px); height: var(--library-control-height, 36px); padding: 0 12px; border: 1px solid #454e5c;
   border-radius: 8px; background: #262c35; color: #d5dce7; font-size: 14px;
   cursor: pointer; white-space: nowrap;
 }
@@ -93,13 +114,56 @@
 }
 
 :is(.app, .arcade-app).library-home .game-card { padding: 0; gap: 0; overflow: visible; }
-:is(.app, .arcade-app).library-home .game-preview { border-radius: 11px 11px 0 0; }
-:is(.app, .arcade-app).library-home .game-main { padding: 14px; }
+:is(.app, .arcade-app).library-home .game-preview { border-radius: 8px 8px 0 0; aspect-ratio: 8 / 5; }
+:is(.app, .arcade-app).library-home .game-main { padding: 8px 10px; }
 :is(.app, .arcade-app).library-home .game-title-row h3 { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-:is(.app, .arcade-app).library-home .game-actions { padding: 0 14px 12px; }
+:is(.app, .arcade-app).library-home .game-actions { position: absolute; top: 5px; right: 5px; width: auto; padding: 0; }
 :is(.app, .arcade-app).library-home .game-preview .s-tag { background: #173c2ee8; color: #a3e5bd; border-color: #619b7855; }
 @media (max-width: 700px) {
-  :is(.app, .arcade-app).library-home .game-main { padding: 10px; }
-  :is(.app, .arcade-app).library-home .game-title-row h3 { font-size: 15px; }
-  :is(.app, .arcade-app).library-home .game-actions { padding: 0 10px 10px; }
+  :is(.app, .arcade-app).library-home .game-main { padding: 8px; }
+  :is(.app, .arcade-app).library-home .game-title-row h3 { font-size: 13px; }
+  :is(.app, .arcade-app).library-home .game-actions { padding: 0; }
 }
+
+:is(.app, .arcade-app).library-home .game-title-row h3 { min-height: 2.8em; margin: 0; }
+:is(.app, .arcade-app).library-home .game-main .meta { margin: 3px 0 0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(.app, .arcade-app).library-home .game-actions .cache-remove { width: 30px; height: 30px; min-height: 30px; min-width: 30px; padding: 0; border: 1px solid #ffffff26; background: #151a23df; color: #d6dce5; font-size: 20px; }
+:is(.app, .arcade-app).library-home .game-actions .progress { padding: 5px 7px; border-radius: 5px; background: #151a23eb; }
+.library-home .game-preview .preview-status { top: auto; right: auto; left: 6px; bottom: 6px; }
+.library-home .game-preview .preview-system { top: 6px; left: 6px; font-size: 9px; }
+.library-home .game-preview .preview-placeholder svg { width: 48px; height: 32px; }
+.library-home .game-preview .preview-placeholder { gap: 6px; }
+:is(.app, .arcade-app).library-home .store-pager { min-height: 40px; padding: 5px 4px; gap: 8px; }
+.library-count { color: #969da8; font-size: 12px; }
+@media (max-width: 700px) {
+  :is(.app, .arcade-app).library-home .store-tools { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; padding: 2px 4px 6px; }
+  :is(.app, .arcade-app).library-home .search-tools { grid-column: 1 / -1; }
+  :is(.app, .arcade-app).library-home .store-tools .check { padding-inline: 8px; gap: 6px; font-size: 12px; }
+  :is(.app, .arcade-app).library-home .player-toolbar .s-button { padding-inline: 8px; }
+}
+@media (pointer: coarse) {
+  :is(.app, .arcade-app).library-home .game-actions .cache-remove { width: 40px; height: 40px; min-height: 40px; }
+}
+@media (max-width: 340px) {
+  :is(.app, .arcade-app).library-home .player-title { font-size: 16px; }
+  :is(.app, .arcade-app).library-home .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+:is(.app, .arcade-app).library-home .store-pager { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+.library-count { grid-column: 1; white-space: nowrap; }
+.pager-controls { grid-column: 2; display: flex; align-items: center; justify-content: center; gap: 6px; }
+:is(.app, .arcade-app).library-home .pager-controls .page-info { min-width: 48px; margin: 0; text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) {
+  :is(.app, .arcade-app).library-home .store-pager { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .library-count { grid-column: 1; text-align: center; }
+  .pager-controls { grid-column: 1; gap: 4px; }
+  :is(.app, .arcade-app).library-home .pager-controls .pager-btn { min-width: 46px; padding-inline: 8px; }
+}
+
+@media (pointer: coarse) {
+  .library-home .store-tools { --library-control-height: 40px; }
+}
+
+:is(.app, .arcade-app).library-home .game-main .game-play-meta { display: flex; justify-content: space-between; gap: 6px; }
+.game-play-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.game-play-meta .play-time { flex-shrink: 0; color: #a8bbd3; font-variant-numeric: tabular-nums; }

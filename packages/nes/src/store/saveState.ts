@@ -1,17 +1,13 @@
 /**
  * 存档点持久化:把引擎状态快照存入 IndexedDB,按 (romKey, slot) 索引。
  *
- * 与 ROM 缓存(romLibrary)分库,互不影响。slot 为任意字符串,当前 UI 仅用
- * 'quick' 单槽快速存读,但存储层支持多槽位,便于以后扩展存档列表。
+ * 与 ROM 缓存分库。快速存档使用固定槽，普通存档使用独立槽。
  */
 import type { SaveState } from '../emulator/runner'
-
-/**
- * 存档类型:
- * - 'quick' 快速存档,S 键覆盖式写入,每个游戏只占一个固定槽。
- * - 'normal' 普通存档,新建时追加一条独立槽,可保留多份。
- */
-export type SaveKind = 'quick' | 'normal'
+import { newSaveSlot } from '../../../shared/saveSlots'
+export { saveKindOf } from '../../../shared/saveSlots'
+export type { SaveKind } from '../../../shared/saveSlots'
+import type { SaveKind } from '../../../shared/saveSlots'
 
 export type SaveStateRecord = {
   /** 主键:`${romKey}:${slot}`。 */
@@ -33,26 +29,14 @@ export type SaveStateRecord = {
 /** 快速存档固定占用的槽名(覆盖式单槽)。 */
 export const QUICK_SLOT = 'quick'
 
-/** 判定一条存档的类型;兼容没有 kind 字段的旧记录(按是否为快速槽推断)。 */
-export function saveKindOf(record: SaveStateRecord): SaveKind {
-  return record.kind ?? (record.slot === QUICK_SLOT ? 'quick' : 'normal')
-}
-
 const DB_NAME = 'nes-save-states'
 const DB_VERSION = 1
 const STORE_NAME = 'saves'
 
 let dbPromise: Promise<IDBDatabase> | null = null
-// 同一毫秒内多次新建存档时用于区分 slot,避免主键冲突。
-let slotSeq = 0
 
 function recordKey(romKey: string, slot: string): string {
   return `${romKey}:${slot}`
-}
-
-/** 生成一个不重复的存档 slot,用于多存档列表的新建。 */
-function newSlot(): string {
-  return `s-${Date.now()}-${(slotSeq++).toString(36)}`
 }
 
 export async function putSaveState(
@@ -93,7 +77,7 @@ export async function createSaveState(
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
   const done = txDone(tx)
-  const slot = newSlot()
+  const slot = newSaveSlot()
   const record: SaveStateRecord = {
     key: recordKey(romKey, slot),
     romKey,

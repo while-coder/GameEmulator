@@ -34,7 +34,10 @@ test('saving and deleting native arcade states preserves the original WASM state
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
   const exports = {};
-  runInNewContext(code, { exports, indexedDB, Blob });
+  const shared = {};
+  const sharedCode = ts.transpileModule(readFileSync(resolve(__dirname, '../../../packages/shared/saveSlots.ts'), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+  runInNewContext(sharedCode, { exports: shared });
+  runInNewContext(code, { exports, indexedDB, Blob, require: name => { assert.equal(name, '../../../shared/saveSlots'); return shared; } });
   const make = (coreBuild, byte, savedAt) => ({ key: `${coreBuild}:game`, gameName: 'game.zip', gameHash: 'hash', dependencies: [], coreBuild, state: new Blob([new Uint8Array([byte])]), savedAt });
   const wasm = make(exports.CORE_BUILD, 7, 1), native = make('fbalpha2012-0ce3153-native-v1', 8, 2);
   await exports.putSnapshot(wasm);

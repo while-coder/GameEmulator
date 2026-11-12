@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import screenshots from './data/game-screenshots.json'
 
-const props = defineProps<{ gameKey: string; name: string; system: string; screenshot?: string }>()
+const props = defineProps<{ gameKey: string; name: string; system?: string; screenshot?: string }>()
 const playlists: Record<string, string> = {
   nes: 'Nintendo - Nintendo Entertainment System',
   arcade: 'FBNeo - Arcade Games',
@@ -26,7 +26,7 @@ watch(source, () => { loaded.value = false; failed.value = false })
       <span>{{ source && !failed ? '正在加载预览' : '暂无截图' }}</span>
     </div>
     <img v-if="source && !failed" :src="source" :alt="`${name} 游戏截图`" :class="{ loaded }" loading="lazy" decoding="async" referrerpolicy="no-referrer" @load="loaded = true" @error="failed = true" />
-    <span class="preview-system">{{ system }}</span>
+    <span v-if="system" class="preview-system">{{ system }}</span>
     <div class="preview-status"><slot /></div>
   </div>
 </template>

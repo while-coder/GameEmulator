@@ -163,3 +163,5 @@
   .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) { display: none; }
   .player-modal .player-settings .save-actions .btn { min-height: var(--player-control-height); height: var(--player-control-height); }
 }
+
+.player-modal .player-saves .rename-input { flex: 1; min-width: 0; max-width: 100%; }

@@ -24,6 +24,7 @@ export type LoadSavePayload = {
   romKey: string
   name: string
   state: SaveState
+  coreBuild?: string
   bytes?: Uint8Array
 }
 
@@ -61,7 +62,7 @@ async function refreshCreatedSave() {
   query.value = ''
   await refresh()
 }
-defineExpose({ busyKey, refreshCreatedSave })
+defineExpose({ busyKey, refreshCreatedSave, cancelRename })
 
 watch(
   open,
@@ -113,7 +114,7 @@ async function loadRecord(record: SaveStateRecord) {
 
   // 当前已是这个游戏:直接套用状态,无需重新载入 ROM。
   if (props.currentRomKey === record.romKey) {
-    emit('load', { romKey: record.romKey, name: record.name, state: record.state })
+    emit('load', { romKey: record.romKey, name: record.name, state: record.state, coreBuild: record.coreBuild })
     open.value = false
     return
   }
@@ -126,13 +127,14 @@ async function loadRecord(record: SaveStateRecord) {
       onProgress: (p) => (progress.value = p),
     })
     if (!resolved) {
-      error.value = `未在游戏库中找到《${record.name}》,无法读档。请先在 ROM 库中添加该游戏。`
+      error.value = `未在游戏库中找到《${record.name}》,无法读档。请确认在线游戏库仍收录该游戏。`
       return
     }
     emit('load', {
       romKey: record.romKey,
       name: resolved.name,
       state: record.state,
+      coreBuild: record.coreBuild,
       bytes: resolved.bytes,
     })
     open.value = false
@@ -162,7 +164,7 @@ function startEdit(record: SaveStateRecord) {
   editingKey.value = record.key
   editingText.value = saveLabel(record)
   void nextTick(() => {
-    const el = document.querySelector<HTMLInputElement>('.rename-input')
+    const el = document.querySelector<HTMLInputElement>('.rename-input input, input.rename-input')
     el?.focus()
     el?.select()
   })
@@ -183,6 +185,11 @@ async function commitEdit(record: SaveStateRecord) {
 
 function cancelEdit() {
   editingKey.value = null
+}
+function cancelRename(): boolean {
+  if (!editingKey.value) return false
+  cancelEdit()
+  return true
 }
 
 function progressLabel(): string {
@@ -217,7 +224,7 @@ function formatError(err: unknown): string {
         <span>显示 {{ filteredRecords.length }} 条</span>
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
-      <SHint class="load-hint">Ctrl+S / F8 保存本游戏快速存档，F9 读取。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
+      <SHint class="load-hint">「新建存档」保留多份普通存档；Ctrl+S / F8 覆盖本游戏快速存档，F9 仅读取快速存档。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
 
       <div class="save-list">
         <article v-for="record in filteredRecords" :key="record.key" class="save-card">

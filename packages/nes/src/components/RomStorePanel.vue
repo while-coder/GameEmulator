@@ -21,11 +21,12 @@ import {
   getCachedRom,
   listCachedRoms,
   saveCachedRom,
-  touchCachedRom,
   type CachedRom,
 } from '../store/romLibrary'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
+import { usePlayHistory } from '../../../player-ui/usePlayHistory'
+import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
 const props = defineProps<{ launch?: (payload: { name: string; bytes: Uint8Array; key: string }) => Promise<void> }>()
 const open = defineModel<boolean>('open', { default: false })
@@ -44,10 +45,13 @@ const catalogLoading = ref(false)
 const error = ref<string | null>(null)
 const progressByKey = ref<Record<string, DownloadProgress>>({})
 
-type SortMode = 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
+const { history } = usePlayHistory('nes')
+
+type SortMode = 'recent' | 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: 'default', label: '默认排序' },
+  { value: 'recent', label: '最近游玩' },
+  { value: 'default', label: '目录顺序' },
   { value: 'name-asc', label: '名称 A→Z' },
   { value: 'name-desc', label: '名称 Z→A' },
   { value: 'size-asc', label: '体积 小→大' },
@@ -57,7 +61,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 
 const PAGE_SIZE = 50
 const page = ref(1)
-const sort = ref<SortMode>('default')
+const sort = ref<SortMode>('recent')
 
 function sortList<T>(
   list: T[],
@@ -87,6 +91,7 @@ function sortList<T>(
   }
 }
 
+const legacyPlayedAt = computed(() => new Map(cachedRoms.value.map(rom => [rom.key, rom.lastPlayedAt ?? 0])))
 const cachedKeys = computed(() => new Set(cachedRoms.value.map((rom) => rom.key)))
 // 合并在线目录和缓存，缓存中已不在目录里的游戏仍可离线启动。
 const libraryGames = computed(() => {
@@ -110,8 +115,9 @@ const genreOptions = computed(() => [
 const matchedGames = computed(() =>
   searchRoms(libraryGames.value, query.value, genre.value, downloadedOnly.value, cachedKeys.value),
 )
-const sortedMatched = computed(() =>
-  sortList(matchedGames.value, (g) => g.name, (g) => g.file_size ?? 0, (g) => g.publisher ?? ''),
+const sortedMatched = computed(() => sort.value === 'recent'
+  ? sortRecentlyPlayed(matchedGames.value, romKey, history.value, game => legacyPlayedAt.value.get(romKey(game)) ?? 0)
+  : sortList(matchedGames.value, (g) => g.name, (g) => g.file_size ?? 0, (g) => g.publisher ?? ''),
 )
 const totalCount = computed(() => sortedMatched.value.length)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / PAGE_SIZE)))
@@ -129,7 +135,7 @@ function goPage(target: number) {
   page.value = Math.min(Math.max(1, target), totalPages.value)
 }
 
-watch(open, (value) => { if (value) void prepareStore() }, { immediate: true })
+watch(open, (value) => { if (value) { if (sort.value === 'recent') page.value = 1; void prepareStore() } }, { immediate: true })
 defineExpose({ busyKey })
 
 async function prepareStore() {
@@ -177,7 +183,6 @@ async function play(game: RomEntry) {
       if (!game.download_url) throw new Error('该 ROM 缓存已失效，请重新添加游戏')
       bytes = await downloadAndCache(game, key)
     }
-    await touchCachedRom(key)
     await refreshCached()
     if (props.launch) await props.launch({ name: game.name, bytes, key })
     else emit('load', { name: game.name, bytes, key })
@@ -267,8 +272,8 @@ function formatError(err: unknown): string {
         <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedRoms.length }})</SCheckbox>
       </div>
 
-      <div class="store-summary">
-        <span>{{ catalogLoading ? '正在同步目录 · ' : '' }}匹配 {{ totalCount }} 个{{ totalCount ? `，显示第 ${pageStart + 1}-${pageEnd} 个` : '' }}</span>
+      <div v-if="catalogLoading || error" class="store-summary">
+        <span v-if="catalogLoading" role="status">正在加载游戏目录…</span>
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
 
@@ -278,8 +283,8 @@ function formatError(err: unknown): string {
           :key="romKey(game)"
           class="game-card"
         >
-          <button class="game-launch" :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
-          <GamePreview :game-key="romKey(game)" :name="game.name" :system="'NES / FC'" :screenshot="game.screenshot_url">
+          <button class="game-launch" :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :title="`${game.name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <GamePreview :game-key="romKey(game)" :name="game.name" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
           <div class="game-main">
@@ -287,10 +292,11 @@ function formatError(err: unknown): string {
               <h3>{{ game.name }}</h3>
 
             </div>
-            <p class="meta">{{ metaLine(game) }}</p>
-            <div v-if="game.tags?.length" class="tags">
-              <STag v-for="tag in game.tags.slice(0, 2)" :key="tag" size="small">{{ tag }}</STag>
-            </div>
+            <p v-if="game.genre || history[romKey(game)]?.totalPlayTimeMs" class="meta game-play-meta">
+              <span>{{ game.genre }}</span>
+              <span v-if="history[romKey(game)]?.totalPlayTimeMs" class="play-time">已玩 {{ formatPlayTime(history[romKey(game)].totalPlayTimeMs) }}</span>
+            </p>
+
           </div>
 
           <div v-if="busyKey === romKey(game) || cachedKeys.has(romKey(game))" class="game-actions">
@@ -299,11 +305,13 @@ function formatError(err: unknown): string {
             </span>
             <SButton
               v-if="cachedKeys.has(romKey(game))"
-              class="btn"
+              class="btn cache-remove"
+              title="移除下载缓存"
+              :aria-label="`移除 ${game.name} 的下载缓存`"
               :disabled="busyKey !== null"
               @click.stop="removeCachedByKey(romKey(game))"
             >
-              删除
+              ×
             </SButton>
           </div>
         </article>
@@ -311,12 +319,15 @@ function formatError(err: unknown): string {
         <SEmpty v-if="visibleGames.length === 0" class="empty" :description="catalogLoading ? '正在加载 ROM 目录…' : '没有匹配的 ROM'" />
       </div>
 
-      <div v-if="totalPages > 1" class="store-pager">
-        <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(1)">« 首页</SButton>
-        <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(page - 1)">上一页</SButton>
-        <span class="page-info">{{ page }} / {{ totalPages }}</span>
-        <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(page + 1)">下一页</SButton>
-        <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(totalPages)">末页 »</SButton>
+      <div class="store-pager">
+        <span class="library-count" aria-live="polite">显示 {{ totalCount ? pageStart + 1 : 0 }}–{{ pageEnd }} / 共 {{ totalCount }} 款</span>
+        <nav v-if="totalPages > 1" class="pager-controls" aria-label="游戏库分页">
+          <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(1)">首页</SButton>
+          <SButton class="pager-btn" :disabled="page <= 1" @click="goPage(page - 1)">上一页</SButton>
+          <span class="page-info" aria-label="当前页">{{ page }} / {{ totalPages }}</span>
+          <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(page + 1)">下一页</SButton>
+          <SButton class="pager-btn" :disabled="page >= totalPages" @click="goPage(totalPages)">尾页</SButton>
+        </nav>
       </div>
   </section>
 </template>
@@ -334,7 +345,6 @@ function formatError(err: unknown): string {
 }
 .store-tools {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(120px, 170px) minmax(120px, 170px);
   gap: 10px;
   padding: 12px 18px;
   border-bottom: 1px solid #30353d;
@@ -514,9 +524,6 @@ function formatError(err: unknown): string {
 }
 
 @media (max-width: 720px) {
-  .store-tools {
-    grid-template-columns: 1fr;
-  }
   .store-summary {
     align-items: flex-start;
     flex-direction: column;
@@ -540,7 +547,6 @@ function formatError(err: unknown): string {
   .store-tools {
     padding: 6px 12px;
     gap: 6px;
-    grid-template-columns: minmax(120px, 1fr) minmax(80px, 130px) minmax(80px, 130px);
   }
   .search,
   .select {
@@ -603,28 +609,10 @@ function formatError(err: unknown): string {
 </style>
 
 <style scoped>
-.store-tools { grid-template-columns: minmax(280px, 1fr) repeat(2, minmax(120px, 160px)) auto; }
-.check { gap: 8px; white-space: nowrap; }
-@media (max-width: 720px) {
-  .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .search-tools { grid-column: 1 / -1; }
-}
 @media (orientation: landscape) and (max-height: 540px) {
-  .store-tools {
-    flex-shrink: 0;
-    grid-template-columns: minmax(220px, 1fr) minmax(90px, 120px) minmax(100px, 130px) auto;
-    padding: 4px 12px;
-    gap: 6px;
-  }
-  .search-tools { grid-column: auto; }
-  .check { height: 44px; }
   .store-summary { flex-shrink: 0; }
   .store-pager { padding: 4px 12px; }
   .game-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
-}
-@media (orientation: landscape) and (max-height: 540px) and (max-width: 760px) {
-  .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
-  .search-tools { grid-column: 1 / -1; }
 }
 </style>
 

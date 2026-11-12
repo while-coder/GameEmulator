@@ -5,7 +5,7 @@
  */
 import { loadRomCatalog } from './romCatalog'
 import { downloadRom, type DownloadOptions } from './romDownloader'
-import { getCachedRom, saveCachedRom, touchCachedRom } from './romLibrary'
+import { getCachedRom, saveCachedRom } from './romLibrary'
 
 export type ResolvedRom = {
   name: string
@@ -24,7 +24,6 @@ export async function acquireRomByKey(
 
   const cached = await getCachedRom(key)
   if (cached) {
-    await touchCachedRom(key)
     return { name: cached.name, bytes: cached.bytes }
   }
 
@@ -34,6 +33,5 @@ export async function acquireRomByKey(
 
   const bytes = await downloadRom(entry, options)
   await saveCachedRom(entry, bytes)
-  await touchCachedRom(key)
   return { name: entry.name, bytes }
 }

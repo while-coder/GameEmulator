@@ -20,7 +20,7 @@ export type RomCatalog = {
 
 // ROM 目录运行时从远程加载(web/app 均不打包进产物);切换源改此处即可。
 export const DEFAULT_CATALOG_URL =
-  'https://raw.githubusercontent.com/while-coder/nes-roms/main/catalog.json'
+  'https://vm3-cdn.s3-us-west-2.amazonaws.com/test/assets/test/nes/catalog.json'
 
 export function emptyRomCatalog(): RomCatalog {
   return {
