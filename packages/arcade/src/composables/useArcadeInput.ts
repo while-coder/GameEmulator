@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted, watch, type Ref, type ShallowRef } from 'vue'
 import { ACTIONS, GAMEPAD_AXIS_THRESHOLD, settings, type Action } from '../emulator/settings'
-import type { ArcadeRunner } from '../emulator/runner'
-export function useArcadeInput(runner: ShallowRef<ArcadeRunner|null>, enabled: Ref<boolean>) {
+import type { ArcadeRunnerApi } from '../emulator/runner'
+export function useArcadeInput(runner: ShallowRef<ArcadeRunnerApi|null>, enabled: Ref<boolean>) {
   const held=new Map<string,Set<string>>()
   const assignments=new Map<number,number>()
   const padHeld=[new Set<Action>(),new Set<Action>()]
@@ -33,6 +33,7 @@ export function useArcadeInput(runner: ShallowRef<ArcadeRunner|null>, enabled: R
   function visibility(){if(document.hidden)releaseAll()}
   let raf=0
   function poll(){
+    if (runner.value?.nativeInput) { raf=requestAnimationFrame(poll); return }
     const pads=Array.from(navigator.getGamepads?.()??[]).filter((p):p is Gamepad=>!!p)
     for(const index of assignments.keys())if(!pads.some(p=>p.index===index))assignments.delete(index)
     for(const pad of pads)if(!assignments.has(pad.index)){

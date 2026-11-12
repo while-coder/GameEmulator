@@ -5,6 +5,27 @@ import coreWasm from '../assets/cores/fbalpha2012_libretro.wasm?url'
 import { ACTIONS, type Action } from './settings'
 import type { Archive } from '../store/library'
 type Instance = Awaited<ReturnType<typeof Nostalgist.prepare>>
+export interface ArcadeRunnerApi {
+  readonly loaded: boolean
+  readonly aspectRatio: number
+  readonly nativeInput?: boolean
+  readonly coreBuild?: string
+  onError?: (error: Error) => void
+  load(game: Archive, dependencies: Archive[]): Promise<void>
+  press(player: number, action: Action): void
+  release(player: number, action: Action): void
+  pause(): void
+  resume(): void
+  reset(): void
+  setMuted(value: boolean): void
+  save(): Promise<Blob>
+  restore(state: Blob): Promise<void>
+  dispose(): void | Promise<void>
+  syncDisplay?(smoothing: boolean): void
+}
+let factory: ((canvas: HTMLCanvasElement) => ArcadeRunnerApi) | undefined
+export function registerArcadeRunnerFactory(value: (canvas: HTMLCanvasElement) => ArcadeRunnerApi) { factory = value }
+export function createArcadeRunner(canvas: HTMLCanvasElement): ArcadeRunnerApi { return factory?.(canvas) ?? new ArcadeRunner(canvas) }
 // These private virtual keys are separate from the application's real keymaps.
 const virtualKeys=['i','k','j','l','q','w','e','a','s','d','z','x','t','g','f','h','u','o','p','v','b','n','m','c']
 const inputConfig=Object.fromEntries([0,1].flatMap(player=>ACTIONS.map((action,i)=>[`input_player${player+1}_${action.id}`,virtualKeys[player*ACTIONS.length+i]])))

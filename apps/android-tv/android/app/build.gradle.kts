@@ -19,6 +19,7 @@ fun signingValue(key: String, env: String) = signingProperties.getProperty(key)?
 android {
     namespace = "com.wandergame.gameemulator.tv"
     compileSdk = 36
+    ndkVersion = "28.2.13676358"
     defaultConfig {
         applicationId = "com.wandergame.gameemulator.tv"
         minSdk = 26
@@ -81,6 +82,7 @@ val syncArtwork by tasks.registering(Copy::class) {
 tasks.named("preBuild") { dependsOn(syncFrontend, syncArtwork) }
 
 dependencies {
+    implementation(project(":emulator-native"))
     implementation("org.mozilla.geckoview:geckoview:149.0.20260403140140")
     implementation("androidx.activity:activity-ktx:1.10.1")
     testImplementation("junit:junit:4.13.2")

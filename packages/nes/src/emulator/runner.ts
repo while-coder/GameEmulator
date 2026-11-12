@@ -15,6 +15,35 @@ import fceummCoreWasmUrl from '../assets/cores/fceumm_libretro.wasm?url'
 /** 存档快照:RetroArch 的二进制 savestate(可直接存入 IndexedDB)。 */
 export type SaveState = Uint8Array
 
+/** Only the TV entry registers an alternate backend; all other clients use WASM. */
+export interface NesRunnerApi {
+  readonly loaded: boolean
+  readonly isRunning: boolean
+  readonly nativeInput?: boolean
+  readonly saveNamespace?: string
+  onError?: (error: Error) => void
+  loadRom(bytes: Uint8Array): Promise<void>
+  dispose(): Promise<void>
+  unload(): void
+  reset(): void
+  pause(): void
+  resume(): void
+  resumeAudio(): void
+  setVolume(value: number): void
+  setAudioEnabled(value: boolean): void
+  setSpeed(value: number): void
+  press(button: Button): void
+  release(button: Button): void
+  saveState(): Promise<SaveState | null>
+  loadState(state: SaveState): Promise<boolean>
+  configureInput?(maps: Record<number, string>[], turboHz: number): void
+  syncDisplay?(smoothing: boolean, scanlines: boolean): void
+  setDebug?(enabled: boolean): void
+}
+let runnerFactory: ((canvas: HTMLCanvasElement) => NesRunnerApi) | undefined
+export function registerNesRunnerFactory(factory: (canvas: HTMLCanvasElement) => NesRunnerApi): void { runnerFactory = factory }
+export function createNesRunner(canvas: HTMLCanvasElement): NesRunnerApi { return runnerFactory?.(canvas) ?? new NesRunner(canvas) }
+
 const WIDTH = 256
 const HEIGHT = 240
 

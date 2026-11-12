@@ -12,9 +12,13 @@ apps/pwa/dist/
 apps/android-tv/dist/
 apps/android-tv/node_modules/
 apps/android-tv/android/.gradle/
+apps/android-tv/android/.cxx/
 apps/android-tv/android/.kotlin/
 apps/android-tv/android/build/
 apps/android-tv/android/app/build/
+apps/android-tv/android/app/.cxx/
+packages/android-native/android/.cxx/
+packages/android-native/android/build/
 apps/android-tv/android/local.properties
 
 # TypeScript 增量构建产物

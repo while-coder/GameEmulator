@@ -242,6 +242,7 @@ function toggleAudio() {
 }
 
 function onSystemAction(action: string) {
+  if (action === 'pause') paused.value = true
   if (action === 'open-settings') {
     settingsOpen.value = true
   }

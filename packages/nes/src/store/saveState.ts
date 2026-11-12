@@ -25,6 +25,8 @@ export type SaveStateRecord = {
   /** 用户可编辑的存档名;旧记录无此字段时展示层回退到 name。 */
   label?: string
   state: SaveState
+  /** Missing on existing WASM saves. Native builds keep their own state identity. */
+  coreBuild?: string
   savedAt: number
 }
 
@@ -60,6 +62,7 @@ export async function putSaveState(
   state: SaveState,
   label?: string,
   kind: SaveKind = 'quick',
+  coreBuild?: string,
 ): Promise<void> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
@@ -69,6 +72,7 @@ export async function putSaveState(
     romKey,
     slot,
     kind,
+    coreBuild,
     name,
     label,
     state,
@@ -84,6 +88,7 @@ export async function createSaveState(
   name: string,
   label: string,
   state: SaveState,
+  coreBuild?: string,
 ): Promise<SaveStateRecord> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
@@ -94,6 +99,7 @@ export async function createSaveState(
     romKey,
     slot,
     kind: 'normal',
+    coreBuild,
     name,
     label,
     state,

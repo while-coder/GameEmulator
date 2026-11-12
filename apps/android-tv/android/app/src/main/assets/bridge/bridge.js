@@ -3,6 +3,10 @@
 if (location.origin === 'http://127.0.0.1:17864') {
   const port = browser.runtime.connectNative('game_emulator');
   port.onMessage.addListener(message => {
+    if (message.type === 'nativePause') {
+      window.wrappedJSObject.dispatchEvent(new Event('tv-native-pause'));
+      return;
+    }
     if (message.type === 'imeHidden') {
       window.wrappedJSObject.dispatchEvent(new Event('tv-text-input-dismissed', { cancelable: true }));
       return;

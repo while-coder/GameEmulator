@@ -1,2 +1,5 @@
 export { default as ArcadeView } from './ArcadeView.vue'
 export { mountPlayerApp as mountArcadeApp } from './mount'
+export { registerArcadeRunnerFactory, type ArcadeRunnerApi } from './emulator/runner'
+export type { Action } from './emulator/settings'
+export type { Archive } from './store/library'

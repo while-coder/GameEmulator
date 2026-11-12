@@ -255,7 +255,7 @@ function formatError(err: unknown): string {
                 ✎
               </SIconButton>
             </div>
-            <p class="meta">{{ record.name }}</p>
+            <p class="meta">{{ record.name }} · {{ record.coreBuild ? '原生内核' : 'WASM 内核' }}</p>
             <p class="meta time">{{ formatTime(record.savedAt) }}</p>
           </div>
 

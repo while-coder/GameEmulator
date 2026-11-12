@@ -27,6 +27,7 @@ fun signingProp(fileKey: String, envKey: String): String? =
 
 android {
     compileSdk = 36
+    ndkVersion = "28.2.13676358"
     namespace = "com.wandergame.nesemulator"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
@@ -92,6 +93,7 @@ rust {
 }
 
 dependencies {
+    implementation(project(":emulator-native"))
     implementation("androidx.webkit:webkit:1.14.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.activity:activity-ktx:1.10.1")

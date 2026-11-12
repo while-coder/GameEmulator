@@ -7,6 +7,37 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AssetServerTest {
+    @Test fun nativeTransfersAreBoundedAndRequireSameOriginCustomHeader() {
+        AssetServer { throw FileNotFoundException(it) }.use { server ->
+            var calls = 0
+            server.nativeHandler = { method, path, body ->
+                calls++
+                assertEquals("POST", method); assertEquals("/native/nes/load", path)
+                NativeReply(body)
+            }
+            fun request(extra: String, body: ByteArray = byteArrayOf(1, 2, 3), path: String = "/native/nes/load", length: Int = body.size): ByteArray {
+                return Socket("127.0.0.1", AssetServer.PORT).use { socket ->
+                    socket.soTimeout = 5000
+                    socket.getOutputStream().write(("POST $path HTTP/1.1\r\nHost: 127.0.0.1:${AssetServer.PORT}\r\nContent-Length: $length\r\n$extra\r\n").toByteArray())
+                    socket.getOutputStream().write(body)
+                    socket.getInputStream().readBytes()
+                }
+            }
+            assertTrue(request("").toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 403"))
+            assertTrue(request("X-GameEmulator-TV: 1\r\nOrigin: https://evil.example\r\n").toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 403"))
+            assertTrue(request("X-GameEmulator-TV: 1\r\n", length = 8 * 1024 * 1024 + 1).toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 413"))
+            assertTrue(request("X-GameEmulator-TV: 1\r\n", path = "/native/nes/command", length = 16385).toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 413"))
+            assertTrue(request("X-GameEmulator-TV: 1\r\n", path = "/native/arcade/upload/game.zip/0", length = 262145).toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 413"))
+            assertEquals(0, calls)
+            val body = byteArrayOf(0, 97, -1, 10)
+            val result = request("X-GameEmulator-TV: 1\r\nOrigin: ${AssetServer.ORIGIN}\r\n", body)
+            assertTrue(result.toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 200"))
+            assertArrayEquals(body, result.takeLast(body.size).toByteArray())
+            assertEquals(1, calls)
+            assertFalse(result.toString(Charsets.ISO_8859_1).contains("Access-Control-Allow-Origin"))
+        }
+    }
+    private fun NativeReply(bytes: ByteArray) = AssetServer.NativeResponse(bytes, "application/octet-stream")
     @Test fun servesBundledFilesAndRejectsUnsafeRequests() {
         val wasm = byteArrayOf(0, 97, 115, 109, -1)
         val files = mapOf("index.html" to "<html>TV</html>".toByteArray(), "assets/core.wasm" to wasm)

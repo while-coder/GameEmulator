@@ -11,3 +11,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "GameEmulatorTV"
 include(":app")
+include(":emulator-native")
+project(":emulator-native").projectDir = file("../../../packages/android-native/android")

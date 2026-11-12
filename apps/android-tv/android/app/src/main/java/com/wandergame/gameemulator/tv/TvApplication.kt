@@ -13,6 +13,9 @@ class TvApplication : Application() {
             .build())
     }
     private var server: AssetServer? = null
+    fun setNativeHandler(handler: ((String, String, ByteArray) -> AssetServer.NativeResponse)?) {
+        server?.nativeHandler = handler
+    }
     fun startServer() {
         if (server == null) server = AssetServer { assets.open("www/$it") }
     }

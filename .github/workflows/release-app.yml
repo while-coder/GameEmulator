@@ -135,14 +135,14 @@ jobs:
           packages: platform-tools
 
       - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358" "cmake;3.22.1"
 
       - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
 
       - name: Build and test Android TV APK
         run: |
           pnpm build:android-tv:release
-          node --test apps/android-tv/scripts/bridge.test.cjs
+          node --test apps/android-tv/scripts/*.test.cjs
           cd apps/android-tv/android
           sh ./gradlew :app:testDebugUnitTest --console=plain
 

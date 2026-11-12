@@ -73,7 +73,8 @@ export async function listSnapshots(): Promise<Snapshot[]> {
   const snapshots = await read<Snapshot[]>('saves')
   const latest = new Map<string, Snapshot>()
   for (const snapshot of snapshots.sort((a,b)=>b.savedAt-a.savedAt)) {
-    if (!latest.has(snapshot.gameHash)) latest.set(snapshot.gameHash, snapshot)
+    const group = `${snapshot.coreBuild}:${snapshot.gameHash}`
+    if (!latest.has(group)) latest.set(group, snapshot)
   }
   return [...latest.values()]
 }
@@ -85,7 +86,7 @@ export async function removeSnapshot(key: string): Promise<void> {
     const snapshots=request.result as Snapshot[]
     const selected=snapshots.find(snapshot=>snapshot.key===key)
     for(const snapshot of snapshots) {
-      if(snapshot.key===key||selected&&snapshot.gameHash===selected.gameHash)store.delete(snapshot.key)
+      if(snapshot.key===key||selected&&snapshot.gameHash===selected.gameHash&&snapshot.coreBuild===selected.coreBuild)store.delete(snapshot.key)
     }
   }
   await completion
@@ -102,7 +103,7 @@ export async function putSnapshot(snapshot: Snapshot): Promise<void> {
   const request=store.getAll()
   request.onsuccess=()=>{
     for(const previous of request.result as Snapshot[]) {
-      if(previous.gameHash===snapshot.gameHash)store.delete(previous.key)
+      if(previous.gameHash===snapshot.gameHash&&previous.coreBuild===snapshot.coreBuild)store.delete(previous.key)
     }
     store.put(snapshot)
   }
@@ -134,8 +135,8 @@ export async function importArchive(file: File, kind: ArchiveKind): Promise<Arch
   await putArchive(archive)
   return archive
 }
-export function bundleKey(game: Archive, dependencies: Archive[]): string {
-  return `${CORE_BUILD}:${game.hash}:${dependencies.map(d=>`${d.name}=${d.hash}`).sort().join(',')}`
+export function bundleKey(game: Archive, dependencies: Archive[], coreBuild = CORE_BUILD): string {
+  return `${coreBuild}:${game.hash}:${dependencies.map(d=>`${d.name}=${d.hash}`).sort().join(',')}`
 }
 export async function pickArchives(): Promise<File[]> {
   return new Promise(resolve=>{

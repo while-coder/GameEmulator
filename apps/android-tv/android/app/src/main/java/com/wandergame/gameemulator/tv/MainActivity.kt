@@ -11,6 +11,10 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.FrameLayout
+import android.view.KeyEvent
+import android.view.MotionEvent
+import com.wandergame.emulator.nativecore.NativeEmulator
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,6 +30,7 @@ import org.mozilla.geckoview.WebExtension
 class MainActivity : ComponentActivity() {
     private lateinit var session: GeckoSession
     private lateinit var view: GeckoView
+    private lateinit var nativeNes: NativeEmulator
     private var port: WebExtension.Port? = null
     private val handler = Handler(Looper.getMainLooper())
     private var backSequence = 0
@@ -60,7 +65,13 @@ class MainActivity : ComponentActivity() {
             return
         }
         view = GeckoView(this)
-        setContentView(view)
+        val root = FrameLayout(this)
+        root.addView(view, FrameLayout.LayoutParams(-1, -1))
+        setContentView(root)
+        try { nativeNes = NativeEmulator(this, root, ::nativeInputDisconnected, ::nativeFailure) }
+        catch (error: LinkageError) { showError("原生内核加载失败：${error.message}"); return }
+        catch (error: Exception) { showError("原生内核初始化失败：${error.message}"); return }
+        app.setNativeHandler { method, path, body -> nativeNes.request(method, path, body).let { AssetServer.NativeResponse(it.bytes, it.mime) } }
         // BACK may be consumed by the IME before the Activity sees it.
         var imeWasVisible = false
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
@@ -75,6 +86,9 @@ class MainActivity : ComponentActivity() {
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny> {
                 val uri = Uri.parse(request.uri)
+                if (uri.host == "127.0.0.1" && uri.port == AssetServer.PORT && uri.path in listOf("/", "/index.html", "/nes.html", "/arcade.html")) {
+                    nativeNes.stop()
+                }
                 // Keep the document on our origin; remote ROM/catalog fetches are unaffected.
                 return GeckoResult.fromValue(if (uri.scheme == "http" && uri.host == "127.0.0.1" && uri.port == AssetServer.PORT)
                     AllowOrDeny.ALLOW else AllowOrDeny.DENY)
@@ -159,6 +173,22 @@ class MainActivity : ComponentActivity() {
         handler.postDelayed({ if (pendingBack == id) pendingBack = null }, 1500)
     }
 
+    fun nativeInputDisconnected() {
+        port?.postMessage(JSONObject().put("type", "nativePause"))
+    }
+    fun nativeFailure(message: String?) {
+        Toast.makeText(this, message ?: "原生模拟器操作失败", Toast.LENGTH_LONG).show()
+        nativeInputDisconnected()
+    }
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (::nativeNes.isInitialized && nativeNes.key(event)) return true
+        return super.dispatchKeyEvent(event)
+    }
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        if (::nativeNes.isInitialized && nativeNes.motion(event)) return true
+        return super.dispatchGenericMotionEvent(event)
+    }
+
     @Suppress("DEPRECATION")
     private fun immersive() {
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
@@ -180,10 +210,13 @@ class MainActivity : ComponentActivity() {
         if (::session.isInitialized) session.setActive(true)
     }
     override fun onStop() {
+        if (::nativeNes.isInitialized) { nativeNes.pause(); nativeInputDisconnected() }
         if (::session.isInitialized) session.setActive(false)
         super.onStop()
     }
     override fun onDestroy() {
+        (application as TvApplication).setNativeHandler(null)
+        if (::nativeNes.isInitialized) nativeNes.close()
         handler.removeCallbacksAndMessages(null)
         filePrompt?.let { if (!it.isComplete) fileResult?.complete(it.dismiss()) }
         port?.disconnect()

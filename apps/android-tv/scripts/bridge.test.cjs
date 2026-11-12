@@ -47,6 +47,15 @@ test('IME dismissal restores navigation without closing the page', () => {
   assert.equal(bridge.sent[0].result, 'handled');
   assert.equal(bridge.navigated.length, 0);
 });
+
+test('native lifecycle pause reaches the page without triggering back navigation', () => {
+  const events = [];
+  const bridge = setup('/nes.html', () => { throw new Error('must not navigate'); }, undefined, event => events.push(event.type));
+  bridge.receive({ type: 'nativePause' });
+  assert.deepEqual(events, ['tv-native-pause']);
+  assert.equal(bridge.sent.length, 0);
+  assert.equal(bridge.navigated.length, 0);
+});
 test('BACK resumes page navigation once text editing is already finished', () => {
   let backCalls = 0;
   const bridge = setup('/nes.html', () => { backCalls++; return 'handled'; }, undefined, () => true);

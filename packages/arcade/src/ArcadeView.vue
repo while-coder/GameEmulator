@@ -11,7 +11,7 @@ import TouchControls from './components/TouchControls.vue'
 import RomStorePanel from './components/RomStorePanel.vue'
 import RemoteSelect from './components/RemoteSelect.vue'
 import { findCatalogGame, loadCatalogs, type ArcadeCatalog, type CatalogGame } from './store/catalog'
-import { ArcadeRunner } from './emulator/runner'
+import { createArcadeRunner, type ArcadeRunnerApi } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action, type TouchLayout } from './emulator/settings'
 import { CORE_BUILD, bundleKey, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
 import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
@@ -30,7 +30,9 @@ const display=ref<HTMLElement|null>(null)
 const root=ref<HTMLElement|null>(null)
 const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??null)
 const fullscreen=useFullscreen(fullscreenRoot)
-const runner=shallowRef<ArcadeRunner|null>(null)
+const runner=shallowRef<ArcadeRunnerApi|null>(null)
+const coreBuild=()=>runner.value?.coreBuild??CORE_BUILD
+const currentBundle=(game:Archive, dependencies:Archive[])=>bundleKey(game,dependencies,coreBuild())
 const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
 const layoutEditing=ref(false)
 const touchLayoutDraft=ref<TouchLayout>()
@@ -54,7 +56,7 @@ const saveFilter=ref('all')
 const saveFilterOptions=computed(()=>[
   {value:'all',label:'全部游戏'},
   ...(loaded.value?[{value:'current',label:'本游戏'}]:[]),
-  ...snapshots.value.map(snapshot=>({value:snapshot.gameHash,label:snapshotName(snapshot)})).sort((a,b)=>a.label.localeCompare(b.label,'zh-Hans-CN')),
+  ...[...new Map(snapshots.value.map(snapshot=>[snapshot.gameHash,{value:snapshot.gameHash,label:snapshotName(snapshot)}])).values()].sort((a,b)=>a.label.localeCompare(b.label,'zh-Hans-CN')),
 ])
 const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>(saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value))&&snapshotName(snapshot).toLocaleLowerCase().includes(saveQuery.value.trim().toLocaleLowerCase())).sort((a,b)=>b.savedAt-a.savedAt))
 watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
@@ -92,7 +94,7 @@ async function startGame(source:Archive,snapshot?:Snapshot){
   await loadPreparedGame(game,dependencies,snapshot)
 }
 async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Snapshot){
-  if(snapshot&&bundleKey(game,dependencies)!==snapshot.key)throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
+  if(snapshot&&currentBundle(game,dependencies)!==snapshot.key)throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
   progress.value=null
   await refresh()
   current.value=null;input.releaseAll()
@@ -116,14 +118,14 @@ async function save(){
   if(!game||!runner.value?.loaded)throw new Error('请先启动游戏')
   const dependencies=currentDependencies.value
   const state=await runner.value.save()
-  await putSnapshot({key:bundleKey(game,dependencies),gameName:game.name,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:CORE_BUILD,state,savedAt:Date.now()})
+  await putSnapshot({key:currentBundle(game,dependencies),gameName:game.name,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:coreBuild(),state,savedAt:Date.now()})
   snapshots.value=await listSnapshots()
   notify('已快速存档')
 }
 async function restore(snapshot:Snapshot){
-  if(snapshot.coreBuild!==CORE_BUILD)throw new Error('此存档不属于当前街机核心版本')
+  if(snapshot.coreBuild!==coreBuild())throw new Error('此存档不属于当前街机核心版本，原存档已保留')
   const game=games.value.find(g=>g.hash===snapshot.gameHash)
-  if(!current.value||bundleKey(current.value,currentDependencies.value)!==snapshot.key){
+  if(!current.value||currentBundle(current.value,currentDependencies.value)!==snapshot.key){
     if(game)await startGame(game,snapshot)
     else{
       const match=await findCatalogGame(snapshot.gameHash,downloads.signal)
@@ -137,15 +139,15 @@ async function restore(snapshot:Snapshot){
 }
 async function quickRestore(){
   if(!current.value)throw new Error('请先启动游戏')
-  const snapshot=(await listSnapshots()).find(snapshot=>snapshot.gameHash===current.value!.hash)
+  const snapshot=(await listSnapshots()).find(snapshot=>snapshot.gameHash===current.value!.hash&&snapshot.coreBuild===coreBuild())
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();runner.value?.dispose();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library'}
+async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library';await runner.value?.dispose()}
 async function leave(){
   if(busy.value||leaving.value)return
-  leaving.value=true;stop()
-  try{await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
+  leaving.value=true
+  try{await stop();await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
 }
 function nativeBack(): 'handled'{
   if(busy.value||leaving.value)return 'handled'
@@ -199,16 +201,19 @@ function measure(){
   let width=container.clientWidth,height=width/aspect
   if(height>container.clientHeight){height=container.clientHeight;width=height*aspect}
   frameSize.value={width:`${Math.floor(width)}px`,height:`${Math.floor(height)}px`}
+  requestAnimationFrame(()=>runner.value?.syncDisplay?.(settings.smoothing))
   // The core observes the canvas CSS size and manages its backing buffer in
   // device pixels. Resizing it in CSS pixels here clips rendering on Retina.
 }
 watch(()=>settings.aspect,()=>nextTick(measure))
+watch(()=>settings.smoothing,()=>runner.value?.syncDisplay?.(settings.smoothing))
 const touchVisible=computed(()=>layoutEditing.value||settings.touch!=='never')
 let resize:ResizeObserver|null=null
 const blurCanvas=()=>canvas.value?.blur()
-function pageHide(){downloads.abort();input.releaseAll();runner.value?.dispose()}
+function pageHide(){downloads.abort();input.releaseAll();void Promise.resolve(runner.value?.dispose()).catch(err=>console.warn('[Arcade] 退出核心失败',err))}
 onMounted(()=>{
-  runner.value=new ArcadeRunner(canvas.value!)
+  runner.value=createArcadeRunner(canvas.value!)
+  runner.value.onError=(err)=>{error.value=err.message;menuOpen.value=true}
   runner.value.setMuted(settings.muted)
   canvas.value!.addEventListener('focus',blurCanvas)
   resize=new ResizeObserver(measure);resize.observe(display.value!)
@@ -225,7 +230,7 @@ onBeforeUnmount(()=>{
   window.removeEventListener('keydown',shellKey,true);window.removeEventListener('pagehide',pageHide)
   canvas.value?.removeEventListener('focus',blurCanvas)
   delete (window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack
-  runner.value?.dispose()
+  void Promise.resolve(runner.value?.dispose()).catch(err=>console.warn('[Arcade] 退出核心失败',err))
 })
 const PAD_LABELS:Record<number,string>={0:'A / ×',1:'B / ○',2:'X / □',3:'Y / △',4:'LB / L1',5:'RB / R1',8:'Select / Back',9:'Start',12:'↑',13:'↓',14:'←',15:'→'}
 const time=(value:number)=>new Date(value).toLocaleString()
@@ -273,9 +278,9 @@ const time=(value:number)=>new Date(value).toLocaleString()
           <section v-else-if="tab==='saves'" class="store-panel player-saves">
             <div class="store-tools"><div class="search-tools"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SInput v-model:value="saveQuery" type="search" placeholder="搜索存档名、游戏名" aria-label="搜索存档" /></div><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" /></div>
             <div class="store-summary">显示 {{filteredSnapshots.length}} 条</div>
-            <SHint class="load-hint">每个游戏保留一个快速存档（Ctrl+S / F8 保存，F9 读取），保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
+            <SHint class="load-hint">每个游戏按内核版本保留一个快速存档（Ctrl+S / F8 保存，F9 读取），同内核保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
             <div class="save-list">
-              <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="save-card"><div class="save-main"><div class="save-title-row"><STag size="small" type="warning">快速</STag><h3>{{snapshotName(snapshot)}}</h3></div><p class="meta">{{snapshot.gameName}}</p><p class="meta time">{{time(snapshot.savedAt)}}</p></div><div class="save-actions"><SButton class="btn primary" @click="task(()=>restore(snapshot))">{{ loaded && current?.hash !== snapshot.gameHash ? '切换并读档' : '读档' }}</SButton><SButton class="btn" @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
+              <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="save-card"><div class="save-main"><div class="save-title-row"><STag size="small" type="warning">快速</STag><h3>{{snapshotName(snapshot)}}</h3></div><p class="meta">{{snapshot.gameName}} · {{snapshot.coreBuild.includes('-native-')?'原生内核':'WASM 内核'}}</p><p class="meta time">{{time(snapshot.savedAt)}}</p></div><div class="save-actions"><SButton class="btn primary" @click="task(()=>restore(snapshot))">{{ loaded && current?.hash !== snapshot.gameHash ? '切换并读档' : '读档' }}</SButton><SButton class="btn" @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton></div></article>
               <SEmpty v-if="!filteredSnapshots.length" :description="snapshots.length?'没有匹配的存档':'还没有任何存档'" />
             </div>
           </section>

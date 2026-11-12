@@ -9,7 +9,7 @@
     "build": "node scripts/build.cjs assembleDebug",
     "build:release": "node scripts/build.cjs assembleRelease",
     "install:device": "node scripts/build.cjs installDebug",
-    "test": "node --test scripts/bridge.test.cjs && node scripts/build.cjs testDebugUnitTest"
+    "test": "node --test scripts/*.test.cjs && node scripts/build.cjs testDebugUnitTest"
   },
   "dependencies": {
     "vue": "catalog:",

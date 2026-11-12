@@ -17,7 +17,7 @@ export {
 export { useFullscreen, type FullscreenApi } from './composables/useFullscreen'
 export { useAutoHideToolbar, type AutoHideToolbarApi } from './composables/useAutoHideToolbar'
 export { useInputMonitor, type InputMonitorApi } from './composables/useInputMonitor'
-export { Button, NesRunner, SCREEN, type SaveState } from './emulator/runner'
+export { Button, NesRunner, SCREEN, createNesRunner, registerNesRunnerFactory, type NesRunnerApi, type SaveState } from './emulator/runner'
 export {
   createSaveState,
   deleteSaveState,

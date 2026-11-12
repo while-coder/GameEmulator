@@ -9,6 +9,8 @@ GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白�
 
 支持导入本地游戏、浏览在线游戏库，并提供键盘、手柄、触屏操作及即时存档功能。
 
+普通 Android 版与独立 Android TV 版的 NES / FC、街机使用共用的原生 `.so` 引擎；其他平台使用 WASM。原生即时存档与旧 WASM 存档分开保存，旧档保留但不能直接互读。构建与兼容性说明见 [Android 原生引擎](packages/android-native/README.md)。
+
 ## 在线体验
 
 通过 GitHub Pages 提供网页版，无需下载安装，打开浏览器即可体验：

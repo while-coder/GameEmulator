@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { Button, NesRunner, type SaveState } from '../emulator/runner'
+import { Button, createNesRunner, type NesRunnerApi, type SaveState } from '../emulator/runner'
 import TouchControls from './TouchControls.vue'
 import {
   createSaveState,
@@ -42,7 +42,8 @@ const emit = defineEmits<{ systemAction: [action: string] }>()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const displayRef = ref<HTMLDivElement | null>(null)
 const frameRef = ref<HTMLDivElement | null>(null)
-let runner: NesRunner | null = null
+let runner: NesRunnerApi | null = null
+function quickSlot() { return runner?.saveNamespace ? `${QUICK_SLOT}:${runner.saveNamespace}` : QUICK_SLOT }
 // Complete in-flight saves before the host destroys this document.
 const pendingOperations = new Set<Promise<unknown>>()
 function trackOperation<T>(operation: Promise<T>): Promise<T> {
@@ -93,7 +94,7 @@ async function doQuickSave() {
       showToast('存档失败')
       return
     }
-    await putSaveState(romKey, QUICK_SLOT, romName, state)
+    await putSaveState(romKey, quickSlot(), romName, state, undefined, 'quick', runner.saveNamespace)
     showToast('已存档')
   } catch (err) {
     console.error('[NES] 快速存档失败', err)
@@ -114,8 +115,8 @@ async function doQuickNewSave(): Promise<boolean> {
       return false
     }
     const list = await listSaveStates(props.romKey)
-    const count = list.filter((r) => r.slot !== QUICK_SLOT).length
-    await createSaveState(props.romKey, props.romName ?? props.romKey, `存档 ${count + 1}`, state)
+    const count = list.filter((r) => r.kind === 'normal' || (!r.kind && r.slot !== QUICK_SLOT)).length
+    await createSaveState(props.romKey, props.romName ?? props.romKey, `存档 ${count + 1}`, state, runner.saveNamespace)
     showToast('已新建存档')
     return true
   } catch (err) {
@@ -132,7 +133,7 @@ async function doQuickLoad() {
   }
   let record
   try {
-    record = await getSaveState(props.romKey, QUICK_SLOT)
+    record = await getSaveState(props.romKey, quickSlot())
   } catch (err) {
     console.error('[NES] 读档失败', err)
     showToast(`读档失败: ${describeError(err)}`)
@@ -334,6 +335,7 @@ function pollGamepads() {
   padRaf = requestAnimationFrame(pollGamepads)
   syncGamepadAssignments()
   if (!runner) return
+  if (runner.nativeInput) return
   if (props.inputLocked || document.hidden) return // 模态或后台不向游戏送输入(库内导航自行轮询)
   const pads = navigator.getGamepads ? navigator.getGamepads() : []
   if (props.gamePaused) return
@@ -418,12 +420,16 @@ function applyDisplaySize() {
   }
   frame.style.width = `${Math.floor(w)}px`
   frame.style.height = `${Math.floor(h)}px`
+  requestAnimationFrame(() => runner?.syncDisplay?.(settings.display.smoothing, settings.display.scanlines))
 }
 
 let ro: ResizeObserver | null = null
 
 onMounted(() => {
-  runner = new NesRunner(canvasRef.value!)
+  runner = createNesRunner(canvasRef.value!)
+  runner.onError = (error) => { showToast(error.message); emit('systemAction', 'pause') }
+  runner.configureInput?.(settings.players.map(p => p.padmap), settings.misc.turboHz)
+  runner.setDebug?.(settings.misc.showInputDebug)
   runner.setVolume(settings.audio.volume)
   runner.setSpeed(settings.misc.speed)
   // 防串键:Nostalgist/RetroArch 会给 canvas 设 tabindex 并在启动/点击时 focus(),
@@ -465,12 +471,17 @@ onBeforeUnmount(() => {
   toastTimer = 0
   ro?.disconnect()
   ro = null
-  runner?.dispose()
+  void runner?.dispose().catch(err => console.warn('[NES] 退出核心失败', err))
   runner = null
 })
 
 // 设置变化 -> 同步到 runner 与画面尺寸。
 watch(() => settings.players.map((p) => [p.keymap, p.padmap]), releaseAllGameInput, { deep: true })
+watch(() => [settings.players.map(p => p.padmap), settings.misc.turboHz], () => {
+  runner?.configureInput?.(settings.players.map(p => p.padmap), settings.misc.turboHz)
+}, { deep: true })
+watch(() => settings.misc.showInputDebug, value => runner?.setDebug?.(value))
+watch(() => [settings.display.smoothing, settings.display.scanlines], () => runner?.syncDisplay?.(settings.display.smoothing, settings.display.scanlines))
 
 watch(() => settings.audio.volume, (v) => runner?.setVolume(v))
 watch(() => settings.misc.speed, (v) => runner?.setSpeed(v))
@@ -512,7 +523,7 @@ function stop() {
 }
 function onPageHide() {
   releaseAllGameInput()
-  void runner?.dispose()
+  void runner?.dispose().catch(err => console.warn('[NES] 退出核心失败', err))
 }
 async function shutdown() {
   releaseAllGameInput()

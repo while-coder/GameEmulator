@@ -1,0 +1,1 @@
+-keep class com.wandergame.emulator.nativecore.NativeEmulator { *; }
