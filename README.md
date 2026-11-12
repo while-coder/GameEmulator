@@ -7,7 +7,7 @@ GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白�
 - **NES / FC（红白机）**：重温经典 8 位主机游戏。
 - **街机**：支持 CPS、Neo Geo 等经典街机游戏，体验投币开局与双人同玩。
 
-支持导入本地游戏、浏览在线游戏库，并提供键盘、手柄、触屏操作及即时存档功能。
+支持浏览在线游戏库，并提供键盘、手柄、触屏操作及即时存档功能。
 
 普通 Android 版与独立 Android TV 版的 NES / FC、街机使用共用的原生 `.so` 引擎；其他平台使用 WASM。原生即时存档与旧 WASM 存档分开保存，旧档保留但不能直接互读。构建与兼容性说明见 [Android 原生引擎](packages/android-native/README.md)。
 
@@ -17,7 +17,7 @@ GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白�
 
 **[点击进入 GameEmulator 在线体验](https://while-coder.github.io/GameEmulator/)**
 
-进入后选择模拟器，再从游戏库选择游戏或导入本地游戏文件。支持的浏览器还可将网页版添加到主屏幕，方便下次打开。
+进入后选择模拟器，即可直接浏览游戏库；右上角「设置」可调整按键、显示和音频。点击游戏卡片会自动下载并启动，已下载的游戏复用本地缓存。游戏启动后自动全屏，按 Esc / 返回键或点击画面右上角的暂停按钮打开菜单，可继续游戏、存读档、重新开始或返回游戏库；F11 切换全屏。浏览器不允许原生全屏时，游戏画面会铺满页面。支持的浏览器还可将网页版添加到主屏幕，方便下次打开。
 
 ## 支持平台
 
@@ -31,3 +31,7 @@ iOS SideStore 统一订阅源：[while-coder Store](https://while-coder.github.i
 桌面版和 Tauri Android 版在启动后自动检查更新，发现新版本时提示下载和安装；检查失败时不打断使用。Android 版也可在首页点击“检查更新”，并按提示授予安装权限。iOS、网页版和独立 Android TV 版不使用此应用内更新流程。
 
 Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自 `CHANGELOG.md` 中对应版本的段落；点击“知道了”后，同一版本不再重复展示。Tauri 应用发现新版本时优先显示更新提示。PWA 在加载新版页面后展示对应版本的内容，离线时也可查看已缓存版本的说明。
+
+游戏库优先显示目录中的 `screenshot_url`，否则根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图；截图按需加载。执行 `node scripts/sync-game-screenshots.cjs` 可根据本地 `games/*/catalog.json` 更新截图映射（需要联网）。
+
+游戏目录的 `download_url` 可保存相对于 `rom_url_base` 的路径（例如 `2020bb.zip`），游戏和依赖文件在读取目录时统一解析为完整地址；旧的完整 URL 仍然兼容。未指定 `rom_url_base` 时，相对路径按 `catalog.json` 所在目录解析。

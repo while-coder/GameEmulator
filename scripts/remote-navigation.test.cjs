@@ -24,6 +24,44 @@ function rect(left, top, width = 80, height = 40) {
 const candidate = bounds => ({ getBoundingClientRect: () => bounds })
 const navigation = load('packages/player-ui/remoteNavigation.ts')
 
+test('NES and arcade share one navigation stack and clean up its listeners', () => {
+  const listeners = new Set()
+  const cleanups = []
+  let installed = 0
+  const globals = {
+    HTMLElement: class {},
+    document: { activeElement: null },
+    window: {
+      addEventListener(name, handler) { if (name === 'keydown') { listeners.add(handler); installed++ } },
+      removeEventListener(name, handler) { if (name === 'keydown') listeners.delete(handler) },
+    },
+    requestAnimationFrame() { return 1 }, cancelAnimationFrame() {},
+  }
+  const shared = load('packages/player-ui/useRemoteNav.ts', globals, {
+    vue: { ref: value => ({ value }), computed: fn => ({ get value() { return fn() } }), watch: () => () => {}, onBeforeUnmount: fn => cleanups.push(fn) },
+    './gamepad': { GAMEPAD_AXIS_THRESHOLD: 0.5 }, './remoteNavigation': load('packages/player-ui/remoteNavigation.ts', globals),
+  })
+  const nes = load('packages/nes/src/composables/useRemoteNav.ts', {}, { '../../../player-ui/useRemoteNav': shared })
+  const arcade = load('packages/arcade/src/composables/useRemoteNav.ts', {}, { '../../../player-ui/useRemoteNav': shared })
+  assert.equal(nes.navEnabled, arcade.navEnabled)
+  assert.equal(nes.hasGamepad, arcade.hasGamepad)
+  const before = installed
+  let nesBack = 0, arcadeBack = 0
+  const options = { container: { value: null }, active: { value: true } }
+  nes.useRemoteNav({ ...options, priority: 1, onBack: () => nesBack++ })
+  arcade.useRemoteNav({ ...options, priority: 10, onBack: () => arcadeBack++ })
+  assert.equal(installed - before, 1)
+  const pressBack = () => { for (const handler of listeners) handler({ key: 'GoBack', preventDefault() {} }) }
+  pressBack()
+  assert.equal(arcadeBack, 1)
+  assert.equal(nesBack, 0)
+  cleanups[1]()
+  pressBack()
+  assert.equal(nesBack, 1)
+  cleanups[0]()
+  assert.equal(listeners.size, before)
+})
+
 test('horizontal movement chooses a same-row neighbor over a closer diagonal', () => {
   const from = rect(100, 100)
   for (const [dir, x] of [['right', 300], ['left', -100]]) {
@@ -80,10 +118,15 @@ for (const kind of ['nes', 'arcade']) {
       requestAnimationFrame() { return 1 }, performance: { now: () => 0 }, Event: class {},
     }
     const textNavigation = load('packages/player-ui/remoteNavigation.ts', globals)
-    const api = load(`packages/${kind}/src/composables/useRemoteNav.ts`, globals, {
+    const shared = load('packages/player-ui/useRemoteNav.ts', globals, {
       vue: { ref: value => ({ value }), computed: fn => ({ get value() { return fn() } }), watch: () => () => {}, onBeforeUnmount() {} },
-      '../emulator/settings': {}, '../../../player-ui/remoteNavigation': textNavigation,
+      './gamepad': { GAMEPAD_AXIS_THRESHOLD: 0.5 }, './remoteNavigation': textNavigation,
     })
+    const api = load(`packages/${kind}/src/composables/useRemoteNav.ts`, globals, {
+      '../../../player-ui/useRemoteNav': shared,
+    })
+    assert.equal(api.useRemoteNav, shared.useRemoteNav)
+    assert.equal(api.navEnabled, shared.navEnabled)
     api.useRemoteNav({ container: { value: container }, active: { value: true } })
     const press = key => {
       let prevented = false

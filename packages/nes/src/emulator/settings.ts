@@ -1,3 +1,4 @@
+import { GAMEPAD_AXIS_THRESHOLD } from '../../../player-ui/gamepad'
 import { readTouchControl, type TouchControlLayout } from '../../../player-ui/touchLayout'
 /**
  * 全局设置:按键映射(分玩家)、显示效果、音频、杂项。
@@ -133,7 +134,7 @@ export const SPEED_OPTIONS = [0.5, 1, 2, 3]
 export const TURBO_HZ_OPTIONS = [8, 16, 24, 30]
 
 /** 摇杆轴触发阈值:绝对值超过此值才视为对应方向按下,避免静止漂移误触。 */
-export const GAMEPAD_AXIS_THRESHOLD = 0.5
+export { GAMEPAD_AXIS_THRESHOLD } from '../../../player-ui/gamepad'
 
 // 标准手柄(W3C Standard Gamepad)默认映射:方向用 D-pad(b12~b15),A/B 取 Nintendo
 // 手感(A 在右=b1,B 在下=b0),连发绑到面键 X/Y。每个玩家各自保存一份默认值。

@@ -25,26 +25,22 @@ import {
   type TouchPadMode,
 } from '../emulator/settings'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
-import RemoteSelect from './RemoteSelect.vue'
-import RomStorePanel from './RomStorePanel.vue'
+import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import SaveStatePanel, { type LoadSavePayload } from './SaveStatePanel.vue'
 
 const open = defineModel<boolean>('open', { default: false })
 
-type Tab = 'library' | 'saves' | 'keys' | 'display' | 'audio' | 'misc'
-const tab = defineModel<Tab>('tab', { default: 'library' })
+type Tab = 'saves' | 'keys' | 'display' | 'audio' | 'misc'
+const tab = defineModel<Tab>('tab', { default: 'saves' })
 withDefaults(defineProps<{ currentRomKey?: string | null; audioOn?: boolean }>(), { audioOn: true })
 const emit = defineEmits<{
-  loadRom: [{ name: string; bytes: Uint8Array; key: string }]
   loadSave: [LoadSavePayload]
   toggleAudio: []
   editTouchLayout: []
 }>()
-const libraryPanel = ref<InstanceType<typeof RomStorePanel> | null>(null)
 const savePanel = ref<InstanceType<typeof SaveStatePanel> | null>(null)
-const busy = computed(() => libraryPanel.value?.busyKey != null || savePanel.value?.busyKey != null)
+const busy = computed(() => savePanel.value?.busyKey != null)
 defineExpose({ busy, refreshSaves: () => savePanel.value?.refreshCreatedSave() })
-const libraryOpen = computed({ get: () => open.value && tab.value === 'library', set: (v) => { if (!v) open.value = false } })
 const savesOpen = computed({ get: () => open.value && tab.value === 'saves', set: (v) => { if (!v) open.value = false } })
 
 watch(tab, () => {
@@ -75,7 +71,6 @@ const speedOptions = SPEED_OPTIONS.map((s) => ({ value: s, label: `${s}×` }))
 const turboOptions = TURBO_HZ_OPTIONS.map((h) => ({ value: h, label: `${h} 次/秒` }))
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'library', label: '游戏库' },
   { key: 'saves', label: '存档' },
   { key: 'keys', label: '按键' },
   { key: 'display', label: '显示' },
@@ -273,14 +268,9 @@ onBeforeUnmount(() => {
         </SButton>
       </nav>
 
-      <fieldset v-if="tab !== 'library' && tab !== 'saves'" class="settings-actions player-settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
-      <section :id="`settings-panel-${tab}`" class="body player-settings-body" :class="{ 'list-body': tab === 'library' || tab === 'saves', 'player-settings-list': tab === 'library' || tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
-        <RomStorePanel v-if="tab === 'library'" ref="libraryPanel" v-model:open="libraryOpen" @load="emit('loadRom', $event)">
-          <template #actions>
-            <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
-          </template>
-        </RomStorePanel>
-        <SaveStatePanel v-else-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)">
+      <fieldset v-if="tab !== 'saves' && $slots.actions" class="settings-actions player-settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
+      <section :id="`settings-panel-${tab}`" class="body player-settings-body" :class="{ 'list-body': tab === 'saves', 'player-settings-list': tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
+        <SaveStatePanel v-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)">
           <template #actions>
             <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
           </template>
@@ -291,7 +281,7 @@ onBeforeUnmount(() => {
             <h3 id="keyboard-shortcuts-title">快捷键</h3>
             <dl>
               <dt><kbd>Esc</kbd></dt>
-              <dd>开启 / 关闭设置；打开时自动暂停游戏，关闭后继续。</dd>
+              <dd>游戏中打开暂停菜单，再按一次继续游戏。</dd>
               <dt><kbd>Ctrl+S / F8</kbd></dt>
               <dd>快速存档，覆盖当前游戏的快速存档槽。</dd>
               <dt><kbd>F9</kbd></dt>
@@ -409,7 +399,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
       <SHint v-if="tab === 'keys'" class="shortcut-hint player-settings-hint">
-        点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。
+        点击「菜单」暂停游戏，可继续游戏或进入设置；点击「快存」快速存档。
       </SHint>
     </div>
   </SModal>

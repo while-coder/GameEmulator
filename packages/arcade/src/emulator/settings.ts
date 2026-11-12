@@ -1,6 +1,6 @@
 import { readTouchControl, type TouchControlLayout } from '../../../player-ui/touchLayout'
 import { reactive, watch } from 'vue'
-export const GAMEPAD_AXIS_THRESHOLD = 0.5
+export { GAMEPAD_AXIS_THRESHOLD } from '../../../player-ui/gamepad'
 export const ACTIONS = [
   { id: 'up', label: '上', pad: 12 }, { id: 'down', label: '下', pad: 13 },
   { id: 'left', label: '左', pad: 14 }, { id: 'right', label: '右', pad: 15 },

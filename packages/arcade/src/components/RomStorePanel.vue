@@ -9,7 +9,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { dependencyPlan, loadCatalogs, type ArcadeCatalog, type CatalogGame } from '../store/catalog'
 import type { Archive } from '../store/library'
 import type { DependencyProgress } from '../store/dependencies'
-import RemoteSelect from './RemoteSelect.vue'
+import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
+import GamePreview from '../../../player-ui/GamePreview.vue'
 
 type RomEntry = CatalogGame & { local?: Archive; catalog?: ArcadeCatalog }
 const props = defineProps<{
@@ -17,10 +18,8 @@ const props = defineProps<{
   busy: boolean
   progress: DependencyProgress | null
   play: (game: CatalogGame, catalog: ArcadeCatalog) => Promise<void>
-  download: (game: CatalogGame, catalog: ArcadeCatalog) => Promise<void>
   playCached: (game: Archive) => Promise<void>
   remove: (game: Archive) => Promise<void>
-  importFiles: () => Promise<void>
 }>()
 const catalogs = ref<ArcadeCatalog[]>([])
 const catalogLoading = ref(false)
@@ -75,7 +74,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'size-desc', label: '体积 大→小' }, { value: 'publisher', label: '按厂商' },
 ]
 const sort = ref<SortMode>('default'), page = ref(1)
-const PAGE_SIZE = 60
+const PAGE_SIZE = 50
 const sortedMatched = computed(() => {
   const q = query.value.trim().toLocaleLowerCase()
   const games = libraryGames.value.filter(game =>
@@ -109,9 +108,6 @@ async function act(game: RomEntry, action: () => Promise<void>) {
 async function play(game: RomEntry) {
   await act(game, () => game.catalog ? props.play(game, game.catalog) : props.playCached(game.local!))
 }
-async function downloadOnly(game: RomEntry) {
-  if (game.catalog) await act(game, () => props.download(game, game.catalog!))
-}
 async function removeCached(game: RomEntry) {
   if (game.local) await act(game, () => props.remove(game.local!))
 }
@@ -123,7 +119,7 @@ function playLabel(game: RomEntry) {
   if (busyKey.value === romKey(game)) return '处理中'
   return cachedKeys.value.has(romKey(game)) ? '启动' : '下载并启动'
 }
-const downloadLabel = (game: RomEntry) => busyKey.value === romKey(game) ? '下载中' : '下载'
+
 const formatSize = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`
 const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, formatSize(game.file_size)].filter(Boolean).join(' · ')
 </script>
@@ -131,10 +127,10 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 <template>
   <section class="store-panel player-library">
       <div class="store-tools">
-        <div class="search-tools"><SButton :disabled="busy" @click="importFiles">打开本地 ROM</SButton><SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" /></div>
+        <div class="search-tools"><SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" /></div>
         <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
-        <SCheckbox v-model:checked="downloadedOnly" class="check">已下载 ({{ cachedKeys.size }})</SCheckbox>
+        <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedKeys.size }})</SCheckbox>
       </div>
 
       <div class="store-summary">
@@ -149,39 +145,30 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
           :key="romKey(game)"
           class="game-card"
         >
+          <button class="game-launch" :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <GamePreview :game-key="romKey(game)" :name="game.name || game.file_name" :system="game.system || 'ARCADE'" :screenshot="game.screenshot_url">
+            <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
+          </GamePreview>
           <div class="game-main">
             <div class="game-title-row">
               <h3>{{ game.name || game.file_name }}</h3>
-              <STag size="small" class="cache-state" :type="cachedKeys.has(romKey(game)) ? 'success' : 'default'">
-                {{ cachedKeys.has(romKey(game)) ? '已下载' : '未下载' }}
-              </STag>
+
             </div>
             <p class="meta">{{ metaLine(game) }}</p>
             <div v-if="game.tags?.length" class="tags">
-              <STag v-for="tag in game.tags.slice(0, 4)" :key="tag" size="small">{{ tag }}</STag>
+              <STag v-for="tag in game.tags.slice(0, 2)" :key="tag" size="small">{{ tag }}</STag>
             </div>
           </div>
 
-          <div class="game-actions">
-            <span v-if="busyKey === romKey(game) && progressLabel(game)" class="progress">
-              {{ progressLabel(game) }}
+          <div v-if="busyKey === romKey(game) || game.local" class="game-actions">
+            <span v-if="busyKey === romKey(game)" class="progress">
+              {{ playLabel(game) }} {{ progressLabel(game) }}
             </span>
-            <SButton
-              v-if="game.catalog && !cachedKeys.has(romKey(game))"
-              class="btn"
-              :disabled="busy || busyKey !== null"
-              @click="downloadOnly(game)"
-            >
-              {{ downloadLabel(game) }}
-            </SButton>
-            <SButton class="btn primary" :disabled="busy || busyKey !== null" @click="play(game)">
-              {{ playLabel(game) }}
-            </SButton>
             <SButton
               v-if="game.local"
               class="btn"
               :disabled="busy || busyKey !== null"
-              @click="removeCached(game)"
+              @click.stop="removeCached(game)"
             >
               删除
             </SButton>

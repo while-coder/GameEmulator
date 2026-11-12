@@ -24,10 +24,13 @@ import {
   touchCachedRom,
   type CachedRom,
 } from '../store/romLibrary'
-import RemoteSelect from './RemoteSelect.vue'
+import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
+import GamePreview from '../../../player-ui/GamePreview.vue'
 
+const props = defineProps<{ launch?: (payload: { name: string; bytes: Uint8Array; key: string }) => Promise<void> }>()
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{
+  beforePlay: []
   load: [{ name: string; bytes: Uint8Array; key: string }]
 }>()
 
@@ -52,7 +55,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'publisher', label: '按厂商' },
 ]
 
-const PAGE_SIZE = 60
+const PAGE_SIZE = 50
 const page = ref(1)
 const sort = ref<SortMode>('default')
 
@@ -155,6 +158,7 @@ async function refreshCached() {
 
 async function play(game: RomEntry) {
   if (busyKey.value !== null) return
+  emit('beforePlay')
   const key = romKey(game)
   busyKey.value = key
   error.value = null
@@ -175,25 +179,9 @@ async function play(game: RomEntry) {
     }
     await touchCachedRom(key)
     await refreshCached()
-    emit('load', { name: game.name, bytes, key })
+    if (props.launch) await props.launch({ name: game.name, bytes, key })
+    else emit('load', { name: game.name, bytes, key })
     open.value = false
-  } catch (err) {
-    error.value = formatError(err)
-  } finally {
-    clearProgress(key)
-    busyKey.value = null
-  }
-}
-
-async function downloadOnly(game: RomEntry) {
-  if (busyKey.value !== null) return
-  const key = romKey(game)
-  if (cachedKeys.value.has(key)) return
-  busyKey.value = key
-  error.value = null
-  try {
-    await downloadAndCache(game, key)
-    await refreshCached()
   } catch (err) {
     error.value = formatError(err)
   } finally {
@@ -247,17 +235,11 @@ function playLabel(game: RomEntry): string {
   return cachedKeys.value.has(key) ? '启动' : '下载并启动'
 }
 
-function downloadLabel(game: RomEntry): string {
-  const key = romKey(game)
-  if (busyKey.value === key) return '下载中'
-  return '下载'
-}
 
 function metaLine(game: RomEntry): string {
   const parts = [
     game.genre,
     game.publisher,
-    game.mapper !== undefined ? `Mapper ${game.mapper}` : null,
     game.file_size ? formatSize(game.file_size) : null,
   ]
   return parts.filter(Boolean).join(' · ')
@@ -278,12 +260,11 @@ function formatError(err: unknown): string {
   <section class="store-panel player-library">
       <div class="store-tools">
         <div class="search-tools">
-          <slot name="actions" />
           <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" />
         </div>
         <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
-        <SCheckbox v-model:checked="downloadedOnly" class="check">已下载 ({{ cachedRoms.length }})</SCheckbox>
+        <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedRoms.length }})</SCheckbox>
       </div>
 
       <div class="store-summary">
@@ -297,39 +278,30 @@ function formatError(err: unknown): string {
           :key="romKey(game)"
           class="game-card"
         >
+          <button class="game-launch" :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <GamePreview :game-key="romKey(game)" :name="game.name" :system="'NES / FC'" :screenshot="game.screenshot_url">
+            <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
+          </GamePreview>
           <div class="game-main">
             <div class="game-title-row">
               <h3>{{ game.name }}</h3>
-              <STag size="small" class="cache-state" :type="cachedKeys.has(romKey(game)) ? 'success' : 'default'">
-                {{ cachedKeys.has(romKey(game)) ? '已下载' : '未下载' }}
-              </STag>
+
             </div>
             <p class="meta">{{ metaLine(game) }}</p>
             <div v-if="game.tags?.length" class="tags">
-              <STag v-for="tag in game.tags.slice(0, 4)" :key="tag" size="small">{{ tag }}</STag>
+              <STag v-for="tag in game.tags.slice(0, 2)" :key="tag" size="small">{{ tag }}</STag>
             </div>
           </div>
 
-          <div class="game-actions">
-            <span v-if="busyKey === romKey(game) && progressLabel(game)" class="progress">
-              {{ progressLabel(game) }}
+          <div v-if="busyKey === romKey(game) || cachedKeys.has(romKey(game))" class="game-actions">
+            <span v-if="busyKey === romKey(game)" class="progress">
+              {{ playLabel(game) }} {{ progressLabel(game) }}
             </span>
-            <SButton
-              v-if="!cachedKeys.has(romKey(game))"
-              class="btn"
-              :disabled="busyKey !== null"
-              @click="downloadOnly(game)"
-            >
-              {{ downloadLabel(game) }}
-            </SButton>
-            <SButton class="btn primary" :disabled="busyKey !== null" @click="play(game)">
-              {{ playLabel(game) }}
-            </SButton>
             <SButton
               v-if="cachedKeys.has(romKey(game))"
               class="btn"
               :disabled="busyKey !== null"
-              @click="removeCachedByKey(romKey(game))"
+              @click.stop="removeCachedByKey(romKey(game))"
             >
               删除
             </SButton>

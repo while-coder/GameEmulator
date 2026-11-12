@@ -1,4 +1,5 @@
 import { getCachedCatalog, putCachedCatalog } from './library'
+import { catalogDownloadBase } from '../../../shared/romUrl'
 
 export interface CatalogFile {
   file_name: string
@@ -10,6 +11,7 @@ export interface CatalogFile {
 export interface CatalogGame extends CatalogFile {
   name?: string
   name_en?: string
+  screenshot_url?: string
   genre?: string
   publisher?: string
   tags?: string[]
@@ -18,6 +20,7 @@ export interface CatalogGame extends CatalogFile {
   dependencies: string[]
 }
 export interface ArcadeCatalog {
+  rom_url_base?: string
   games: CatalogGame[]
   dependency_files: CatalogFile[]
 }
@@ -41,6 +44,8 @@ function remoteUrl(value: string, base = window.location.href): string {
 
 function parseCatalog(value: unknown, source: string): ArcadeCatalog {
   if (!value || typeof value !== 'object' || !('games' in value) || !Array.isArray(value.games)) throw new Error('游戏目录格式无效')
+  const romUrlBase = 'rom_url_base' in value ? value.rom_url_base : undefined
+  const base = remoteUrl(catalogDownloadBase(source, romUrlBase))
   const readFile = (value: unknown): CatalogFile => {
     if (!value || typeof value !== 'object') throw new Error('游戏目录文件信息无效')
     const file = value as CatalogFile
@@ -49,7 +54,7 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
         (file.dependencies !== undefined && (!Array.isArray(file.dependencies) || file.dependencies.some(name => typeof name !== 'string' || !archiveName.test(name))))) {
       throw new Error(`游戏目录下载地址或依赖信息无效：${file.file_name}`)
     }
-    return { ...file, sha256: file.sha256.toLowerCase(), download_url: remoteUrl(file.download_url, source) }
+    return { ...file, sha256: file.sha256.toLowerCase(), download_url: remoteUrl(file.download_url, base) }
   }
   const games = value.games.map(value => {
     const file = readFile(value) as CatalogGame
@@ -58,7 +63,8 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
   })
   const dependencies = 'dependency_files' in value ? value.dependency_files : []
   if (!Array.isArray(dependencies)) throw new Error('游戏目录依赖列表无效')
-  const catalog = { games, dependency_files: dependencies.map(readFile) }
+  const catalog: ArcadeCatalog = { games, dependency_files: dependencies.map(readFile) }
+  if (romUrlBase !== undefined) catalog.rom_url_base = base
   const files = new Map<string, CatalogFile>()
   for (const file of [...catalog.dependency_files, ...games]) {
     const existing = files.get(file.file_name)

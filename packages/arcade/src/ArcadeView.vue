@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { finishTextEditing } from '../../player-ui/remoteNavigation'
+import { useSettingsTab } from '../../player-ui/useSettingsTab'
+import PauseMenu from '../../player-ui/PauseMenu.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import fbaLicense from './assets/cores/FBA-LICENSE.txt?raw'
 import retroarchLicense from './assets/cores/RETROARCH-COPYING.txt?raw'
@@ -9,17 +11,18 @@ import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SSwitch from '@qingfeng346/ui-kit/components/SSwitch.vue'
 import TouchControls from './components/TouchControls.vue'
 import RomStorePanel from './components/RomStorePanel.vue'
-import RemoteSelect from './components/RemoteSelect.vue'
+import RemoteSelect from '../../player-ui/RemoteSelect.vue'
 import { findCatalogGame, loadCatalogs, type ArcadeCatalog, type CatalogGame } from './store/catalog'
 import { createArcadeRunner, type ArcadeRunnerApi } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action, type TouchLayout } from './emulator/settings'
-import { CORE_BUILD, bundleKey, importArchive, listArchives, listSnapshots, pickArchives, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
+import { CORE_BUILD, bundleKey, listArchives, listSnapshots, putSnapshot, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
 import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
 import { navEnabled, useRemoteNav } from './composables/useRemoteNav'
 import '../../player-ui/player.css'
 import '../../player-ui/settings.css'
+import '../../player-ui/library.css'
 import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
 import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
@@ -36,9 +39,14 @@ const currentBundle=(game:Archive, dependencies:Archive[])=>bundleKey(game,depen
 const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
 const layoutEditing=ref(false)
 const touchLayoutDraft=ref<TouchLayout>()
-const tab=ref<'library'|'saves'|'keys'|'display'|'audio'|'misc'>('library')
-const tabs=[{id:'library',label:'游戏库'},{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
-function openLibrary(){tab.value='library';menuOpen.value=true}
+const tab=useSettingsTab('arcade')
+const tabs=[{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
+const pauseOpen=ref(false)
+const pauseMenu=ref<InstanceType<typeof PauseMenu>|null>(null)
+function resumeGame(){if(!busy.value&&!leaving.value)pauseOpen.value=false}
+function showSettings(nextTab?:typeof tab.value){if(nextTab)tab.value=nextTab;menuOpen.value=true;pauseOpen.value=false}
+function openMenu(){if(loaded.value)pauseOpen.value=true;else menuOpen.value=true}
+watch(fullscreen.isFullscreen,(value,previous)=>{if(previous&&!value&&loaded.value&&!menuOpen.value)openMenu()})
 function editTouchLayout(){touchLayoutDraft.value=JSON.parse(JSON.stringify(settings.touchLayout));layoutEditing.value=true;menuOpen.value=false}
 function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false;touchLayoutDraft.value=undefined}
 function saveTouchLayout(){if(touchLayoutDraft.value)settings.touchLayout=touchLayoutDraft.value;finishTouchLayout()}
@@ -61,7 +69,7 @@ const saveFilterOptions=computed(()=>[
 const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>(saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value))&&snapshotName(snapshot).toLocaleLowerCase().includes(saveQuery.value.trim().toLocaleLowerCase())).sort((a,b)=>b.savedAt-a.savedAt))
 watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
 watch([tab,loaded],()=>{saveFilter.value=loaded.value?'current':'all'})
-const enabled=computed(()=>loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
+const enabled=computed(()=>loaded.value&&!menuOpen.value&&!pauseOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
 const input=useArcadeInput(runner,enabled)
 const player=ref(0)
 const capturing=ref<Action|null>(null)
@@ -75,20 +83,10 @@ function notify(text:string){message.value=text;clearTimeout(messageTimer);messa
 async function task(action:()=>Promise<void>){
   if(busy.value||leaving.value)return
   busy.value=true;error.value='';retryAction.value=null
-  try{await action()}catch(err){if(!downloads.signal.aborted){error.value=err instanceof Error?err.message:String(err);retryAction.value=action;menuOpen.value=true}}
+  try{await action()}catch(err){if(!downloads.signal.aborted){error.value=err instanceof Error?err.message:String(err);retryAction.value=action;menuOpen.value=true;pauseOpen.value=false}}
   finally{busy.value=false;progress.value=null}
 }
 async function refresh(){[archives.value,snapshots.value]=await Promise.all([listArchives(),listSnapshots()])}
-async function importFiles(){
-  const files=await pickArchives()
-  if(!files.length)return
-  await task(async()=>{
-    let count=0
-    try{for(const file of files){await importArchive(file,'game');count++}}
-    finally{await refresh()}
-    notify(`已导入 ${count} 个文件`)
-  })
-}
 async function startGame(source:Archive,snapshot?:Snapshot){
   const {game,dependencies}=await prepareGame(source,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
   await loadPreparedGame(game,dependencies,snapshot)
@@ -103,12 +101,11 @@ async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Sn
   await nextTick();measure()
 }
 async function play(game:Archive){await task(async()=>{await startGame(game);menuOpen.value=false})}
-async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog,launch:boolean){
+async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog){
   await task(async()=>{
     try{
       const {game,dependencies}=await prepareCatalogGame(entry,catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
-      if(launch){await loadPreparedGame(game,dependencies);menuOpen.value=false}
-      else notify('游戏及依赖已下载')
+      await loadPreparedGame(game,dependencies);menuOpen.value=false
     }finally{await refresh()}
   })
 }
@@ -129,7 +126,7 @@ async function restore(snapshot:Snapshot){
     if(game)await startGame(game,snapshot)
     else{
       const match=await findCatalogGame(snapshot.gameHash,downloads.signal)
-      if(!match)throw new Error(`未找到存档对应的游戏，请先导入原始游戏包 ${snapshot.gameName}`)
+      if(!match)throw new Error(`未找到存档对应的游戏，请确认在线游戏库仍收录 ${snapshot.gameName}`)
       const prepared=await prepareCatalogGame(match.game,match.catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
       await loadPreparedGame(prepared.game,prepared.dependencies,snapshot)
     }
@@ -143,7 +140,7 @@ async function quickRestore(){
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];menuOpen.value=false;tab.value='library';await runner.value?.dispose()}
+async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];menuOpen.value=false;pauseOpen.value=false;await runner.value?.dispose();await fullscreen.exit()}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true
@@ -153,7 +150,8 @@ function nativeBack(): 'handled'{
   if(busy.value||leaving.value)return 'handled'
   if(layoutEditing.value)finishTouchLayout()
   else if(menuOpen.value)menuOpen.value=false
-  else if(loaded.value)stop()
+  else if(pauseOpen.value)resumeGame()
+  else if(loaded.value)openMenu()
   else void leave()
   return 'handled'
 }
@@ -170,8 +168,8 @@ function shellKey(event:KeyboardEvent){
     event.preventDefault();event.stopImmediatePropagation()
     if(event.repeat||busy.value||leaving.value)return
     if(event.code==='F11'){void fullscreen.toggle();return}
-    if(event.code==='Escape'){capturing.value=null;if(layoutEditing.value)finishTouchLayout();else menuOpen.value=!menuOpen.value;return}
-    if(!menuOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
+    if(event.code==='Escape'){capturing.value=null;if(layoutEditing.value)finishTouchLayout();else if(menuOpen.value)menuOpen.value=false;else if(pauseOpen.value)resumeGame();else openMenu();return}
+    if(!menuOpen.value&&!pauseOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
     return
   }
   if(capturing.value&&menuOpen.value){
@@ -181,12 +179,14 @@ function shellKey(event:KeyboardEvent){
 }
 // The shell owns these keys before menu navigation or the game sees them.
 if(typeof window!=='undefined')window.addEventListener('keydown',shellKey,true)
+useRemoteNav({container:root,active:computed(()=>navEnabled.value&&!loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value),onBack:nativeBack,autoFocus:true,priority:1})
 const toolbar=ref<HTMLElement|null>(null)
 useRemoteNav({container:toolbar,active:computed(()=>navEnabled.value&&!menuOpen.value&&!layoutEditing.value&&!loaded.value&&!busy.value&&!leaving.value),onBack:nativeBack,autoFocus:true,priority:0})
 const panel=ref<HTMLElement|null>(null)
 useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:closeMenu,autoFocus:true,priority:10})
-watch([menuOpen,layoutEditing,busy,current],()=>{
-  if(menuOpen.value||layoutEditing.value||busy.value)runner.value?.pause()
+useRemoteNav({container:computed(()=>pauseMenu.value?.panel??null),active:computed(()=>navEnabled.value&&pauseOpen.value&&!busy.value&&!leaving.value),onBack:resumeGame,autoFocus:true,priority:10})
+watch([menuOpen,pauseOpen,layoutEditing,busy,current],()=>{
+  if(menuOpen.value||pauseOpen.value||layoutEditing.value||busy.value)runner.value?.pause()
   else runner.value?.resume()
 },{flush:'sync'})
 watch(()=>settings.muted,value=>runner.value?.setMuted(value))
@@ -237,14 +237,22 @@ const time=(value:number)=>new Date(value).toLocaleString()
 </script>
 
 <template>
-  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value}">
-    <header ref="toolbar" class="player-toolbar" aria-label="游戏功能区">
+  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded&&!layoutEditing}">
+    <header v-show="!loaded || layoutEditing" ref="toolbar" class="player-toolbar" aria-label="游戏功能区">
       <SButton :disabled="busy||leaving" @click="leave">返回模拟器列表</SButton>
       <span class="player-title">街机模拟器</span>
-      <SButton class="player-fullscreen" @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton>
-      <SButton @click="menuOpen=true">菜单</SButton>
+      <span class="library-header-line" aria-hidden="true"></span>
+      <SButton :disabled="busy || leaving" @click="openMenu">⚙ 设置</SButton>
     </header>
-    <main class="arcade-stage player-stage" :class="{'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
+    <section v-show="!loaded && !layoutEditing" class="library-browser" aria-label="游戏库">
+      <div class="library-heading"><span>选择游戏，自动下载并开始游玩</span></div>
+      <div v-if="busy" class="library-progress" role="status">{{progressText}}</div>
+      <RomStorePanel :archives="archives" :busy="busy||leaving" :progress="progress"
+        :play="remoteGame"
+        :play-cached="play" :remove="deleteGame" />
+      <div class="library-help">方向键 / 手柄选择 · 确认开始 <span>Esc 菜单 · F11 全屏</span></div>
+    </section>
+    <main class="arcade-stage player-stage" :class="{'player-preparing':!loaded&&!layoutEditing,'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
       <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
         <div class="layout-edit-header">
           <span>拖动调整位置 · 保存后生效</span>
@@ -255,11 +263,13 @@ const time=(value:number)=>new Date(value).toLocaleString()
       </div>
       <div ref="display" class="arcade-display">
         <div class="arcade-frame" :style="frameSize"><canvas ref="canvas" :style="{imageRendering:settings.smoothing?'auto':'pixelated'}" tabindex="-1" /></div>
-        <div v-if="!loaded && !layoutEditing" class="player-empty"><strong>选择游戏，开始游玩</strong><span>在游戏库中选择游戏，或导入本地 ROM。</span><SButton @click="openLibrary">打开游戏库</SButton></div>
       </div>
-      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="menuOpen=true" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
+      <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
-    <footer class="arcade-status"><span>{{current?.name??'未载入游戏'}}</span><span v-if="busy">处理中…</span><span v-else>街机 · FB Alpha 2012</span></footer>
+    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false">
+      <PauseMenu ref="pauseMenu" :game-name="current?.name || ''" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(save)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
+    </SModal>
+    <button v-if="loaded && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>
 
     <SModal v-model:show="menuOpen" title="设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
@@ -269,13 +279,8 @@ const time=(value:number)=>new Date(value).toLocaleString()
           <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
           <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
         </div>
-        <fieldset v-if="tab!=='library'&&tab!=='saves'" class="player-settings-actions" :disabled="busy||leaving"><template v-if="tab==='misc'"><SButton :disabled="!loaded" @click="runner?.reset()">复位游戏</SButton><SButton :disabled="!loaded" @click="stop">中止游戏</SButton><SButton @click="fullscreen.toggle">{{fullscreen.isFullscreen.value?'退出全屏':'全屏'}}</SButton></template></fieldset>
-        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content player-settings-body" :class="{'library-content':tab==='library'||tab==='saves','player-settings-list':tab==='library'||tab==='saves'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
-          <RomStorePanel v-if="tab==='library'" :archives="archives" :busy="busy||leaving" :progress="progress"
-            :play="(game,catalog)=>remoteGame(game,catalog,true)" :download="(game,catalog)=>remoteGame(game,catalog,false)"
-            :play-cached="play" :remove="deleteGame" :import-files="importFiles" />
-
-          <section v-else-if="tab==='saves'" class="store-panel player-saves">
+        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content player-settings-body" :class="{'library-content':tab==='saves','player-settings-list':tab==='saves'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
+          <section v-if="tab==='saves'" class="store-panel player-saves">
             <div class="store-tools"><div class="search-tools"><SButton :disabled="!loaded" @click="task(save)">快速存档</SButton><SInput v-model:value="saveQuery" type="search" placeholder="搜索存档名、游戏名" aria-label="搜索存档" /></div><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" /></div>
             <div class="store-summary">显示 {{filteredSnapshots.length}} 条</div>
             <SHint class="load-hint">每个游戏按内核版本保留一个快速存档（Ctrl+S / F8 保存，F9 读取），同内核保存时覆盖。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
@@ -286,7 +291,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
           </section>
 
           <section v-else-if="tab==='keys'" class="keys-page">
-            <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>开启 / 关闭设置，自动暂停 / 继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
+            <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>游戏中打开暂停菜单，再按一次继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
             <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="editTouchLayout">编辑布局</SButton></div>
             <SHint class="layout-hint">摇杆可调整大小，每个动作按钮可独立移动、缩放或隐藏；横屏与竖屏分别保存。</SHint>
             <div class="arcade-actions player-switch"><SButton v-for="(_,i) in settings.players" :key="i" :class="{selected:player===i}" @click="player=i">玩家 {{i+1}}</SButton></div>
@@ -308,7 +313,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
             <details class="core-licenses"><summary>开源许可</summary><h4>FB Alpha 2012</h4><pre>{{fbaLicense}}</pre><h4>RetroArch</h4><pre>{{retroarchLicense}}</pre></details>
           </section>
         </fieldset>
-        <SHint v-if="tab==='keys'" class="player-settings-hint">点击「菜单」打开设置时自动暂停，关闭设置后继续游戏；点击「快存」快速存档。</SHint>
+        <SHint v-if="tab==='keys'" class="player-settings-hint">点击「菜单」暂停游戏，可继续游戏或进入设置；点击「快存」快速存档。</SHint>
       </div>
     </SModal>
   </div>

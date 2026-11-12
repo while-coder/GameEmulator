@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import { computed, nextTick, ref, useAttrs } from 'vue'
-import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
+import { navEnabled, useRemoteNav } from './useRemoteNav'
 
 // 遥控/手柄友好的下拉框:
 // - 鼠标模式(navEnabled 为假):默认使用原生 <select>，searchable 开启时使用可搜索弹层。

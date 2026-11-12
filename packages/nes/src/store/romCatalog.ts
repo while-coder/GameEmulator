@@ -1,5 +1,8 @@
+import { catalogDownloadBase } from '../../../shared/romUrl'
+
 export type RomEntry = {
   name: string
+  screenshot_url?: string
   genre?: string
   publisher?: string
   tags?: string[]
@@ -10,12 +13,8 @@ export type RomEntry = {
 }
 
 export type RomCatalog = {
-  source?: string
-  version?: number
-  captured_at?: string
   updated_at?: string
   rom_url_base?: string
-  count?: number
   games: RomEntry[]
 }
 
@@ -25,7 +24,6 @@ export const DEFAULT_CATALOG_URL =
 
 export function emptyRomCatalog(): RomCatalog {
   return {
-    source: DEFAULT_CATALOG_URL,
     games: [],
   }
 }
@@ -44,10 +42,12 @@ export async function loadRomCatalog(url = DEFAULT_CATALOG_URL): Promise<RomCata
   if (!Array.isArray(catalog.games)) {
     throw new Error('ROM 目录格式无效')
   }
+  const downloadBase = catalogDownloadBase(url, catalog.rom_url_base)
   for (const game of catalog.games) {
     if (!game.name || !game.download_url || !game.sha256 || typeof game.file_size !== 'number') {
       throw new Error('ROM 目录缺少必要字段')
     }
+    game.download_url = new URL(game.download_url, downloadBase).href
   }
   // 远程目录可能存在 sha256 相同的重复条目(同一 ROM 内容多次收录)。
   // sha256 同时是 romKey / 缓存键,重复会导致 v-for key 冲突且无法区分,

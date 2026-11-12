@@ -14,6 +14,7 @@ const ALLOWED_DOWNLOAD_HOSTS = new Set([
   'raw.githubusercontent.com',
   'github.com',
   'youxi.s3.bitiful.net',
+  'vm3-cdn.s3-us-west-2.amazonaws.com',
 ])
 
 export async function downloadRom(
