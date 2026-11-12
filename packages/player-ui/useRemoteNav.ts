@@ -350,7 +350,13 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
     opts.active,
     (on) => {
       if (on && opts.autoFocus) {
-        requestAnimationFrame(() => focusFirst())
+        requestAnimationFrame(() => {
+          if (topInstance() !== inst) return
+          const active = document.activeElement
+          // Keep focus restored by a popup or moved by the activating key.
+          if (active instanceof HTMLElement && opts.container.value?.contains(active) && isFocusable(active)) return
+          focusFirst()
+        })
       }
     },
     { immediate: true },

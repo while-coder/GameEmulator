@@ -81,6 +81,10 @@ test('dropdown navigation keeps popup focus and returns to adjacent controls aft
     press('ArrowLeft')
     assert.equal(document.activeElement, trigger)
   }
+  document.activeElement = null
+  watchers[0].fn(true)
+  flushFrames()
+  assert.equal(document.activeElement, back)
 })
 
 test('NES and arcade share one navigation stack and clean up its listeners', () => {

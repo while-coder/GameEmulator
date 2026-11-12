@@ -75,7 +75,7 @@ function closePopup(): void {
   if (!open.value) return
   open.value = false
   // 关闭后焦点回到触发按钮,导航链路不断。
-  nextTick(() => triggerRef.value?.focus())
+  nextTick(() => triggerRef.value?.focus({ preventScroll: true }))
 }
 
 function toggle(): void {
