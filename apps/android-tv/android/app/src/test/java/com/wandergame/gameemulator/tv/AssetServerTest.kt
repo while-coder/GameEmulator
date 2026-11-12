@@ -1,6 +1,7 @@
 package com.wandergame.gameemulator.tv
 
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.net.Socket
 import org.junit.Assert.*
@@ -18,9 +19,24 @@ class AssetServerTest {
             fun request(extra: String, body: ByteArray = byteArrayOf(1, 2, 3), path: String = "/native/nes/load", length: Int = body.size): ByteArray {
                 return Socket("127.0.0.1", AssetServer.PORT).use { socket ->
                     socket.soTimeout = 5000
-                    socket.getOutputStream().write(("POST $path HTTP/1.1\r\nHost: 127.0.0.1:${AssetServer.PORT}\r\nContent-Length: $length\r\n$extra\r\n").toByteArray())
-                    socket.getOutputStream().write(body)
-                    socket.getInputStream().readBytes()
+                    val requestHeaders = "POST $path HTTP/1.1\r\nHost: 127.0.0.1:${AssetServer.PORT}\r\nContent-Length: $length\r\n$extra\r\n"
+                    socket.getOutputStream().write(requestHeaders.toByteArray() + body)
+                    // Rejected uploads may close with unread request bytes, producing
+                    // a TCP reset after the response. Honor Content-Length rather
+                    // than waiting for EOF after an already complete HTTP response.
+                    val input = socket.getInputStream()
+                    val headers = ByteArrayOutputStream()
+                    while (!headers.toString("US-ASCII").endsWith("\r\n\r\n")) {
+                        val next = input.read()
+                        check(next >= 0 && headers.size() < 8192) { "Incomplete HTTP response headers" }
+                        headers.write(next)
+                    }
+                    val responseLength = headers.toString("US-ASCII").lineSequence()
+                        .first { it.startsWith("Content-Length:", ignoreCase = true) }
+                        .substringAfter(':').trim().toInt()
+                    val responseBody = input.readNBytes(responseLength)
+                    assertEquals(responseLength, responseBody.size)
+                    headers.toByteArray() + responseBody
                 }
             }
             assertTrue(request("").toString(Charsets.ISO_8859_1).startsWith("HTTP/1.1 403"))

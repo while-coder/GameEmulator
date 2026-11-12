@@ -12,6 +12,7 @@
     "test": "node --test scripts/*.test.cjs && node scripts/build.cjs testDebugUnitTest"
   },
   "dependencies": {
+    "@game-emulator/android-native": "workspace:*",
     "vue": "catalog:",
     "@game-emulator/shell": "workspace:*",
     "@game-emulator/nes": "workspace:*",

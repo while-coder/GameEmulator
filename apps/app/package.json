@@ -17,6 +17,7 @@
     "ios:init": "node src-tauri/native/sync-icons.cjs ios && tauri ios init --ci && node src-tauri/native/ios/prepare.cjs"
   },
   "dependencies": {
+    "@game-emulator/android-native": "workspace:*",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-updater": "^2.10.1",

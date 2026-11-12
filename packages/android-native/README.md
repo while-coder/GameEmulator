@@ -3,6 +3,11 @@
 Both the ordinary Tauri Android APK and the standalone Android TV APK use this
 module for **NES/FC and arcade**. Desktop, iOS and PWA continue using WASM.
 
+The TypeScript adapters are a workspace package, `@game-emulator/android-native`,
+with `/nes`, `/arcade` and `/transport` exports. Both apps declare this dependency;
+the package declares its own NES/arcade dependencies so TypeScript and Vite can
+resolve them from the shared source directory after a clean pnpm install.
+
 - FCEUmm: `libfceumm.so`.
 - FB Alpha 2012 / FBA 0.2.97.29 ROM sets: `libfbalpha2012.so`.
 - Common libretro host, EGL/OpenGL ES and Oboe audio: `libgameemulator.so`.
@@ -15,6 +20,13 @@ The Android library is included as `:emulator-native`. The Tauri project's
 `native/android/prepare.cjs` regenerates its Gradle inclusion; edit that template,
 not ignored `gen/android` files. NDK **28.2.13676358**, CMake **3.22.1**, SDK 36
 and JDK 17+ are required. CMake validates vendored source archives and builds offline.
+
+The release workflow checks both Android frontends before creating the release.
+The ordinary APK and TV APK then build independently of the desktop release.
+The ordinary Android init step installs the NDK/CMake versions above and sets
+`NDK_HOME`, overriding the reusable workflow's older default NDK. Both release
+jobs require the Android keystore, password, alias and key password, supplied via
+`BUILD_SIGNING_JSON` or the corresponding `ANDROID_*` secrets.
 
 ```sh
 pnpm android:build --debug --apk --ci

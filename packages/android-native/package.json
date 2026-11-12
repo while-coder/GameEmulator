@@ -1,0 +1,15 @@
+{
+  "name": "@game-emulator/android-native",
+  "private": true,
+  "type": "module",
+  "version": "0.0.3",
+  "exports": {
+    "./nes": "./src/nes.ts",
+    "./arcade": "./src/arcade.ts",
+    "./transport": "./src/transport.ts"
+  },
+  "dependencies": {
+    "@game-emulator/nes": "workspace:*",
+    "@game-emulator/arcade": "workspace:*"
+  }
+}

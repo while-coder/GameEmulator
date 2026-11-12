@@ -28,6 +28,9 @@ importers:
 
   apps/android-tv:
     dependencies:
+      '@game-emulator/android-native':
+        specifier: workspace:*
+        version: link:../../packages/android-native
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../../packages/arcade
@@ -56,6 +59,9 @@ importers:
 
   apps/app:
     dependencies:
+      '@game-emulator/android-native':
+        specifier: workspace:*
+        version: link:../../packages/android-native
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../../packages/arcade
@@ -127,6 +133,15 @@ importers:
       vue-tsc:
         specifier: 'catalog:'
         version: 2.2.12(typescript@5.9.3)
+
+  packages/android-native:
+    dependencies:
+      '@game-emulator/arcade':
+        specifier: workspace:*
+        version: link:../arcade
+      '@game-emulator/nes':
+        specifier: workspace:*
+        version: link:../nes
 
   packages/arcade:
     dependencies:

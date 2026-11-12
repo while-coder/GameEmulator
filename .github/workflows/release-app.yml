@@ -29,6 +29,23 @@ jobs:
           package-json: package.json
           changelog: CHANGELOG.md
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
+
+      - name: Check Android frontends and native bridge tests
+        run: |
+          TAURI_ENV_PLATFORM=android pnpm --filter @game-emulator/app run build:frontend
+          pnpm build:android-tv:frontend
+          node --test apps/android-tv/scripts/*.test.cjs scripts/save-state.test.cjs apps/app/src-tauri/native/android/manifest-update.test.cjs
+
   prepare-release:
     needs: check
     runs-on: ubuntu-latest
@@ -54,8 +71,7 @@ jobs:
     secrets: inherit
 
   release-android:
-    needs: [check, release-desktop]
-    if: ${{ !cancelled() && needs.release-desktop.result == 'success' }}
+    needs: [check, prepare-release]
     uses: while-coder/workflows/.github/workflows/tauri-android-release.yml@main
     with:
       project-path: apps/app
@@ -64,7 +80,12 @@ jobs:
       tag-name: ${{ needs.check.outputs.tag }}
       version: ${{ needs.check.outputs.version }}
       asset-prefix: GameEmulator
-      init-command: pnpm android:init
+      # The reusable workflow installs NDK 27; both Android hosts require NDK 28.
+      init-command: |
+        sdkmanager "ndk;28.2.13676358" "cmake;3.22.1"
+        export NDK_HOME="$ANDROID_HOME/ndk/28.2.13676358"
+        echo "NDK_HOME=$NDK_HOME" >> "$GITHUB_ENV"
+        pnpm android:init
       build-command: pnpm run android:build --apk --aab
     secrets: inherit
 
