@@ -264,7 +264,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 
 <template>
   <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded&&!layoutEditing}">
-    <header v-show="!loaded || layoutEditing" ref="toolbar" class="player-toolbar" aria-label="游戏功能区">
+    <header v-show="!loaded || layoutEditing" ref="toolbar" class="player-toolbar" data-nav-row aria-label="游戏功能区">
       <SButton class="library-back" aria-label="返回模拟器列表" :disabled="busy||leaving" @click="leave">‹ 返回</SButton>
       <span class="player-title">街机模拟器</span>
       <span class="library-header-line" aria-hidden="true"></span>
@@ -290,7 +290,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
       </div>
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
-    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false">
+    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="current?.name || ''" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
     </SModal>
     <button v-if="loaded && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>

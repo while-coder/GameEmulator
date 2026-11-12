@@ -26,8 +26,8 @@ export interface ArcadeCatalog {
 }
 
 export const DEFAULT_CATALOG_URLS = [
-  'https://vm3-cdn.s3-us-west-2.amazonaws.com/test/assets/test/arcade/catalog.json',
-  'https://vm3-cdn.s3-us-west-2.amazonaws.com/test/assets/test/neogeo/catalog.json',
+  'https://raw.githubusercontent.com/while-coder/arcade-roms/main/catalog.json',
+  'https://raw.githubusercontent.com/while-coder/neogeo-roms/main/catalog.json',
 ]
 const configuredUrls = String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').trim()
 const catalogUrls = [...new Set(configuredUrls ? configuredUrls.split(/[\s,]+/).filter(Boolean) : DEFAULT_CATALOG_URLS)]

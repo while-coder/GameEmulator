@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
     class="app"
     :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName && !layoutEditing }]"
   >
-    <header v-show="libraryVisible || layoutEditing" ref="toolbarRef" class="player-toolbar" aria-label="游戏功能区">
+    <header v-show="libraryVisible || layoutEditing" ref="toolbarRef" class="player-toolbar" data-nav-row aria-label="游戏功能区">
       <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="leaveEmulator">‹ 返回</SButton>
       <span class="player-title">{{ title }}</span>
       <span class="library-header-line" aria-hidden="true"></span>
@@ -402,7 +402,7 @@ onBeforeUnmount(() => {
       <div v-if="exitHintVisible" class="exit-hint" role="status">再按一次返回键退出</div>
     </Transition>
 
-    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="!loading && !creatingSave && !leaving" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
+    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="romName || ''" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
     </SModal>
     <button v-if="romName && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>

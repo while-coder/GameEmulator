@@ -158,7 +158,7 @@
 .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) kbd { display: inline-block; white-space: nowrap; }
 .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) dd { margin: 0; color: #bbb; }
 .player-modal .player-settings .save-actions .btn { min-height: 34px; padding: 6px 12px; border: 1px solid #434a54; border-radius: 6px; background: #303640; color: #eee; font-size: 13px; }
-.player-modal .player-settings .save-actions .primary { border-color: #2f6f9f; background: #2f6f9f; }
+.player-modal .player-settings .save-actions .primary { border-color: var(--player-load-border); background: var(--player-load-background); color: var(--player-load-text); }
 @media (pointer: coarse) {
   .player-modal .player-settings :is(.keyboard-help, .keyboard-shortcuts) { display: none; }
   .player-modal .player-settings .save-actions .btn { min-height: var(--player-control-height); height: var(--player-control-height); }

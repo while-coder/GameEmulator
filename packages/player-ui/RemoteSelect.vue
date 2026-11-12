@@ -2,10 +2,8 @@
 import { computed, nextTick, ref, useAttrs } from 'vue'
 import { navEnabled, useRemoteNav } from './useRemoteNav'
 
-// 遥控/手柄友好的下拉框:
-// - 鼠标模式(navEnabled 为假):默认使用原生 <select>，searchable 开启时使用可搜索弹层。
-// - 遥控模式:渲染触发按钮 —— 选中后按「确定」弹出选项列表,上下键在列表内移动,
-//   再按「确定」才切换选项(而非原生 select 那样左右键即时改值,不符合遥控操作习惯)。
+// 鼠标、触屏、键盘和手柄统一使用自渲染下拉菜单。
+// 点击或按「确定」展开，上下键移动，再按「确定」才切换选项。
 // 弹层挂 priority=20 的 useRemoteNav(高于模态的 10),打开时独占按键;BACK/确定后回落。
 
 interface Option {
@@ -123,16 +121,7 @@ useRemoteNav({
 </script>
 
 <template>
-  <!-- 鼠标模式:原生下拉,体验不变 -->
-  <select v-if="!navEnabled && !searchable" v-bind="attrs" v-model="model" class="remote-select">
-    <option v-for="opt in options" :key="String(opt.value)" :value="opt.value">
-      {{ opt.label }}
-    </option>
-  </select>
-
-  <!-- 遥控模式:触发按钮 + 弹出列表 -->
   <button
-    v-else
     v-bind="attrs"
     ref="triggerRef"
     type="button"

@@ -1,6 +1,6 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { GAMEPAD_AXIS_THRESHOLD } from './gamepad'
-import { createNavigationRepeatGuard, finishTextEditing, focusNavigationElement, isTextEntry, isTextNavigationIdle, pickNeighbor, resumeTextEditing } from './remoteNavigation'
+import { createNavigationRepeatGuard, finishTextEditing, focusNavigationElement, isTextEntry, isTextNavigationBoundary, isTextNavigationIdle, pickNeighbor, resumeTextEditing } from './remoteNavigation'
 
 // ===== Android TV 遥控器 / 手柄的统一 UI 焦点导航 =====
 // 几何空间导航:DPAD 方向上,在容器内的可聚焦元素中按真实矩形找最近邻并 .focus()。
@@ -202,7 +202,7 @@ function onKeyDown(e: KeyboardEvent): void {
   const top = topInstance()
   if (!top) return
   const active = document.activeElement
-  // 单行文本框(search/text/...)只挡住左右(光标)、退格、回车;上下让位给导航,否则 TV 上焦点会卡在输入框/select 里。
+  // 单行输入框保留文字编辑；光标到边界后允许左右移焦，上下直接导航。
   const typing = isTextEntry(active) && !isTextNavigationIdle(active)
   const multilineTyping = typing && isMultilineTextEntry(active)
 
@@ -228,12 +228,12 @@ function onKeyDown(e: KeyboardEvent): void {
       if (allowNavigationRepeat(e)) top.move('down')
       return
     case 'ArrowLeft':
-      if (typing) return
+      if (typing && (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.isComposing || !isTextNavigationBoundary(active, 'left'))) return
       e.preventDefault()
       if (allowNavigationRepeat(e)) top.move('left')
       return
     case 'ArrowRight':
-      if (typing) return
+      if (typing && (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.isComposing || !isTextNavigationBoundary(active, 'right'))) return
       e.preventDefault()
       if (allowNavigationRepeat(e)) top.move('right')
       return
@@ -243,7 +243,9 @@ function onKeyDown(e: KeyboardEvent): void {
     case 'BrowserBack':
       if (typing && e.key === 'Backspace') return // 打字时退格交原生
       e.preventDefault()
-      top.back()
+      // A handled back key must not reach a shell listener and reopen the menu.
+      if (top.opts.onBack) e.stopImmediatePropagation()
+      if (!e.repeat) top.back()
       return
   }
 }
@@ -292,7 +294,22 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
       focusNavigationElement(cands[0])
       return
     }
-    const next = pickNeighbor(current.getBoundingClientRect(), cands, dir)
+    const horizontal = dir === 'left' || dir === 'right'
+    const row = horizontal ? current.closest<HTMLElement>('[data-nav-row]') : null
+    const grid = current.closest<HTMLElement>('[data-nav-grid]')
+    const cell = !horizontal ? current.closest<HTMLElement>('[data-nav-cell]') : null
+    const from = (cell ?? current).getBoundingClientRect()
+    let next: HTMLElement | null
+    if (grid && container.contains(grid)) {
+      // Offscreen rows belong before fixed filters/pagination, regardless of
+      // their viewport distance. Vertical moves target each card's main action.
+      const inside = cands.filter(el => grid.contains(el) && (horizontal || el.hasAttribute('data-nav-primary')))
+      next = pickNeighbor(from, inside, dir)
+      if (!next && !horizontal) next = pickNeighbor(from, cands.filter(el => !grid.contains(el)), dir)
+    } else {
+      const candidates = row && container.contains(row) ? cands.filter(el => row.contains(el)) : cands
+      next = pickNeighbor(from, candidates, dir)
+    }
     if (next) {
       focusNavigationElement(next)
     }

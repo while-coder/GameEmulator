@@ -147,13 +147,14 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
 
-      <div class="game-list">
+      <div class="game-list" data-nav-grid>
         <article
           v-for="game in visibleGames"
           :key="romKey(game)"
           class="game-card"
+          data-nav-cell
         >
-          <button class="game-launch" :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :title="`${game.name || game.file_name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <button class="game-launch" data-nav-primary :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :title="`${game.name || game.file_name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
           <GamePreview :game-key="romKey(game)" :name="game.name || game.file_name" :system="game.system || 'ARCADE'" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>

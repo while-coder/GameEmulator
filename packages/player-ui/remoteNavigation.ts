@@ -12,6 +12,14 @@ export function isTextNavigationIdle(el: Element | null): boolean {
   return el instanceof HTMLElement && idleTextInputs.has(el)
 }
 
+/** Leave a single-line input only when there is no text left to traverse. */
+export function isTextNavigationBoundary(el: Element | null, dir: 'left' | 'right'): boolean {
+  if (!(el instanceof HTMLInputElement)) return false
+  if (el.value === '') return true
+  if (el.selectionStart === null || el.selectionStart !== el.selectionEnd) return false
+  return dir === 'left' ? el.selectionStart === 0 : el.selectionEnd === el.value.length
+}
+
 /** Keep the input as a navigation anchor after the keyboard is dismissed. */
 export function finishTextEditing(): boolean {
   const el = document.activeElement

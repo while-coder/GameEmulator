@@ -277,13 +277,14 @@ function formatError(err: unknown): string {
         <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
       </div>
 
-      <div class="game-list">
+      <div class="game-list" data-nav-grid>
         <article
           v-for="game in visibleGames"
           :key="romKey(game)"
           class="game-card"
+          data-nav-cell
         >
-          <button class="game-launch" :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :title="`${game.name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <button class="game-launch" data-nav-primary :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :title="`${game.name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
           <GamePreview :game-key="romKey(game)" :name="game.name" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>

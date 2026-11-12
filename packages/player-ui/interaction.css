@@ -16,9 +16,24 @@ textarea,
   user-select: text;
 }
 
-/* Keep text-field and select focus highlights inside clipped toolbars and dialogs. */
-:is(.app, .arcade-app, .player-modal) :is(.s-input, .remote-select, select, textarea, input[type='text'], input[type='search'], input[type='number']):focus {
-  outline: none;
-  outline-offset: 0;
-  box-shadow: inset 0 0 0 2px var(--library-accent, #8aafe0), inset 0 0 8px #8aafe040;
+:root {
+  --player-focus-shadow: inset 0 0 0 2px #8aafe0, inset 0 0 12px #8aafe066;
+  --player-load-background: #6b4e24;
+  --player-load-border: #a68045;
+  --player-load-text: #fff5e5;
+}
+
+/* Override component and UI-kit focus rings so clipped controls stay visible. */
+:focus-visible,
+:is(button, a, input, select, textarea, [tabindex], [data-nav]):focus,
+.player-library .store-tools .check:focus-within {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: var(--player-focus-shadow) !important;
+}
+
+:is([role='tab'][aria-selected='true'], .rs-option[data-selected='true']),
+.player-library .store-tools .check.is-checked,
+.player-settings .player-switch :is(.active, .selected) {
+  box-shadow: var(--player-focus-shadow) !important;
 }

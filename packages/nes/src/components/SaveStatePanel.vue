@@ -436,7 +436,8 @@ function formatError(err: unknown): string {
   cursor: pointer;
 }
 .btn.primary {
-  background: #2f6f9f;
+  background: var(--player-load-background);
+  color: var(--player-load-text);
 }
 .btn:hover:not(:disabled) {
   filter: brightness(1.12);
