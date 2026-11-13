@@ -19,9 +19,7 @@ if (location.origin === 'http://127.0.0.1:17864') {
         result = 'handled';
       } else if (typeof page.__handleAndroidBack === 'function') {
         result = page.__handleAndroidBack();
-      } else if (location.pathname === '/' || location.pathname === '/index.html') {
-        result = 'exit';
-      } else {
+      } else if (location.pathname !== '/' && location.pathname !== '/index.html') {
         location.replace('/index.html');
       }
     } catch (error) {

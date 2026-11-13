@@ -2,6 +2,7 @@
 import { finishTextEditing } from '../../player-ui/remoteNavigation'
 import { useSettingsTab } from '../../player-ui/useSettingsTab'
 import PauseMenu from '../../player-ui/PauseMenu.vue'
+import BackConfirmDialog from '../../player-ui/BackConfirmDialog.vue'
 import { usePlaySession } from '../../player-ui/usePlayHistory'
 import { nextSaveLabel, type SaveKind } from '../../shared/saveSlots'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
@@ -30,7 +31,7 @@ import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import SIconButton from '@qingfeng346/ui-kit/components/button/SIconButton.vue'
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 
-const props=defineProps<{onLeave:()=>void|Promise<void>}>()
+const props=defineProps<{onLeave:()=>void|Promise<void>;backOnEscape?:boolean}>()
 const canvas=ref<HTMLCanvasElement|null>(null)
 const display=ref<HTMLElement|null>(null)
 const root=ref<HTMLElement|null>(null)
@@ -40,6 +41,7 @@ const runner=shallowRef<ArcadeRunnerApi|null>(null)
 const coreBuild=()=>runner.value?.coreBuild??CORE_BUILD
 const currentBundle=(game:Archive, dependencies:Archive[])=>bundleKey(game,dependencies,coreBuild())
 const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
+const leaveConfirm=ref(false)
 const layoutEditing=ref(false)
 const touchLayoutDraft=ref<TouchLayout>()
 const tab=useSettingsTab('arcade')
@@ -165,19 +167,21 @@ async function commitEdit(snapshot:Snapshot){
 }
 function cancelEdit(){editingKey.value=null}
 async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];menuOpen.value=false;pauseOpen.value=false;await runner.value?.dispose();await fullscreen.exit()}
+function requestLeave(){if(!busy.value&&!leaving.value)leaveConfirm.value=true}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true
   try{await stop();await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
 }
 function nativeBack(): 'handled'{
+  if(leaveConfirm.value){leaveConfirm.value=false;return 'handled'}
   if(busy.value||leaving.value)return 'handled'
   if(editingKey.value)cancelEdit()
   else if(layoutEditing.value)finishTouchLayout()
   else if(menuOpen.value)menuOpen.value=false
   else if(pauseOpen.value)resumeGame()
   else if(loaded.value)openMenu()
-  else void leave()
+  else requestLeave()
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
@@ -194,7 +198,7 @@ function shellKey(event:KeyboardEvent){
     event.preventDefault();event.stopImmediatePropagation()
     if(event.repeat||busy.value||leaving.value)return
     if(event.code==='F11'){void fullscreen.toggle();return}
-    if(event.code==='Escape'){capturing.value=null;if(layoutEditing.value)finishTouchLayout();else if(menuOpen.value)menuOpen.value=false;else if(pauseOpen.value)resumeGame();else openMenu();return}
+    if(event.code==='Escape'){capturing.value=null;if(leaveConfirm.value)leaveConfirm.value=false;else if(layoutEditing.value)finishTouchLayout();else if(menuOpen.value)menuOpen.value=false;else if(pauseOpen.value)resumeGame();else if(loaded.value)openMenu();else if(props.backOnEscape)requestLeave();else openMenu();return}
     if(!menuOpen.value&&!pauseOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
     return
   }
@@ -205,9 +209,9 @@ function shellKey(event:KeyboardEvent){
 }
 // The shell owns these keys before menu navigation or the game sees them.
 if(typeof window!=='undefined')window.addEventListener('keydown',shellKey,true)
-useRemoteNav({container:root,active:computed(()=>navEnabled.value&&!loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value),onBack:nativeBack,autoFocus:true,priority:1})
+useRemoteNav({container:root,active:computed(()=>navEnabled.value&&!loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value),onBack:()=>props.backOnEscape?nativeBack():openMenu(),autoFocus:true,priority:1})
 const toolbar=ref<HTMLElement|null>(null)
-useRemoteNav({container:toolbar,active:computed(()=>navEnabled.value&&!menuOpen.value&&!layoutEditing.value&&!loaded.value&&!busy.value&&!leaving.value),onBack:nativeBack,autoFocus:true,priority:0})
+useRemoteNav({container:toolbar,active:computed(()=>navEnabled.value&&!menuOpen.value&&!layoutEditing.value&&!loaded.value&&!busy.value&&!leaving.value),onBack:()=>props.backOnEscape?nativeBack():openMenu(),autoFocus:true,priority:0})
 const panel=ref<HTMLElement|null>(null)
 useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:closeMenu,autoFocus:true,priority:10})
 useRemoteNav({container:computed(()=>pauseMenu.value?.panel??null),active:computed(()=>navEnabled.value&&pauseOpen.value&&!busy.value&&!leaving.value),onBack:resumeGame,autoFocus:true,priority:10})
@@ -265,7 +269,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 <template>
   <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded&&!layoutEditing}">
     <header v-show="!loaded || layoutEditing" ref="toolbar" class="player-toolbar" data-nav-row aria-label="游戏功能区">
-      <SButton class="library-back" aria-label="返回模拟器列表" :disabled="busy||leaving" @click="leave">‹ 返回</SButton>
+      <SButton class="library-back" aria-label="返回模拟器列表" :disabled="busy||leaving" @click="requestLeave">‹ 返回</SButton>
       <span class="player-title">街机模拟器</span>
       <span class="library-header-line" aria-hidden="true"></span>
       <SButton :disabled="busy || leaving" @click="openMenu">⚙ 设置</SButton>
@@ -290,6 +294,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
       </div>
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
+    <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leave" />
     <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="current?.name || ''" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
     </SModal>

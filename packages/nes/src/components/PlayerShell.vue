@@ -2,6 +2,7 @@
 import { finishTextEditing } from '../../../player-ui/remoteNavigation'
 import { useSettingsTab } from '../../../player-ui/useSettingsTab'
 import PauseMenu from '../../../player-ui/PauseMenu.vue'
+import BackConfirmDialog from '../../../player-ui/BackConfirmDialog.vue'
 import { usePlaySession } from '../../../player-ui/usePlayHistory'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
@@ -21,7 +22,7 @@ import '../../../player-ui/player.css'
 import '../../../player-ui/library.css'
 
 type ToolbarMode = 'app' | 'web'
-type BackResult = 'exit' | 'handled'
+type BackResult = 'handled'
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +35,7 @@ const props = withDefaults(
     openLoadingLabel?: string
     footerHideOnTouch?: boolean
     enableBackExit?: boolean
+    backOnEscape?: boolean
     onExit?: () => void | Promise<void>
   }>(),
   {
@@ -46,6 +48,7 @@ const props = withDefaults(
     openLoadingLabel: '载入中...',
     footerHideOnTouch: true,
     enableBackExit: false,
+    backOnEscape: false,
     onExit: undefined,
   },
 )
@@ -78,6 +81,7 @@ function showSettings(tab?: typeof settingsTab.value) {
 const layoutEditing = ref(false)
 const touchLayoutDraft = ref<TouchLayout>()
 const leaving = ref(false)
+const leaveConfirm = ref(false)
 const leaveError = ref('')
 const libraryPanel = ref<InstanceType<typeof RomStorePanel> | null>(null)
 const libraryVisible = computed(() => !romName.value && !layoutEditing.value)
@@ -96,7 +100,7 @@ async function launchGame(payload: { name: string; bytes: Uint8Array; key: strin
   await loadRomBytes(payload.name, payload.bytes, payload.key)
   settingsOpen.value = false
 }
-useRemoteNav({ container: appRef, active: computed(() => navEnabled.value && libraryVisible.value && !settingsOpen.value && !libraryBusy.value), autoFocus: true, priority: 1, onBack: consumeBack })
+useRemoteNav({ container: appRef, active: computed(() => navEnabled.value && libraryVisible.value && !settingsOpen.value && !libraryBusy.value), autoFocus: true, priority: 1, onBack: () => props.backOnEscape ? consumeBack() : openMenu() })
 async function leaveEmulator() {
   if (leaving.value || loading.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return
   leaving.value = true
@@ -109,6 +113,10 @@ async function leaveEmulator() {
   } finally {
     leaving.value = false
   }
+}
+function requestLeave() {
+  if (leaving.value || loading.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return
+  leaveConfirm.value = true
 }
 function editTouchLayout() {
   touchLayoutDraft.value = JSON.parse(JSON.stringify(settings.touchLayout))
@@ -149,20 +157,20 @@ function onShellKey(event: KeyboardEvent) {
     void toggleFullscreen()
     return
   }
-  if (layoutEditing.value) finishTouchLayout()
+  if (leaveConfirm.value) leaveConfirm.value = false
+  else if (layoutEditing.value) finishTouchLayout()
   else if (settingsOpen.value) settingsOpen.value = false
   else if (pauseOpen.value) resumeGame()
+  else if (romName.value) openMenu()
+  else if (props.enableBackExit && props.backOnEscape) requestLeave()
   else openMenu()
 }
 // Register before useRemoteNav installs its capture listener.
 if (typeof window !== 'undefined') window.addEventListener('keydown', onShellKey, true)
 const settingsTab = useSettingsTab('nes')
-const exitHintVisible = ref(false)
-let exitArmedAt = 0
-let exitHintTimer: ReturnType<typeof setTimeout> | null = null
 
 const inputLocked = computed(
-  () => settingsOpen.value || pauseOpen.value || layoutEditing.value || leaving.value,
+  () => settingsOpen.value || pauseOpen.value || layoutEditing.value || leaving.value || leaveConfirm.value,
 )
 
 usePlaySession('nes', playingRomKey, computed(() => !!playingRomKey.value && !inputLocked.value && !paused.value && !loading.value))
@@ -173,7 +181,7 @@ useRemoteNav({
   active: computed(() => navEnabled.value && !inputLocked.value && (!romName.value || paused.value)),
   autoFocus: true,
   priority: 0,
-  onBack: props.enableBackExit ? consumeBack : undefined,
+  onBack: props.enableBackExit ? () => props.backOnEscape ? consumeBack() : openMenu() : undefined,
 })
 
 // 弹窗暂停与手动暂停独立，关窗后保留原来的手动暂停状态。
@@ -279,8 +287,8 @@ function onSystemAction(action: string) {
   }
 }
 
-const EXIT_CONFIRM_MS = 2000
 function handleBack(): BackResult {
+  if (leaveConfirm.value) { leaveConfirm.value = false; return 'handled' }
   if (loading.value || leaving.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return 'handled'
   if (layoutEditing.value) {
     finishTouchLayout()
@@ -301,29 +309,12 @@ function handleBack(): BackResult {
   }
   if (!props.enableBackExit) return 'handled'
 
-  // Returning to the launcher never terminates the application.
-  if (props.onExit) return 'exit'
-  const now = Date.now()
-  if (now - exitArmedAt < EXIT_CONFIRM_MS) {
-    if (exitHintTimer) {
-      clearTimeout(exitHintTimer)
-      exitHintTimer = null
-    }
-    exitHintVisible.value = false
-    return 'exit'
-  }
-  exitArmedAt = now
-  exitHintVisible.value = true
-  if (exitHintTimer) clearTimeout(exitHintTimer)
-  exitHintTimer = setTimeout(() => {
-    exitHintVisible.value = false
-    exitHintTimer = null
-  }, EXIT_CONFIRM_MS)
+  requestLeave()
   return 'handled'
 }
 
 function consumeBack() {
-  if (handleBack() === 'exit') void leaveEmulator()
+  handleBack()
 }
 
 defineExpose({
@@ -334,7 +325,6 @@ defineExpose({
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onShellKey, true)
-  if (exitHintTimer) clearTimeout(exitHintTimer)
 })
 </script>
 
@@ -345,7 +335,7 @@ onBeforeUnmount(() => {
     :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName && !layoutEditing }]"
   >
     <header v-show="libraryVisible || layoutEditing" ref="toolbarRef" class="player-toolbar" data-nav-row aria-label="游戏功能区">
-      <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="leaveEmulator">‹ 返回</SButton>
+      <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="requestLeave">‹ 返回</SButton>
       <span class="player-title">{{ title }}</span>
       <span class="library-header-line" aria-hidden="true"></span>
       <SButton title="打开设置 (Esc)" :disabled="libraryBusy" @click="openMenu">⚙ 设置</SButton>
@@ -398,10 +388,7 @@ onBeforeUnmount(() => {
       />
     </main>
 
-    <Transition name="toast">
-      <div v-if="exitHintVisible" class="exit-hint" role="status">再按一次返回键退出</div>
-    </Transition>
-
+    <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leaveEmulator" />
     <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="romName || ''" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
     </SModal>
@@ -467,28 +454,5 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-}
-.exit-hint {
-  position: fixed;
-  left: 50%;
-  bottom: 80px;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  border-radius: 22px;
-  background: rgba(0, 0, 0, 0.82);
-  color: #fff;
-  font-size: 14px;
-  letter-spacing: 0.3px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  pointer-events: none;
-  z-index: 1000;
-}
-.toast-enter-active,
-.toast-leave-active {
-  transition: opacity 0.18s ease;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
 }
 </style>

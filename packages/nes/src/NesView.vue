@@ -4,6 +4,7 @@ import PlayerShell from './components/PlayerShell.vue'
 
 const props = defineProps<{
   onLeave: () => void | Promise<void>
+  backOnEscape?: boolean
   storageKey?: string
   platformLabel?: string
 }>()
@@ -23,5 +24,5 @@ onBeforeUnmount(() => {
 
 <template>
   <PlayerShell ref="shell" title="NES / FC 模拟器" :platform-label="platformLabel ?? 'NES / FC'"
-    :storage-key="storageKey ?? 'nes:lastRom'" enable-back-exit :on-exit="props.onLeave" />
+    :storage-key="storageKey ?? 'nes:lastRom'" enable-back-exit :on-exit="props.onLeave" :back-on-escape="backOnEscape" />
 </template>

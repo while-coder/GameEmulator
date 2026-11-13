@@ -143,6 +143,11 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
     }
     /** Invoked on an HTTP worker, never the UI thread. */
     fun request(method: String, path: String, body: ByteArray): NativeResponse {
+        if (path == "/native/app/exit") {
+            require(method == "POST" && body.isEmpty()) { "无效的退出请求" }
+            activity.runOnUiThread { activity.finish() }
+            return json(JSONObject().put("ok", true))
+        }
         require(path.matches(Regex("/native/(nes|arcade)/[a-zA-Z0-9_+./-]+"))) { "无效的原生接口" }
         val requestedSystem = path.split('/')[2]
         val route = path.removePrefix("/native/$requestedSystem/")

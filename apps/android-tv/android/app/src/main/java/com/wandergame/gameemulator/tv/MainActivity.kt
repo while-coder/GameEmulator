@@ -147,7 +147,6 @@ class MainActivity : ComponentActivity() {
                             val json = message as? JSONObject ?: return
                             if (source !== port || json.optString("type") != "backResult" || json.optInt("id") != pendingBack) return
                             pendingBack = null
-                            if (json.optString("result") == "exit") finish()
                         }
                         override fun onDisconnect(source: WebExtension.Port) {
                             if (source === port) { port = null; pendingBack = null }

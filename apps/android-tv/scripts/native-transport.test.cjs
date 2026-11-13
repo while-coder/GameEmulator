@@ -26,3 +26,18 @@ test('ordinary Android never falls back to WASM when the native bridge is missin
   runInNewContext(code, { exports, window: {}, Uint8Array });
   await assert.rejects(exports.createWebViewTransport()('/native/nes/info', 'GET'), /通道未加载/);
 });
+
+test('confirmed exit uses the existing Android bridge and propagates HTTP errors', async () => {
+  const exports = {}, sent = [];
+  const bridge = { onmessage: null, postMessage(message) {
+    const request = JSON.parse(message); sent.push(request);
+    bridge.onmessage({ data: JSON.stringify({ id: request.id, body: btoa('{"ok":true}'), mime: 'application/json' }) });
+  } };
+  runInNewContext(code, { exports, window: { GameEmulatorNative: bridge, setTimeout }, clearTimeout, Response, Uint8Array, btoa, atob });
+  await exports.exitAndroidApp(exports.createWebViewTransport());
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].path, '/native/app/exit');
+  assert.equal(sent[0].method, 'POST');
+  assert.equal(sent[0].body, '');
+  await assert.rejects(exports.exitAndroidApp(async () => new Response('native exit failed', { status: 503 })), /native exit failed/);
+});
