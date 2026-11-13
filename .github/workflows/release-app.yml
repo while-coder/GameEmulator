@@ -315,7 +315,7 @@ jobs:
     needs: [check, prepare-release]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: write
@@ -349,20 +349,26 @@ jobs:
           path: apps/pwa/dist
 
       - id: deployment
-        name: Deploy Pages until success
+        name: Deploy Pages
+        timeout-minutes: 15
         uses: actions/github-script@v9
         env:
           PAGES_ARTIFACT_ID: ${{ steps.pages-artifact.outputs.artifact_id }}
         with:
           script: |
-            const artifactId = process.env.PAGES_ARTIFACT_ID;
-            if (!artifactId) {
-              throw new Error('Upload Pages artifact did not return an artifact ID.');
+            const artifactId = Number(process.env.PAGES_ARTIFACT_ID);
+            if (!Number.isSafeInteger(artifactId) || artifactId <= 0) {
+              throw new Error('Upload Pages artifact did not return a valid numeric artifact ID.');
             }
             const retryDelayMs = 5000;
+            const maxAttempts = 3;
+            const maxStatusChecks = 120;
             const { owner, repo } = context.repo;
 
             const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            const isPermanentError = (error) =>
+              error.status >= 400 && error.status < 500 &&
+              ![408, 409, 429].includes(error.status);
 
             async function createDeployment(artifactId) {
               const idToken = await core.getIDToken();
@@ -380,7 +386,7 @@ jobs:
             }
 
             async function waitForDeployment(deploymentId) {
-              while (true) {
+              for (let check = 0; check < maxStatusChecks; check += 1) {
                 await sleep(retryDelayMs);
                 try {
                   const response = await github.request(
@@ -405,14 +411,14 @@ jobs:
                     return false;
                   }
                 } catch (error) {
+                  if (isPermanentError(error)) throw error;
                   core.warning(`Could not get deployment ${deploymentId} status: ${error.message}`);
                 }
               }
+              throw new Error(`GitHub Pages deployment ${deploymentId} timed out waiting for status.`);
             }
 
-            let attempt = 1;
-
-            while (true) {
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
               try {
                 core.info(`Creating GitHub Pages deployment, attempt ${attempt}.`);
                 const deployment = await createDeployment(artifactId);
@@ -432,11 +438,11 @@ jobs:
                   return;
                 }
 
-                core.warning(`GitHub Pages deployment ${deploymentId} failed. Retrying in 5 seconds.`);
+                throw new Error(`GitHub Pages deployment ${deploymentId} failed.`);
               } catch (error) {
+                if (isPermanentError(error) || attempt === maxAttempts) throw error;
                 core.warning(`GitHub Pages deployment attempt ${attempt} failed: ${error.message}`);
               }
 
-              attempt += 1;
               await sleep(retryDelayMs);
             }
