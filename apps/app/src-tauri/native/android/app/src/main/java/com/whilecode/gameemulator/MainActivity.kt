@@ -1,4 +1,4 @@
-package com.wandergame.nesemulator
+package com.whilecode.gameemulator
 
 import android.os.Bundle
 import android.webkit.WebView
@@ -8,8 +8,8 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
-import com.wandergame.emulator.nativecore.NativeEmulator
-import com.wandergame.emulator.nativecore.NativeWebViewBridge
+import com.whilecode.gameemulator.nativecore.NativeEmulator
+import com.whilecode.gameemulator.nativecore.NativeWebViewBridge
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 

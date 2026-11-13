@@ -1,4 +1,4 @@
-package com.wandergame.gameemulator.tv
+package com.whilecode.gameemulator.tv
 
 import java.io.Closeable
 import java.io.InputStream

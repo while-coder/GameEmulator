@@ -18,6 +18,6 @@
 
 Tauri 开发、构建前以及 `build.rs` 会自动生成当前目标平台的图标；根目录 `pnpm sync:icons` 刷新所有可在当前主机生成的平台图标及 Web 资源。
 
-Android 沿用现有 `com.wandergame.nesemulator` 标识。签名仍从仓库根 `secrets/keystore.properties` 或环境变量读取，不应将密钥放进模板或生成工程。
+Android 沿用现有 `com.whilecode.gameemulator` 标识。签名仍从仓库根 `secrets/keystore.properties` 或环境变量读取，不应将密钥放进模板或生成工程。
 
 应用显示名支持英文 `GameEmulator`、简体中文“游戏模拟器”和繁体中文“遊戲模擬器”。Android（含 TV）使用系统字符串资源，Apple 平台使用 `InfoPlist.strings`；Web 标题与启动页使用 `packages/shell/src/branding.ts`，桌面窗口标题跟随 WebView 语言。iOS 本地化资源需要通过 `prepare.cjs` 复制到应用 target 并运行 XcodeGen，不能仅放入 Tauri 的 `bundle.resources`。

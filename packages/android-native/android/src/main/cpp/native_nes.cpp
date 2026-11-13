@@ -402,7 +402,7 @@ std::string string(JNIEnv* env, jstring value) {
 }
 void fail(JNIEnv* env, const std::exception& e) { env->ThrowNew(env->FindClass("java/lang/IllegalStateException"),e.what()); }
 }
-#define JNI(name) Java_com_wandergame_emulator_nativecore_NativeEmulator_##name
+#define JNI(name) Java_com_whilecode_gameemulator_nativecore_NativeEmulator_##name
 extern "C" JNIEXPORT jlong JNICALL JNI(create)(JNIEnv* env,jobject,jstring directory) {
     try { return reinterpret_cast<jlong>(new Engine(string(env,directory))); }
     catch(const std::exception& e) { fail(env,e); return 0; }

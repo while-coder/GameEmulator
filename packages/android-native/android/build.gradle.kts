@@ -6,7 +6,7 @@ plugins {
 // the Tauri and GeckoView Gradle roots (which use different Kotlin versions).
 layout.buildDirectory.set(rootProject.layout.buildDirectory.dir("dependencies/emulator-native"))
 android {
-    namespace = "com.wandergame.emulator.nativecore"
+    namespace = "com.whilecode.gameemulator.nativecore"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
     defaultConfig {

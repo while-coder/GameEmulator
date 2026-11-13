@@ -1,4 +1,4 @@
-package com.wandergame.gameemulator.tv
+package com.whilecode.gameemulator.tv
 
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
@@ -14,7 +14,7 @@ import android.widget.Toast
 import android.widget.FrameLayout
 import android.view.KeyEvent
 import android.view.MotionEvent
-import com.wandergame.emulator.nativecore.NativeEmulator
+import com.whilecode.gameemulator.nativecore.NativeEmulator
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts

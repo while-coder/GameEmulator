@@ -28,10 +28,10 @@ fun signingProp(fileKey: String, envKey: String): String? =
 android {
     compileSdk = 36
     ndkVersion = "28.2.13676358"
-    namespace = "com.wandergame.nesemulator"
+    namespace = "com.whilecode.gameemulator"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
-        applicationId = "com.wandergame.nesemulator"
+        applicationId = "com.whilecode.gameemulator"
         minSdk = 24
         targetSdk = 36
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()

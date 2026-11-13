@@ -1,4 +1,4 @@
-package com.wandergame.gameemulator.tv
+package com.whilecode.gameemulator.tv
 
 import android.app.Application
 import org.mozilla.geckoview.GeckoRuntime

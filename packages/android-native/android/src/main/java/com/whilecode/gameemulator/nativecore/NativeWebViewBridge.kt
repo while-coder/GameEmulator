@@ -1,4 +1,4 @@
-package com.wandergame.emulator.nativecore
+package com.whilecode.gameemulator.nativecore
 
 import android.net.Uri
 import android.util.Base64

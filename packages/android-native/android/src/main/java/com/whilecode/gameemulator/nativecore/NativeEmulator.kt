@@ -1,4 +1,4 @@
-package com.wandergame.emulator.nativecore
+package com.whilecode.gameemulator.nativecore
 
 import android.graphics.SurfaceTexture
 import android.app.Activity
