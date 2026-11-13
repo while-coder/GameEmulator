@@ -344,52 +344,25 @@ jobs:
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
+        id: pages-artifact
         with:
           path: apps/pwa/dist
 
       - id: deployment
         name: Deploy Pages until success
         uses: actions/github-script@v9
+        env:
+          PAGES_ARTIFACT_ID: ${{ steps.pages-artifact.outputs.artifact_id }}
         with:
           script: |
-            const artifactName = 'github-pages';
+            const artifactId = process.env.PAGES_ARTIFACT_ID;
+            if (!artifactId) {
+              throw new Error('Upload Pages artifact did not return an artifact ID.');
+            }
             const retryDelayMs = 5000;
             const { owner, repo } = context.repo;
 
             const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-            async function getPagesArtifact() {
-              const artifacts = [];
-              let page = 1;
-              while (true) {
-                const response = await github.request(
-                  'GET /repos/{owner}/{repo}/actions/runs/{run_id}/artifacts',
-                  {
-                    owner,
-                    repo,
-                    run_id: Number(process.env.GITHUB_RUN_ID),
-                    per_page: 100,
-                    page,
-                  },
-                );
-
-                const pageArtifacts = response.data.artifacts || [];
-                artifacts.push(...pageArtifacts);
-                if (pageArtifacts.length < 100) {
-                  break;
-                }
-                page += 1;
-              }
-
-              const matches = artifacts.filter((artifact) => artifact.name === artifactName);
-              if (matches.length === 0) {
-                throw new Error(`No artifacts named "${artifactName}" were found for this workflow run.`);
-              }
-              if (matches.length > 1) {
-                throw new Error(`Multiple artifacts named "${artifactName}" were found for this workflow run.`);
-              }
-              return matches[0];
-            }
 
             async function createDeployment(artifactId) {
               const idToken = await core.getIDToken();
@@ -437,13 +410,12 @@ jobs:
               }
             }
 
-            const artifact = await getPagesArtifact();
             let attempt = 1;
 
             while (true) {
               try {
                 core.info(`Creating GitHub Pages deployment, attempt ${attempt}.`);
-                const deployment = await createDeployment(artifact.id);
+                const deployment = await createDeployment(artifactId);
                 const deploymentId = deployment.id || deployment.status_url?.split('/').pop();
 
                 if (!deploymentId) {
