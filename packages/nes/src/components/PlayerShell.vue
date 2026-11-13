@@ -137,6 +137,10 @@ function resetTouchLayout() {
   if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
+  if (event.code === 'Escape') {
+    const gameMenu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
+    if (gameMenu) { event.preventDefault(); event.stopImmediatePropagation(); gameMenu.close(); return }
+  }
   if (event.code === 'Escape' && settingsModal.value?.cancelRename?.()) {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -389,7 +393,7 @@ onBeforeUnmount(() => {
     </main>
 
     <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leaveEmulator" />
-    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
+    <SModal v-model:show="pauseOpen" class="player-pause-modal" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="romName || ''" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
     </SModal>
     <button v-if="romName && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>

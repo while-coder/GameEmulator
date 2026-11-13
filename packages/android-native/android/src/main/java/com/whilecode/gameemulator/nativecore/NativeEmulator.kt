@@ -46,12 +46,26 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
     private var debug = false
     private val inputs = activity.getSystemService(InputManager::class.java)
     private val audioManager = activity.getSystemService(AudioManager::class.java)
+    @Volatile private var hasAudioFocus = false
     private val audioFocus = AudioManager.OnAudioFocusChangeListener { change ->
-        if (change <= 0) activity.runOnUiThread { if (!closed && playing) { pause(); notifyPause() } }
+        if (change in listOf(AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)) {
+            activity.runOnUiThread {
+                if (!closed && playing && hasAudioFocus) {
+                    android.util.Log.i("NativeEmulator", "Pausing after audio focus change: $change")
+                    pause(); notifyPause()
+                }
+            }
+        }
     }
-    @Suppress("DEPRECATION") private fun releaseAudioFocus() { audioManager.abandonAudioFocus(audioFocus) }
+    @Suppress("DEPRECATION") private fun releaseAudioFocus() {
+        if (!hasAudioFocus) return
+        hasAudioFocus = false
+        audioManager.abandonAudioFocus(audioFocus)
+    }
     @Suppress("DEPRECATION") private fun acquireAudioFocus() {
+        if (hasAudioFocus) return
         check(audioManager.requestAudioFocus(audioFocus, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { "暂时无法获得音频焦点，请稍后继续游戏" }
+        hasAudioFocus = true
     }
     private val players = linkedMapOf<Int, Int>()
     private val signals = arrayOf(mutableSetOf<String>(), mutableSetOf<String>())
@@ -271,7 +285,7 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
                             }
                             turboHz = value.getDouble("turboHz").coerceIn(1.0, 30.0); releaseInputs()
                         }
-                        "resume" -> { acquireAudioFocus(); control(handle, "resume", 0.0); playing = true }
+                        "resume" -> { if (!playing) { acquireAudioFocus(); control(handle, "resume", 0.0); playing = true } }
                         "pause", "stop" -> { playing = false; releaseInputs(); releaseAudioFocus(); control(handle, action, 0.0) }
                         "debug" -> { debug = value.optDouble("value") != 0.0 }
                         "volume", "speed", "smoothing", "scanlines", "reset" -> {

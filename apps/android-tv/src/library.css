@@ -1,5 +1,30 @@
 /* TV has a small CSS viewport even on a large panel. Keep the game library
    compact without changing the shared phone/desktop or in-game layouts. */
+/* A coarse pointer on Android TV does not imply a touch screen. Explicit
+   "always" and layout editing still allow virtual controls when requested. */
+:root.android-tv .touch-controls:not(.always):not(.editing),
+:root.android-tv .arcade-touch:not(.touch-always):not(.editing) { display: none; }
+:root.android-tv .screen-wrap:not(.always-controls) { grid-template-rows: minmax(0, 1fr); }
+:root.android-tv .arcade-stage:not(.always-controls) { display: flex; }
+:root.android-tv .play-menu-button { top: 8px; right: 12px; padding: 5px 8px; font-size: 11px; }
+
+/* Override the UI kit's phone breakpoint, which otherwise fills the TV viewport. */
+:root.android-tv .player-pause-modal { align-items: center; padding: 16px; }
+:root.android-tv .player-pause-modal .s-modal-box {
+  width: min(420px, calc(100vw - 32px)) !important;
+  max-height: calc(100dvh - 32px);
+  border: 1px solid var(--sui-border);
+  border-radius: 10px;
+}
+:root.android-tv .player-pause-modal .s-modal-header { padding: 10px 14px; }
+:root.android-tv .player-pause-modal .s-modal-header h2 { font-size: 14px; }
+:root.android-tv .player-pause-modal .s-modal-body { padding: 12px 14px; }
+:root.android-tv .player-pause-modal .pause-menu { gap: 10px; }
+:root.android-tv .player-pause-modal .pause-game-name { font-size: 13px; }
+:root.android-tv .player-pause-modal .pause-menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+:root.android-tv .player-pause-modal .pause-menu-actions .s-button { min-height: 34px; font-size: 13px; }
+:root.android-tv .player-pause-modal .pause-hint { font-size: 11px; }
+
 :root.android-tv .library-home {
   padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
@@ -69,15 +94,7 @@
 :root.android-tv .library-home .game-preview .preview-placeholder > span { font-size: 10px; }
 :root.android-tv .library-home .game-preview .preview-system { top: 4px; left: 4px; padding: 2px 4px; font-size: 8px; }
 :root.android-tv .library-home .game-preview .preview-status { left: 4px; bottom: 4px; }
-:root.android-tv .library-home .game-actions { top: 3px; right: auto; left: 45px; }
-:root.android-tv .library-home .game-actions .cache-remove {
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-  min-height: 28px;
-  font-size: 18px;
-}
-:root.android-tv .library-home .game-actions:has(.progress) { left: 3px; }
+:root.android-tv .library-home .game-actions { top: 3px; right: auto; left: 3px; }
 :root.android-tv .library-home .game-actions .progress { max-width: 70px; font-size: 11px; overflow-wrap: anywhere; }
 
 :root.android-tv .library-home .store-pager {
@@ -106,7 +123,6 @@
   :root.android-tv .library-home .game-preview { flex-basis: 100px; width: 100px; }
   :root.android-tv .library-home .game-title-row h3 { font-size: 16px; }
   :root.android-tv .library-home .game-main .meta { font-size: 12px; }
-  :root.android-tv .library-home .game-actions:not(:has(.progress)) { left: 69px; }
 }
 
 @media (max-width: 540px) {

@@ -11,6 +11,8 @@ const props = defineProps<{
 const shell = ref<InstanceType<typeof PlayerShell> | null>(null)
 // Android's native back callback is installed in each independent document.
 function handleBack(): 'handled' {
+  const menu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
+  if (menu) { menu.close(); return 'handled' }
   shell.value?.consumeBack()
   return 'handled'
 }

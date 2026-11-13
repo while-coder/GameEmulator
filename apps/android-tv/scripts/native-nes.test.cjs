@@ -93,15 +93,70 @@ test('pause, resume and shutdown are serialized; a failed operation does not pre
   let failState = false;
   const { runner, calls, listeners } = setup({ state: () => failState ? Response.json({ error: 'save failed' }, { status: 400 }) : undefined });
   await runner.loadRom(new Uint8Array(16));
+  runner.resume();
   runner.pause(); runner.resume();
   failState = true;
   await assert.rejects(runner.saveState(), /save failed/);
   await runner.dispose();
   const actions = calls.filter(call => call.command).map(call => call.command.action);
-  assert.ok(actions.indexOf('pause') < actions.indexOf('resume'));
+  assert.deepEqual(actions.filter(action => action === 'pause' || action === 'resume'), ['resume', 'pause', 'resume']);
   assert.equal(actions.at(-1), 'stop');
   assert.equal(listeners.size, 0);
   assert.equal(runner.loaded, false);
   assert.equal(runner.isRunning, false);
   for (const { options } of calls) assert.equal(options.headers['X-GameEmulator-TV'], '1');
+});
+
+test('repeated playback updates and native pause notifications only transition once', async () => {
+  const { runner, calls, listeners } = setup();
+  const errors = [];
+  runner.onError = error => errors.push(error.message);
+  const notifyPause = listeners.get('tv-native-pause');
+  notifyPause(); // The host may stop while still in the library.
+  await runner.loadRom(new Uint8Array(16));
+  notifyPause(); // Loading a ROM leaves it paused until the page resumes it.
+  runner.pause();
+  runner.resume(); runner.resume(); runner.resume();
+  await runner.saveState();
+  assert.equal(calls.filter(call => call.command?.action === 'resume').length, 1);
+  assert.equal(errors.length, 0);
+  runner.pause(); runner.pause();
+  await runner.saveState();
+  assert.equal(calls.filter(call => call.command?.action === 'pause').length, 1);
+  assert.equal(calls.filter(call => call.path === 'frame').length, 1);
+  notifyPause();
+  assert.equal(errors.length, 0);
+  runner.resume();
+  await runner.saveState();
+  notifyPause(); notifyPause();
+  assert.deepEqual(errors, ['游戏已暂停']);
+  assert.equal(runner.isRunning, false);
+  runner.resume();
+  await runner.saveState();
+  notifyPause();
+  assert.equal(errors.length, 2); // A later genuine interruption still pauses.
+  await runner.dispose();
+  notifyPause();
+  assert.equal(errors.length, 2);
+});
+
+test('a rejected native resume can be retried', async () => {
+  let rejectResume = true;
+  const { runner, calls } = setup({ command: options => {
+    if (JSON.parse(options.body).action === 'resume' && rejectResume)
+      return Response.json({ error: 'audio focus unavailable' }, { status: 400 });
+  } });
+  const errors = [];
+  runner.onError = error => errors.push(error.message);
+  await runner.loadRom(new Uint8Array(16));
+  runner.resume();
+  await runner.saveState();
+  assert.equal(runner.isRunning, false);
+  assert.deepEqual(errors, ['audio focus unavailable']);
+  rejectResume = false;
+  runner.resume();
+  await runner.saveState();
+  assert.equal(runner.isRunning, true);
+  assert.equal(calls.filter(call => call.command?.action === 'resume').length, 2);
+  await runner.dispose();
 });

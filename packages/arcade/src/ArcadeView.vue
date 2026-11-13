@@ -174,6 +174,8 @@ async function leave(){
   try{await stop();await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
 }
 function nativeBack(): 'handled'{
+  const gameMenu=document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
+  if(gameMenu){gameMenu.close();return 'handled'}
   if(leaveConfirm.value){leaveConfirm.value=false;return 'handled'}
   if(busy.value||leaving.value)return 'handled'
   if(editingKey.value)cancelEdit()
@@ -185,6 +187,7 @@ function nativeBack(): 'handled'{
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
+  if(event.code==='Escape'&&document.querySelector('dialog.game-card-menu[open]')){event.preventDefault();event.stopImmediatePropagation();nativeBack();return}
   if(event.code==='Escape'&&editingKey.value){event.preventDefault();event.stopImmediatePropagation();cancelEdit();return}
   if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
     event.preventDefault()
@@ -295,7 +298,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
     <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leave" />
-    <SModal v-model:show="pauseOpen" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
+    <SModal v-model:show="pauseOpen" class="player-pause-modal" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
       <PauseMenu ref="pauseMenu" :game-name="current?.name || ''" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
     </SModal>
     <button v-if="loaded && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>

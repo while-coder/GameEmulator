@@ -83,6 +83,13 @@ let listening = false
 
 // 手柄边沿检测状态(跨整个栈共享,按键只发给栈顶)。
 const padPrev = { up: false, down: false, left: false, right: false, ok: false, back: false }
+let padConfirmTarget: HTMLElement | null = null
+function releasePadConfirm(cancel = false) {
+  if (!padConfirmTarget) return
+  const target = padConfirmTarget
+  padConfirmTarget = null
+  target.dispatchEvent(new Event(!cancel && document.activeElement === target ? 'nav-confirm-end' : 'nav-confirm-cancel'))
+}
 
 /** 当前应接收按键的实例:活跃实例中 priority 最高者。 */
 function topInstance(): NavInstance | null {
@@ -151,6 +158,7 @@ function pollPads(): void {
   // 无活跃实例(如当前无导航):跳过手柄读取并清边沿状态,
   // 既省掉每帧 getGamepads,也避免下次激活时把"按住未松"误判成新按下。
   if (!top) {
+    releasePadConfirm(true)
     padPrev.up = false
     padPrev.down = false
     padPrev.left = false
@@ -186,7 +194,14 @@ function pollPads(): void {
   if (down && !padPrev.down) top.move('down')
   if (left && !padPrev.left) top.move('left')
   if (right && !padPrev.right) top.move('right')
-  if (ok && !padPrev.ok) top.ok()
+  if (ok && !padPrev.ok) {
+    const target = document.activeElement
+    if (target instanceof HTMLElement && target.hasAttribute('data-nav-hold')) {
+      padConfirmTarget = target
+      target.dispatchEvent(new Event('nav-confirm-start'))
+    } else top.ok()
+  }
+  if (!ok && padPrev.ok) releasePadConfirm()
   if (back && !padPrev.back) top.back()
   padPrev.up = up
   padPrev.down = down
@@ -211,6 +226,9 @@ function onKeyDown(e: KeyboardEvent): void {
   // 否则中间确认键按下无反应(能上下左右移焦点却无法"按下"开始游戏)。
   if (e.key === 'Enter' || e.key === 'Select' || e.key === 'Accept' || e.keyCode === 13 || e.keyCode === 23) {
     if (typing) return // 文本框内回车交原生(如提交/换行)
+    // Card presses resolve on release so a held OK can open its action menu.
+    if (e.repeat) { e.preventDefault(); return }
+    if (active instanceof HTMLElement && active.hasAttribute('data-nav-hold')) return
     e.preventDefault()
     top.ok()
     return
@@ -270,6 +288,7 @@ function teardownGlobalListeners(): void {
   // 仍有实例存活则保留(可能只是暂时无活跃实例)。
   if (instances.length > 0) return
   listening = false
+  releasePadConfirm(true)
   window.removeEventListener('keydown', onKeyDown, true)
   window.removeEventListener('tv-text-input-dismissed', onTextInputDismissed)
   if (rafId) cancelAnimationFrame(rafId)
