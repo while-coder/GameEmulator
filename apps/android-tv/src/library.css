@@ -1,0 +1,90 @@
+/* TV has a small CSS viewport even on a large panel. Keep the game library
+   compact without changing the shared phone/desktop or in-game layouts. */
+:root.android-tv .library-home {
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+}
+
+:root.android-tv .library-home .player-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 6px;
+}
+:root.android-tv .library-home .player-title { font-size: 18px; }
+:root.android-tv .library-home .library-header-line { display: block; }
+:root.android-tv .library-home .player-toolbar .s-button {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+:root.android-tv .library-home .store-tools {
+  --library-control-height: 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 110px) minmax(100px, 120px) auto;
+  gap: 8px;
+  padding: 2px 4px 6px;
+}
+:root.android-tv .library-home .store-tools .search-tools { grid-column: auto; }
+:root.android-tv .library-home .store-tools .check { padding-inline: 8px; gap: 6px; font-size: 12px; }
+:root.android-tv .library-home .store-tools .check input { flex-basis: 18px; width: 18px; height: 18px; }
+
+/* Small screenshots leave room for two-line names and play history beside them. */
+:root.android-tv .library-home .game-list {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+  padding: 6px 4px 8px;
+  scroll-padding-block: 6px;
+}
+:root.android-tv .library-home .game-card {
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 78px;
+}
+:root.android-tv .library-home .game-preview {
+  flex: 0 0 88px;
+  width: 88px;
+  aspect-ratio: auto;
+  border-radius: 8px 0 0 8px;
+}
+:root.android-tv .library-home .game-main { align-self: center; padding: 6px 8px; }
+:root.android-tv .library-home .game-title-row h3 { min-height: 0; font-size: 14px; line-height: 1.35; }
+:root.android-tv .library-home .game-main .meta { margin-top: 4px; font-size: 11px; }
+:root.android-tv .library-home .game-preview .preview-placeholder { gap: 4px; }
+:root.android-tv .library-home .game-preview .preview-placeholder svg { width: 32px; height: 24px; }
+:root.android-tv .library-home .game-preview .preview-placeholder > span { font-size: 10px; }
+:root.android-tv .library-home .game-preview .preview-system { top: 4px; left: 4px; padding: 2px 4px; font-size: 8px; }
+:root.android-tv .library-home .game-preview .preview-status { left: 4px; bottom: 4px; }
+:root.android-tv .library-home .game-actions { top: 3px; right: auto; left: 57px; }
+:root.android-tv .library-home .game-actions .cache-remove {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  font-size: 18px;
+}
+:root.android-tv .library-home .game-actions .progress { max-width: 82px; font-size: 11px; overflow-wrap: anywhere; }
+
+:root.android-tv .library-home .store-pager {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 36px;
+  padding: 4px;
+  gap: 8px;
+}
+:root.android-tv .library-home .library-count { grid-column: 1; text-align: left; font-size: 11px; }
+:root.android-tv .library-home .pager-controls { grid-column: 2; gap: 4px; }
+:root.android-tv .library-home .pager-controls .pager-btn {
+  min-height: 28px;
+  height: 28px;
+  min-width: 40px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+:root.android-tv .library-home .pager-controls .page-info { min-width: 42px; font-size: 12px; }
+
+@media (max-width: 540px) {
+  :root.android-tv .library-home .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
+  :root.android-tv .library-home .store-tools .search-tools { grid-column: 1 / -1; }
+  :root.android-tv .library-home .game-list { grid-template-columns: minmax(0, 1fr); }
+  :root.android-tv .library-home .store-pager { grid-template-columns: minmax(0, 1fr); }
+  :root.android-tv .library-home .pager-controls { grid-column: 1; }
+}

@@ -139,13 +139,21 @@ public:
         std::lock_guard<std::mutex> guard(mutex);
         paused = true; audible = false; closeAudio(); unload(); error.clear();
         core.open(arcade ? "libfbalpha2012.so" : "libfceumm.so");
-        gamePath = arcade ? std::move(path) : "game.nes";
+        gamePath = arcade ? std::move(path) : baseDirectory + "/game.nes";
         directory = arcade ? gamePath.substr(0,gamePath.find_last_of('/')) : baseDirectory;
         saveDirectory = arcade ? baseDirectory + "/arcade" : baseDirectory;
         rom = std::move(bytes); batteryPath = saveDirectory + "/" + hash + ".srm";
         rotation = 0; geometryAspect = 4.0/3.0;
         pixelFormat = RETRO_PIXEL_FORMAT_RGB565;
         try {
+            if (!arcade) {
+                // This pinned FCEUmm defaults to need_fullpath and only accepts
+                // memory content through GET_GAME_INFO_EXT, which we do not expose.
+                std::ofstream out(gamePath, std::ios::binary | std::ios::trunc);
+                out.write(reinterpret_cast<const char*>(rom.data()), static_cast<std::streamsize>(rom.size()));
+                out.close();
+                if (!out) throw std::runtime_error("游戏文件写入失败，请检查设备存储空间");
+            }
             core.set_environment(environment); core.set_video_refresh(video);
             core.set_audio_sample(sample); core.set_audio_sample_batch(batch);
             core.set_input_poll([] {}); core.set_input_state(input);
