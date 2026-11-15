@@ -166,6 +166,7 @@ onBeforeUnmount(() => {
     <div
       ref="dpadRef"
       class="dpad"
+      data-game-control
       data-layout-group="dpad"
       :style="positionStyle('dpad')"
       :class="{ active: activeDirs.length > 0 }"
@@ -190,7 +191,7 @@ onBeforeUnmount(() => {
       <SButton class="fkey system-key" :disabled="!editing && !canSave" aria-label="快速存档" @click="emit('quickSave')">快存</SButton>
 
       </div>
-      <div class="fn-group fn-right" aria-label="SELECT 和 START" data-layout-group="functionsRight" :style="positionStyle('functionsRight')">
+      <div class="fn-group fn-right" aria-label="SELECT 和 START" data-game-control data-layout-group="functionsRight" :style="positionStyle('functionsRight')">
       <button
         :disabled="!editing && disabled"
         class="fkey"
@@ -218,7 +219,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- 右：A/B 平排，每列上方为对应的连发键 -->
-    <div class="actions" :class="{detached}" :style="positionStyle('actions')">
+    <div class="actions" data-game-control :class="{detached}" :style="positionStyle('actions')">
       <div class="col col-b">
         <button
           :disabled="!editing && disabled"

@@ -18,6 +18,17 @@ export function configureWebInteractions() {
   const preventDefault = (event: Event) => {
     if (event.cancelable) event.preventDefault()
   }
+  // Some mobile WebViews still show a long-press loupe after pointerdown
+  // is canceled. Cancel the native touch stream too; these controls use
+  // pointer events and do not need synthesized mouse/click events.
+  const preventControlTouch = (event: Event) => {
+    if (event.target instanceof Element && event.target.closest('[data-game-control]')) {
+      preventDefault(event)
+    }
+  }
+  for (const type of ['touchstart', 'touchmove']) {
+    document.addEventListener(type, preventControlTouch, { capture: true, passive: false })
+  }
   // WebKit exposes pinch gestures separately from touch/pointer events.
   for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
     document.addEventListener(type, preventDefault, { passive: false })

@@ -112,15 +112,15 @@ const { controlsRef, detached, selected, selectedLayout, positionStyle, startLay
       <div class="function-group functions-left" aria-label="菜单和快存" data-layout-group="functionsLeft" :style="positionStyle('functionsLeft')">
       <SButton aria-label="打开设置菜单" @click="emit('menu')">菜单</SButton><SButton aria-label="快速存档" :disabled="!editing && disabled" @click="emit('save')">快存</SButton>
       </div>
-      <div class="function-group functions-right" aria-label="投币和开始" data-layout-group="functionsRight" :style="positionStyle('functionsRight')">
+      <div class="function-group functions-right" aria-label="投币和开始" data-game-control data-layout-group="functionsRight" :style="positionStyle('functionsRight')">
       <button v-for="a in (['select','start'] as const)" :key="a" :disabled="!editing && disabled" @pointerdown="buttonDown($event,a)" @pointerup="up" @pointercancel="up" @lostpointercapture="up">{{a==='select'?'投币':'开始'}}</button>
       </div>
     </div>
     <div class="touch-play">
-      <div class="stick" role="group" aria-label="八方向摇杆" data-layout-group="dpad" :style="positionStyle('dpad')" @pointerdown="stickDown" @pointermove="stickMove" @pointerup="up" @pointercancel="up" @lostpointercapture="up">
+      <div class="stick" role="group" aria-label="八方向摇杆" data-game-control data-layout-group="dpad" :style="positionStyle('dpad')" @pointerdown="stickDown" @pointermove="stickMove" @pointerup="up" @pointercancel="up" @lostpointercapture="up">
         <span class="stick-guide" aria-hidden="true"/><span class="stick-knob" aria-hidden="true" :style="{transform:`translate(${stick.x}px,${stick.y}px)`}" />
       </div>
-      <div class="six-buttons" :class="{detached}" :style="positionStyle('actions')">
+      <div class="six-buttons" data-game-control :class="{detached}" :style="positionStyle('actions')">
         <button v-for="action in ACTION_BUTTONS" :key="action.id" :data-layout-group="action.id" data-layout-button :style="positionStyle(action.id)" :disabled="!editing && disabled" @pointerdown="buttonDown($event,action.id)" @pointerup="up" @pointercancel="up" @lostpointercapture="up">{{action.label}}</button>
       </div>
     </div>
