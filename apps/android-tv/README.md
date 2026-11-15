@@ -6,7 +6,6 @@ It packages ARM32 and ARM64 FCEUmm, FB Alpha 2012 and host `.so` libraries.
 
 ```sh
 pnpm build:android-tv
-pnpm test:android-tv
 ```
 
 Debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`.

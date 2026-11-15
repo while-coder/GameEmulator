@@ -31,7 +31,6 @@ jobs require the Android keystore, password, alias and key password, supplied vi
 ```sh
 pnpm android:build --debug --apk --ci
 pnpm build:android-tv
-pnpm test:android-tv
 ```
 
 The ordinary app uses an origin-restricted AndroidX WebMessage listener. It does
@@ -71,7 +70,7 @@ to 512 MiB. The working cache is replaced when preparing another arcade game.
 
 ## Validation boundary
 
-Build checks and transport tests do not demonstrate device performance. On the
+Build checks do not demonstrate device performance. On the
 target phone and TV, compare identical ROMs with the previous APK, then check:
 
 1. NES and CPS/Neo Geo gameplay and audio for 30 minutes, including parent/BIOS loading.

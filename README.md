@@ -32,7 +32,9 @@ iOS SideStore 统一订阅源：[while-coder Store](https://while-coder.github.i
 
 Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自 `CHANGELOG.md` 中对应版本的段落；点击“知道了”后，同一版本不再重复展示。Tauri 应用发现新版本时优先显示更新提示。PWA 在加载新版页面后展示对应版本的内容，离线时也可查看已缓存版本的说明。
 
-游戏库优先显示目录中的 `screenshot_url`，否则根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图；截图按需加载。执行 `node scripts/sync-game-screenshots.cjs` 可根据本地 `games/*/catalog.json` 更新截图映射（需要联网）。
+游戏库优先显示目录中的 `screenshot_url`，否则根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图；截图按需加载。
+
+本地封面资源保存在 `games/<平台>/screenshots/`，同一平台内按来源网址去重。`manifest.json` 记录游戏名、ROM 校验值、原始图片来源、公开截图地址、本地文件、图片校验值及缺图列表；NES 的 `matches.json` 额外记录匹配依据。目录中的 `screenshot_url` 指向对应 `nes-roms`、`arcade-roms`、`neogeo-roms` 仓库的 `screenshots/` 图片，应用按需加载。本地副本用于资源管理，尚未打包进应用。`games/` 仍由 Git 忽略。
 
 游戏目录的 `download_url` 可保存相对于 `rom_url_base` 的路径（例如 `2020bb.zip`），游戏和依赖文件在读取目录时统一解析为完整地址；旧的完整 URL 仍然兼容。未指定 `rom_url_base` 时，相对路径按 `catalog.json` 所在目录解析。
 

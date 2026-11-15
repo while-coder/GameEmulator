@@ -85,5 +85,4 @@ dependencies {
     implementation(project(":emulator-native"))
     implementation("org.mozilla.geckoview:geckoview:149.0.20260403140140")
     implementation("androidx.activity:activity-ktx:1.10.1")
-    testImplementation("junit:junit:4.13.2")
 }

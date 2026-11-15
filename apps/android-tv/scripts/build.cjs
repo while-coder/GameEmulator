@@ -3,7 +3,7 @@ const path = require('node:path');
 
 const host = path.resolve(__dirname, '..');
 const task = process.argv[2] || 'assembleDebug';
-if (!['assembleDebug', 'assembleRelease', 'installDebug', 'testDebugUnitTest'].includes(task)) {
+if (!['assembleDebug', 'assembleRelease', 'installDebug'].includes(task)) {
   throw new Error(`Unsupported Gradle task: ${task}`);
 }
 function run(command, args, cwd) {

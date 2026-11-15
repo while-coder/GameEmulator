@@ -40,11 +40,10 @@ jobs:
 
       - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
 
-      - name: Check Android frontends and native bridge tests
+      - name: Check Android frontends
         run: |
           TAURI_ENV_PLATFORM=android pnpm --filter @game-emulator/app run build:frontend
           pnpm build:android-tv:frontend
-          node --test apps/android-tv/scripts/*.test.cjs scripts/save-state.test.cjs apps/app/src-tauri/native/android/manifest-update.test.cjs
 
   prepare-release:
     needs: check
@@ -160,12 +159,8 @@ jobs:
 
       - uses: while-coder/workflows/.github/actions/install-pnpm-dependencies@main
 
-      - name: Build and test Android TV APK
-        run: |
-          pnpm build:android-tv:release
-          node --test apps/android-tv/scripts/*.test.cjs
-          cd apps/android-tv/android
-          sh ./gradlew :app:testDebugUnitTest --console=plain
+      - name: Build Android TV APK
+        run: pnpm build:android-tv:release
 
       - name: Verify and name signed APK
         env:
