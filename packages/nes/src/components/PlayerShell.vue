@@ -393,8 +393,8 @@ onBeforeUnmount(() => {
     </main>
 
     <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leaveEmulator" />
-    <SModal v-model:show="pauseOpen" class="player-pause-modal" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
-      <PauseMenu ref="pauseMenu" :game-name="romName || ''" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
+    <SModal v-model:show="pauseOpen" class="player-pause-modal" :title="romName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
+      <PauseMenu ref="pauseMenu" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
     </SModal>
     <button v-if="romName && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>
   </div>

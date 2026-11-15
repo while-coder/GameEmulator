@@ -8,6 +8,7 @@ export type ArchiveKind = 'game' | 'support'
 export interface Archive {
   id: string
   name: string
+  displayName?: string
   hash: string
   file: Blob
   size: number
@@ -69,8 +70,19 @@ async function write(store: string, value: StoredArchive | Snapshot | CachedCata
   await completion
 }
 export async function listArchives(): Promise<Archive[]> {
-  return (await read<StoredArchive[]>('archives')).map(archive=>({
+  const [archives,catalogs]=await Promise.all([
+    read<StoredArchive[]>('archives'),
+    read<CachedCatalog[]>('catalogs'),
+  ])
+  // Older downloads only stored the ZIP name. Recover their display names
+  // from local catalogs without waiting for a network refresh.
+  const names=new Map(catalogs.flatMap(({catalog})=>catalog.games.flatMap(game=>{
+    const name=game.name?.trim()||game.name_en?.trim()
+    return name?[[game.sha256.toLowerCase(),name] as const]:[]
+  })))
+  return archives.map(archive=>({
     ...archive,
+    displayName:names.get(archive.hash.toLowerCase())||archive.displayName,
     file: archive.file instanceof Blob ? archive.file : new Blob([archive.file], {type:'application/zip'}),
   }))
 }
@@ -155,7 +167,8 @@ export async function importArchive(file: File, kind: ArchiveKind): Promise<Arch
   await validateZip(file)
   const name=file.name.toLowerCase(),id=`${kind}:${name}`
   const old=await read<Archive|undefined>('archives',id)
-  const archive:Archive={id,name,kind,file,size:file.size,hash:await hashBlob(file),importedAt:Date.now(),dependencies:old?.dependencies??[]}
+  const hash=await hashBlob(file)
+  const archive:Archive={id,name,kind,file,size:file.size,hash,displayName:old?.hash===hash?old.displayName:undefined,importedAt:Date.now(),dependencies:old?.dependencies??[]}
   await putArchive(archive)
   return archive
 }

@@ -2,7 +2,7 @@
   "name": "@game-emulator/android-native",
   "private": true,
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "exports": {
     "./nes": "./src/nes.ts",
     "./arcade": "./src/arcade.ts",

@@ -1,5 +1,24 @@
 @import './interaction.css';
 
+/* Keep the pause menu a centered card, including the UI kit's phone breakpoint. */
+:root .player-pause-modal.s-modal-overlay {
+  box-sizing: border-box;
+  align-items: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+:root .player-pause-modal .s-modal-box {
+  box-sizing: border-box;
+  width: min(400px, 100%) !important;
+  max-height: 100%;
+  border: 1px solid var(--sui-border);
+  border-radius: 12px;
+}
+:root .player-pause-modal .s-modal-header { flex-shrink: 0; }
+:root .player-pause-modal .s-modal-header h2 {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* Shared player navigation and standby screen for NES and arcade. */
 .layout-edit-tools {
   position: absolute;

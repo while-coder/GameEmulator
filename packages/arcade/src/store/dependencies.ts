@@ -102,7 +102,7 @@ export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCata
     dependencies.push(archive)
   }
   options.signal?.throwIfAborted()
-  const resolved = { ...game, dependencies: dependencies.map(file => file.name) }
+  const resolved = { ...game, displayName: entry.name?.trim() || entry.name_en?.trim() || game.displayName, dependencies: dependencies.map(file => file.name) }
   await putArchive(resolved)
   return { game: resolved, dependencies }
 }

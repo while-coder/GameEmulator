@@ -2,7 +2,6 @@
 import SCheckbox from '@qingfeng346/ui-kit/components/checkbox/SCheckbox.vue'
 import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
-import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -28,6 +27,13 @@ const props = defineProps<{
 const catalogs = ref<ArcadeCatalog[]>([])
 const catalogLoading = ref(false)
 const error = ref('')
+const catalogNotice = computed(() => {
+  if (catalogLoading.value) return '正在更新游戏目录…'
+  if (catalogs.value.length) return '部分游戏目录暂时无法更新'
+  if (/超时|timeout|timed out/i.test(error.value)) return '游戏目录连接超时'
+  if (/abort|中断|取消/i.test(error.value)) return '游戏目录请求已中断'
+  return '游戏目录暂时无法更新'
+})
 const query = ref(''), genre = ref(''), downloadedOnly = ref(false)
 const busyKey = ref<string | null>(null)
 const abort = new AbortController()
@@ -40,7 +46,7 @@ async function refreshCatalog() {
   try {
     const result = await loadCatalogs(abort.signal)
     catalogs.value = result.catalogs
-    error.value = result.errors.join('；')
+    error.value = [...new Set(result.errors)].join('；')
   } catch (err) {
     if (!abort.signal.aborted) error.value = err instanceof Error ? err.message : String(err)
   } finally { catalogLoading.value = false }
@@ -56,7 +62,7 @@ const libraryGames = computed(() => {
     const existing = games.get(local.hash)
     if (existing) existing.local = local
     else games.set(local.hash, {
-      name: local.name, rom_name: local.name.replace(/\.zip$/i, ''), file_name: local.name,
+      name: local.displayName || local.name.replace(/\.zip$/i, ''), rom_name: local.name.replace(/\.zip$/i, ''), file_name: local.name,
       sha256: local.hash, file_size: local.size, download_url: '', dependencies: local.dependencies, local,
     })
   }
@@ -142,10 +148,13 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
         <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedKeys.size }})</SCheckbox>
       </div>
 
-      <div v-if="catalogLoading || error" class="store-summary">
-        <SButton v-if="error" :disabled="busy || catalogLoading" @click="refreshCatalog">重试目录</SButton>
-        <span v-if="catalogLoading" role="status">正在加载游戏目录…</span>
-        <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
+      <div v-if="catalogLoading || error" class="store-summary catalog-notice" :class="{ 'catalog-notice-warning': !!error }" role="status" aria-live="polite">
+        <span class="catalog-notice-icon" aria-hidden="true">{{ catalogLoading ? '↻' : 'ⓘ' }}</span>
+        <div class="catalog-notice-copy">
+          <span class="catalog-notice-title">{{ catalogNotice }}</span>
+          <span class="catalog-notice-description">{{ cachedRoms.length ? '已下载游戏仍可使用' : catalogLoading ? '首次加载可能需要几秒钟' : '请检查网络后重试' }}</span>
+        </div>
+        <SButton v-if="error" class="catalog-retry" :disabled="busy || catalogLoading" @click="refreshCatalog">重新加载</SButton>
       </div>
 
       <div class="game-list" data-nav-grid>
@@ -502,6 +511,26 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 </style>
 
 <style scoped>
+.store-summary.catalog-notice {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 38px;
+  margin: 4px 4px 6px;
+  padding: 8px 12px;
+  border: 1px solid #3b4655;
+  border-radius: 8px;
+  background: #202731;
+  color: #a8bbd3;
+}
+.store-summary.catalog-notice-warning { border-color: #574b33; background: #2b271f; color: #d6bb84; }
+.catalog-notice-icon { flex-shrink: 0; font-size: 17px; }
+.catalog-notice-copy { display: flex; flex: 1; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-width: 0; line-height: 1.5; }
+.catalog-notice-title { font-size: 13px; }
+.catalog-notice-description { color: #a6a9ae; font-size: 12px; }
+.catalog-notice .catalog-retry { flex-shrink: 0; min-height: 32px; padding: 4px 10px; font-size: 12px; }
 .store-summary { flex-wrap: wrap; }
 .game-card { min-width: 0; }
 .game-title-row h3 { flex: 1; }

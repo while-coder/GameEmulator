@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-defineProps<{ gameName: string; busy?: boolean; message?: string }>()
+defineProps<{ busy?: boolean; message?: string }>()
 defineEmits<{ resume: []; save: []; load: []; help: []; settings: []; exit: [] }>()
 const panel = ref<HTMLElement | null>(null)
 defineExpose({ panel })
@@ -8,7 +8,6 @@ defineExpose({ panel })
 
 <template>
   <div ref="panel" class="pause-menu">
-    <p class="pause-game-name">{{ gameName }}</p>
     <fieldset class="pause-menu-actions" :disabled="busy">
       <button type="button" class="s-button pause-resume" @click="$emit('resume')">继续游戏</button>
       <button type="button" class="s-button" @click="$emit('save')">保存进度</button>
@@ -24,10 +23,13 @@ defineExpose({ panel })
 
 <style scoped>
 .pause-menu { display: flex; flex-direction: column; gap: 16px; }
-.pause-game-name { margin: 0; color: #bbb; text-align: center; overflow-wrap: anywhere; }
 .pause-menu-actions { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .pause-menu-actions .s-button { width: 100%; min-height: 44px; font-size: 15px; }
 .pause-menu-actions .pause-resume { background: #2f6f9f; border-color: #2f6f9f; color: #fff; }
 .pause-menu-actions .pause-load { background: var(--player-load-background); border-color: var(--player-load-border); color: var(--player-load-text); }
 .pause-message, .pause-hint { margin: 0; text-align: center; font-size: 13px; color: #aaa; }
+@media (max-height: 500px) and (orientation: landscape) {
+  .pause-menu { gap: 10px; }
+  .pause-menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+}
 </style>

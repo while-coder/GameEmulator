@@ -59,7 +59,8 @@ function resetTouchLayout(){if(touchLayoutDraft.value)touchLayoutDraft.value[win
 function closeMenu(){if(editingKey.value){cancelEdit();return}if(!busy.value&&!leaving.value)menuOpen.value=false}
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
 const catalogNames=ref(new Map<string,string>())
-const snapshotGameName=(snapshot:Snapshot)=>catalogNames.value.get(snapshot.gameHash.toLowerCase())||snapshot.gameName
+const currentGameName=computed(()=>current.value?(catalogNames.value.get(current.value.hash.toLowerCase())||current.value.displayName||current.value.name.replace(/\.zip$/i,'')):'')
+const snapshotGameName=(snapshot:Snapshot)=>catalogNames.value.get(snapshot.gameHash.toLowerCase())||archives.value.find(game=>game.hash.toLowerCase()===snapshot.gameHash.toLowerCase())?.displayName||snapshot.gameName.replace(/\.zip$/i,'')
 const snapshotName=(snapshot:Snapshot)=>snapshot.label?.trim()||snapshotGameName(snapshot)
 const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b.importedAt-a.importedAt))
 const current=shallowRef<Archive|null>(null)
@@ -123,7 +124,7 @@ async function save(kind:SaveKind='quick'){
   if(!game||!runner.value?.loaded)throw new Error('请先启动游戏')
   const dependencies=currentDependencies.value
   const state=await runner.value.save()
-  const snapshot:Snapshot={key:currentBundle(game,dependencies),kind:'quick',gameName:game.name,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:coreBuild(),state,savedAt:Date.now()}
+  const snapshot:Snapshot={key:currentBundle(game,dependencies),kind:'quick',gameName:currentGameName.value,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:coreBuild(),state,savedAt:Date.now()}
   if(kind==='normal'){
     const label=nextSaveLabel(snapshots.value.filter(item=>item.gameHash===game.hash&&item.coreBuild===coreBuild()))
     await createSnapshot(snapshot,label)
@@ -298,8 +299,8 @@ const time=(value:number)=>new Date(value).toLocaleString()
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
     <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leave" />
-    <SModal v-model:show="pauseOpen" class="player-pause-modal" title="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
-      <PauseMenu ref="pauseMenu" :game-name="current?.name || ''" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
+    <SModal v-model:show="pauseOpen" class="player-pause-modal" :title="currentGameName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
+      <PauseMenu ref="pauseMenu" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
     </SModal>
     <button v-if="loaded && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>
