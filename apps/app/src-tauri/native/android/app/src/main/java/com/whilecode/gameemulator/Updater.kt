@@ -1,4 +1,4 @@
-package com.wandergame.nesemulator
+package com.whilecode.gameemulator
 
 import android.content.Context
 import android.content.Intent

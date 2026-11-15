@@ -71,10 +71,9 @@ defineExpose({ focusCard })
 <template>
   <main class="launcher" :aria-busy="busy">
     <div class="launcher-content">
-      <header>
+      <header class="launcher-header">
         <span class="eyebrow">{{ appName }}</span>
         <h1>选择模拟器</h1>
-        <p class="intro">从熟悉的游戏机，开始下一场冒险。</p>
       </header>
       <section class="emulator-grid" aria-label="模拟器列表">
         <button v-for="emulator in emulators" :key="emulator.id" ref="cards"
@@ -119,27 +118,41 @@ defineExpose({ focusCard })
 * { box-sizing: border-box; }
 html, body, #app { margin: 0; min-height: 100%; }
 body { margin: 0; }
-.launcher { --accent: #d45359; min-height: 100dvh; padding: max(40px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
-.launcher-content { max-width: 960px; margin: 0 auto; padding-top: clamp(0px, 5vh, 64px); }
-.eyebrow { color: #b8b8b8; font-size: 12px; letter-spacing: .18em; }
-.launcher h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.03em; margin: 14px 0 10px; }
-.intro { color: #b8b8b8; line-height: 1.6; margin: 0; }
-.emulator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 24px; margin-top: 36px; }
-.emulator-card { display: flex; flex-direction: column; text-align: left; font: inherit; color: inherit; background: #242424; border: 1px solid #404040; border-radius: 16px; padding: 24px; cursor: pointer; transition: border-color .18s, background .18s; }
+.launcher { --accent: #d45359; height: 100dvh; overflow: hidden; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.launcher-content { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 1440px; height: 100%; min-height: 0; margin: 0 auto; }
+.launcher-header { flex: 0 0 auto; text-align: center; }
+.eyebrow { color: #b8b8b8; font-size: 11px; letter-spacing: .18em; }
+.launcher h1 { display: flex; align-items: center; gap: 16px; font-size: clamp(20px, 3vw, 28px); line-height: 1.3; letter-spacing: -.03em; margin: 4px 0 0; }
+.launcher h1::before, .launcher h1::after { content: ''; flex: 1; height: 1px; background: #404040; }
+/* A single horizontal rail owns scrolling; the page itself always fits the viewport. */
+.emulator-grid { display: flex; flex: 1; min-height: 0; min-width: 0; align-items: center; gap: 16px; padding: 6px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 6px; scrollbar-width: thin; }
+.emulator-card { display: flex; flex: 0 0 clamp(220px, 30vw, 300px); flex-direction: column; min-width: 0; height: 100%; max-height: 400px; text-align: left; font: inherit; color: inherit; background: #242424; border: 1px solid #404040; border-radius: 12px; padding: 16px; cursor: pointer; scroll-snap-align: start; transition: border-color .18s, background .18s; }
 .emulator-card:hover { background: #2b2b2b; border-color: #a96569; }
 .emulator-card:focus-visible { outline: 3px solid #82b1ff; outline-offset: 5px; }
 .emulator-card:disabled { cursor: wait; opacity: .7; }
-.console-art { display: grid; place-items: center; height: 160px; width: 100%; background: #1c1e21; border-radius: 10px; margin-bottom: 24px; }
-.console-art svg { width: min(100%, 240px); height: 140px; }
+.console-art { display: grid; flex: 1; min-height: 0; place-items: center; width: 100%; overflow: hidden; background: #1c1e21; border-radius: 8px; margin-bottom: 14px; }
+.console-art svg { width: min(100%, 240px); height: 100%; max-height: 160px; }
 .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.card-heading strong { font-size: 24px; }
+.card-heading strong { font-size: 22px; }
 .badge { background: #253b30; color: #a2dbb4; padding: 4px 8px; border-radius: 5px; font-size: 12px; }
 .console-name { margin-top: 8px; color: #c9c9c9; }
-.detail { margin-top: 12px; color: #b8b8b8; font-size: 13px; line-height: 1.6; }
-.enter-label { display: flex; justify-content: space-between; border-top: 1px solid #404040; padding-top: 18px; margin-top: 24px; color: #f0b3b6; font-weight: 600; }
-.launcher footer { margin-top: 32px; color: #aaa; font-size: 13px; }
-.launch-error { color: #ffb4b4; line-height: 1.6; }
-@media (max-width: 480px) { .launcher { padding-top: max(28px, env(safe-area-inset-top)); } .emulator-grid { margin-top: 28px; } }
-@media (max-height: 700px) { .launcher { padding-top: max(24px, env(safe-area-inset-top)); } .launcher-content { padding-top: 0; } .console-art { height: 130px; margin-bottom: 18px; } .emulator-grid { margin-top: 24px; } }
+.detail { margin-top: 8px; color: #b8b8b8; font-size: 12px; line-height: 1.5; }
+.enter-label { display: flex; justify-content: space-between; border-top: 1px solid #404040; padding-top: 12px; margin-top: 14px; color: #f0b3b6; font-size: 14px; font-weight: 600; }
+.card-heading, .console-name, .detail, .enter-label { flex-shrink: 0; }
+.launcher footer { flex-shrink: 0; color: #aaa; font-size: 12px; text-align: center; }
+.launch-error { flex-shrink: 0; margin: 0; color: #ffb4b4; font-size: 12px; line-height: 1.4; }
+@media (max-height: 440px) {
+  .launcher { padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .launcher-content { gap: 6px; }
+  .launcher h1 { font-size: 20px; }
+  .emulator-grid { gap: 12px; }
+  .emulator-card { padding: 12px; }
+  .console-art { margin-bottom: 8px; }
+  .card-heading strong { font-size: 18px; }
+  .badge { padding: 3px 6px; font-size: 11px; }
+  .console-name { margin-top: 4px; font-size: 13px; }
+  .detail { margin-top: 4px; }
+  .enter-label { padding-top: 8px; margin-top: 8px; font-size: 13px; }
+}
 @media (prefers-reduced-motion: reduce) { .emulator-card { transition: none; } }
 </style>

@@ -36,7 +36,11 @@ export class NativeSession {
   private debug = false
   private readonly output = document.createElement('output')
   private readonly observer: ResizeObserver
-  private readonly nativePause = () => { this.running = false; this.onError?.(new Error('游戏已暂停')) }
+  private readonly nativePause = () => {
+    if (!this.ready || !this.running || this.disposed) return
+    this.running = false
+    this.onError?.(new Error('游戏已暂停'))
+  }
   constructor(private readonly canvas: HTMLCanvasElement, private readonly transport: NativeTransport = httpNativeTransport,
               private readonly system: 'nes' | 'arcade' = 'nes') {
     this.saveNamespace = system === 'arcade' ? ARCADE_BUILD : BUILD
@@ -68,7 +72,10 @@ export class NativeSession {
   }
   private send(action: string, options: Record<string, unknown> = {}) {
     if (this.disposed) return
-    void this.enqueue(() => this.command(action, options)).catch(error => this.onError?.(error))
+    void this.enqueue(() => this.command(action, options)).catch(error => {
+      if (action === 'resume') this.running = false
+      this.onError?.(error)
+    })
   }
   async loadRom(bytes: Uint8Array): Promise<void> {
     await this.enqueue(async () => {
@@ -106,8 +113,8 @@ export class NativeSession {
     this.syncDisplay(); this.startPolling()
   }
   pause(): void {
+    if (!this.ready || !this.running || this.disposed) return
     this.running = false; this.masks = [0, 0]
-    if (!this.ready || this.disposed) return
     void this.enqueue(async () => {
       // One still frame on pause keeps the existing page's paused background.
       // It is intentionally not a per-frame transport.
@@ -123,7 +130,7 @@ export class NativeSession {
     }).catch(error => this.onError?.(error))
   }
   resume(): void {
-    if (!this.ready || this.disposed) return
+    if (!this.ready || this.running || this.disposed) return
     this.running = true; this.syncDisplay(); this.send('resume')
   }
   unload(): void {

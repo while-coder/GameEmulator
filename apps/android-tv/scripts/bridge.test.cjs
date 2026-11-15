@@ -63,10 +63,10 @@ test('BACK resumes page navigation once text editing is already finished', () =>
   assert.equal(backCalls, 1);
   assert.equal(bridge.sent[0].id, 9);
 });
-test('missing handler exits the launcher or navigates an emulator home', () => {
+test('missing handler keeps the launcher open or navigates an emulator home', () => {
   const home = setup('/index.html');
   home.receive({ type: 'back', id: 1 });
-  assert.equal(home.sent[0].result, 'exit');
+  assert.equal(home.sent[0].result, 'handled');
   const emulator = setup('/arcade.html');
   emulator.receive({ type: 'back', id: 2 });
   assert.deepEqual(emulator.navigated, ['/index.html']);

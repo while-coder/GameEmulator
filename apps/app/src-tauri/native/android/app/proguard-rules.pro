@@ -1,6 +1,6 @@
 # Add project specific ProGuard rules here.
 # Called from Rust through JNI; retain the class and static method names.
--keep class com.wandergame.nesemulator.Updater { *; }
+-keep class com.whilecode.gameemulator.Updater { *; }
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 #

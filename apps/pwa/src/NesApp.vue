@@ -2,4 +2,4 @@
 import { NesView } from '@game-emulator/nes'
 function leave() { location.replace(new URL('index.html', location.href).href) }
 </script>
-<template><NesView :on-leave="leave" platform-label="NES / FC · Web" /></template>
+<template><NesView :on-leave="leave" back-on-escape platform-label="NES / FC · Web" /></template>

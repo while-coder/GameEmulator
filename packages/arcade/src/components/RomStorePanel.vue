@@ -11,6 +11,7 @@ import type { Archive } from '../store/library'
 import type { DependencyProgress } from '../store/dependencies'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
+import GameCardActions from '../../../player-ui/GameCardActions.vue'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
@@ -154,7 +155,7 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
           class="game-card"
           data-nav-cell
         >
-          <button class="game-launch" data-nav-primary :disabled="busy || busyKey !== null" :aria-label="`开始 ${(game.name || game.file_name)}`" :title="`${game.name || game.file_name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <GameCardActions :name="game.name || game.file_name" :detail="metaLine(game)" :disabled="busy || busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="!!game.local" @play="play(game)" @remove="removeCached(game)" />
           <GamePreview :game-key="romKey(game)" :name="game.name || game.file_name" :system="game.system || 'ARCADE'" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
@@ -170,20 +171,10 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 
           </div>
 
-          <div v-if="busyKey === romKey(game) || game.local" class="game-actions">
+          <div v-if="busyKey === romKey(game)" class="game-actions">
             <span v-if="busyKey === romKey(game)" class="progress">
               {{ playLabel(game) }} {{ progressLabel(game) }}
             </span>
-            <SButton
-              v-if="game.local"
-              class="btn cache-remove"
-              title="移除下载缓存"
-              :aria-label="`移除 ${game.name || game.file_name} 的下载缓存`"
-              :disabled="busy || busyKey !== null"
-              @click.stop="removeCached(game)"
-            >
-              ×
-            </SButton>
           </div>
         </article>
 

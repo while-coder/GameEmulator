@@ -25,6 +25,7 @@ import {
 } from '../store/romLibrary'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
+import GameCardActions from '../../../player-ui/GameCardActions.vue'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
@@ -284,7 +285,7 @@ function formatError(err: unknown): string {
           class="game-card"
           data-nav-cell
         >
-          <button class="game-launch" data-nav-primary :disabled="busyKey !== null" :aria-label="`开始 ${game.name}`" :title="`${game.name} · ${metaLine(game)}`" :aria-busy="busyKey === romKey(game)" @click="play(game)" />
+          <GameCardActions :name="game.name" :detail="metaLine(game)" :disabled="busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="cachedKeys.has(romKey(game))" @play="play(game)" @remove="removeCachedByKey(romKey(game))" />
           <GamePreview :game-key="romKey(game)" :name="game.name" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
@@ -300,20 +301,10 @@ function formatError(err: unknown): string {
 
           </div>
 
-          <div v-if="busyKey === romKey(game) || cachedKeys.has(romKey(game))" class="game-actions">
+          <div v-if="busyKey === romKey(game)" class="game-actions">
             <span v-if="busyKey === romKey(game)" class="progress">
               {{ playLabel(game) }} {{ progressLabel(game) }}
             </span>
-            <SButton
-              v-if="cachedKeys.has(romKey(game))"
-              class="btn cache-remove"
-              title="移除下载缓存"
-              :aria-label="`移除 ${game.name} 的下载缓存`"
-              :disabled="busyKey !== null"
-              @click.stop="removeCachedByKey(romKey(game))"
-            >
-              ×
-            </SButton>
           </div>
         </article>
 

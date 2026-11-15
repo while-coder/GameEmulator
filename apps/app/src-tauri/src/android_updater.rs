@@ -13,7 +13,7 @@ pub(crate) const UPDATE_PROGRESS_EVENT: &str = "game-emulator://update-progress"
 // 写入 android 字段，客户端只读静态文件，不请求 GitHub API，避免匿名限流。
 const UPDATER_MANIFEST_URL: &str =
     "https://github.com/while-coder/GameEmulator/releases/download/updater/latest.json";
-const UPDATER_CLASS: &str = "com.wandergame.nesemulator.Updater";
+const UPDATER_CLASS: &str = "com.whilecode.gameemulator.Updater";
 /// 下载进度节流间隔，避免大文件下载把事件总线刷爆。
 const PROGRESS_EMIT_INTERVAL: u64 = 256 * 1024;
 

@@ -1,1 +1,1 @@
--keep class com.wandergame.emulator.nativecore.NativeEmulator { *; }
+-keep class com.whilecode.gameemulator.nativecore.NativeEmulator { *; }

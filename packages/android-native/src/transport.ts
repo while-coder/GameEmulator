@@ -4,6 +4,12 @@ export const httpNativeTransport: NativeTransport = async (path, method, body) =
   method, body, headers: { 'X-GameEmulator-TV': '1' }, signal: AbortSignal.timeout(path.endsWith('/load') ? 120000 : 30000),
 })
 
+/** Called only after the user confirms the Vue exit dialog. */
+export async function exitAndroidApp(transport: NativeTransport): Promise<void> {
+  const response = await transport('/native/app/exit', 'POST')
+  if (!response.ok) throw new Error(await response.text())
+}
+
 type Reply = { id: number; error?: string; body: string; mime: string }
 type WebMessageBridge = { postMessage(message: string): void; onmessage: ((event: { data: string }) => void) | null }
 function encode(bytes: Uint8Array): string {

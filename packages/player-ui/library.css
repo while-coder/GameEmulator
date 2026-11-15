@@ -127,7 +127,6 @@
 
 :is(.app, .arcade-app).library-home .game-title-row h3 { min-height: 2.8em; margin: 0; }
 :is(.app, .arcade-app).library-home .game-main .meta { margin: 3px 0 0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-:is(.app, .arcade-app).library-home .game-actions .cache-remove { width: 30px; height: 30px; min-height: 30px; min-width: 30px; padding: 0; border: 1px solid #ffffff26; background: #151a23df; color: #d6dce5; font-size: 20px; }
 :is(.app, .arcade-app).library-home .game-actions .progress { padding: 5px 7px; border-radius: 5px; background: #151a23eb; }
 .library-home .game-preview .preview-status { top: auto; right: auto; left: 6px; bottom: 6px; }
 .library-home .game-preview .preview-system { top: 6px; left: 6px; font-size: 9px; }
@@ -140,9 +139,6 @@
   :is(.app, .arcade-app).library-home .search-tools { grid-column: 1 / -1; }
   :is(.app, .arcade-app).library-home .store-tools .check { padding-inline: 8px; gap: 6px; font-size: 12px; }
   :is(.app, .arcade-app).library-home .player-toolbar .s-button { padding-inline: 8px; }
-}
-@media (pointer: coarse) {
-  :is(.app, .arcade-app).library-home .game-actions .cache-remove { width: 40px; height: 40px; min-height: 40px; }
 }
 @media (max-width: 340px) {
   :is(.app, .arcade-app).library-home .player-title { font-size: 16px; }

@@ -4,12 +4,15 @@ import PlayerShell from './components/PlayerShell.vue'
 
 const props = defineProps<{
   onLeave: () => void | Promise<void>
+  backOnEscape?: boolean
   storageKey?: string
   platformLabel?: string
 }>()
 const shell = ref<InstanceType<typeof PlayerShell> | null>(null)
 // Android's native back callback is installed in each independent document.
 function handleBack(): 'handled' {
+  const menu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
+  if (menu) { menu.close(); return 'handled' }
   shell.value?.consumeBack()
   return 'handled'
 }
@@ -23,5 +26,5 @@ onBeforeUnmount(() => {
 
 <template>
   <PlayerShell ref="shell" title="NES / FC 模拟器" :platform-label="platformLabel ?? 'NES / FC'"
-    :storage-key="storageKey ?? 'nes:lastRom'" enable-back-exit :on-exit="props.onLeave" />
+    :storage-key="storageKey ?? 'nes:lastRom'" enable-back-exit :on-exit="props.onLeave" :back-on-escape="backOnEscape" />
 </template>

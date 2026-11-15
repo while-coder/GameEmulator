@@ -24,6 +24,75 @@ function rect(left, top, width = 80, height = 40) {
 const candidate = bounds => ({ getBoundingClientRect: () => bounds })
 const navigation = load('packages/player-ui/remoteNavigation.ts')
 
+test('card holds distinguish a short press, a long press and a cancelled scroll', () => {
+  let timer, holds = 0
+  const { createHoldAction } = load('packages/player-ui/holdAction.ts', {
+    setTimeout(fn) { timer = fn; return 1 },
+    clearTimeout() { timer = undefined },
+  })
+  const hold = createHoldAction(() => holds++)
+  hold.start()
+  assert.equal(hold.release(), true)
+  assert.equal(timer, undefined)
+  assert.equal(holds, 0)
+  hold.start()
+  timer()
+  assert.equal(holds, 1)
+  assert.equal(hold.held, true)
+  assert.equal(hold.release(), false)
+  hold.start()
+  const delayed = timer
+  hold.cancel() // A scroll, blur or unmount cancels pending long presses.
+  delayed()
+  assert.equal(holds, 1)
+  assert.equal(hold.release(), false)
+  hold.start()
+  assert.equal(hold.held, false)
+  assert.equal(hold.release(), true)
+})
+
+test('hold-aware cards receive gamepad press/release and keep keyboard confirmation local', () => {
+  const listeners = {}, events = []
+  let frame, ok = false
+  const document = { activeElement: null }
+  class Element {
+    hasAttribute(name) { return name === 'data-nav-hold' }
+    dispatchEvent(event) { events.push(event.type) }
+  }
+  const card = new Element()
+  document.activeElement = card
+  const globals = {
+    document, HTMLElement: Element, HTMLInputElement: class {}, HTMLTextAreaElement: class {},
+    Event: class { constructor(type) { this.type = type } },
+    window: { addEventListener(name, fn) { listeners[name] = fn } },
+    requestAnimationFrame(fn) { frame = fn; return 1 },
+    navigator: { getGamepads: () => [{ axes: [], buttons: [{ pressed: ok }] }] },
+  }
+  const api = load('packages/player-ui/useRemoteNav.ts', globals, {
+    vue: { ref: value => ({ value }), computed: fn => ({ get value() { return fn() } }), watch: () => () => {}, onBeforeUnmount() {} },
+    './gamepad': { GAMEPAD_AXIS_THRESHOLD: 0.5 }, './remoteNavigation': load('packages/player-ui/remoteNavigation.ts', globals),
+  })
+  const active = { value: true }
+  api.useRemoteNav({ container: { value: { contains: el => el === card } }, active })
+  let prevented = false
+  listeners.keydown({ key: 'Enter', preventDefault() { prevented = true } })
+  assert.equal(prevented, false) // The card handles keydown/keyup itself.
+  listeners.keydown({ key: 'Enter', repeat: true, preventDefault() { prevented = true } })
+  assert.equal(prevented, true) // Holding OK must not activate an opened menu item.
+  ok = true; frame(); frame()
+  assert.deepEqual(events, ['nav-confirm-start'])
+  ok = false; frame()
+  assert.deepEqual(events, ['nav-confirm-start', 'nav-confirm-end'])
+  ok = true; frame()
+  document.activeElement = null
+  ok = false; frame()
+  assert.equal(events.at(-1), 'nav-confirm-cancel')
+  document.activeElement = card
+  ok = true; frame()
+  active.value = false; frame()
+  assert.equal(events.at(-1), 'nav-confirm-cancel')
+})
+
 test('dropdown navigation keeps popup focus and returns to adjacent controls after closing', () => {
   const document = { activeElement: null }
   const listeners = [], watchers = [], frames = [], ticks = []
@@ -33,6 +102,7 @@ test('dropdown navigation keeps popup focus and returns to adjacent controls aft
     focus() { document.activeElement = this }
     scrollIntoView() {}
     closest() { return null }
+    hasAttribute() { return false }
     click() { this.onClick?.() }
   }
   const back = new Element(0, 0), trigger = new Element(100, 0), next = new Element(200, 0)

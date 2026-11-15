@@ -17,11 +17,11 @@ fun signingValue(key: String, env: String) = signingProperties.getProperty(key)?
     ?: System.getenv(env)?.takeIf { it.isNotBlank() }
 
 android {
-    namespace = "com.wandergame.gameemulator.tv"
+    namespace = "com.whilecode.gameemulator.tv"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
     defaultConfig {
-        applicationId = "com.wandergame.gameemulator.tv"
+        applicationId = "com.whilecode.gameemulator.tv"
         minSdk = 26
         targetSdk = 36
         versionName = appVersion
