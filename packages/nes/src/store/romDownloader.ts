@@ -7,6 +7,7 @@ export type DownloadProgress = {
 }
 
 export type DownloadOptions = {
+  signal?: AbortSignal
   onProgress?: (progress: DownloadProgress) => void
 }
 
@@ -21,11 +22,13 @@ export async function downloadRom(
   entry: RomEntry,
   options: DownloadOptions = {},
 ): Promise<Uint8Array> {
+  options.signal?.throwIfAborted()
   const url = resolveTrustedDownloadUrl(entry.download_url)
   let response: Response
   try {
-    response = await fetch(url)
+    response = await fetch(url, { signal: options.signal })
   } catch (err) {
+    options.signal?.throwIfAborted()
     throw new Error(`下载失败: 无法访问下载地址 (${networkErrorMessage(err)})`)
   }
   if (!response.ok) {
@@ -38,7 +41,9 @@ export async function downloadRom(
     : new Uint8Array(await response.arrayBuffer())
 
   options.onProgress?.({ received: bytes.byteLength, total, ratio: 1 })
+  options.signal?.throwIfAborted()
   await validateRomBytes(entry, bytes)
+  options.signal?.throwIfAborted()
   return bytes
 }
 

@@ -96,8 +96,8 @@ function openMenu() {
 watch(isFullscreen, (value, previous) => {
   if (previous && !value && romName.value && !settingsOpen.value) openMenu()
 })
-async function launchGame(payload: { name: string; bytes: Uint8Array; key: string }) {
-  await loadRomBytes(payload.name, payload.bytes, payload.key)
+async function launchGame(payload: { name: string; bytes: Uint8Array; key: string }, signal?: AbortSignal) {
+  await loadRomBytes(payload.name, payload.bytes, payload.key, signal)
   settingsOpen.value = false
 }
 useRemoteNav({ container: appRef, active: computed(() => navEnabled.value && libraryVisible.value && !settingsOpen.value && !libraryBusy.value), autoFocus: true, priority: 1, onBack: () => props.backOnEscape ? consumeBack() : openMenu() })
@@ -137,6 +137,11 @@ function resetTouchLayout() {
   if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
+  if (event.code === 'Escape' && libraryBusy.value) {
+    event.preventDefault(); event.stopImmediatePropagation()
+    if (!event.repeat) libraryPanel.value?.cancelOperation()
+    return
+  }
   if (event.code === 'Escape') {
     const gameMenu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
     if (gameMenu) { event.preventDefault(); event.stopImmediatePropagation(); gameMenu.close(); return }
@@ -208,11 +213,13 @@ const shellClasses = computed(() => ({
   'is-pseudo-fullscreen': isFullscreen.value && usePseudo.value,
 }))
 
-async function loadRomBytes(name: string, bytes: Uint8Array, key: string) {
+async function loadRomBytes(name: string, bytes: Uint8Array, key: string, signal?: AbortSignal) {
+  signal?.throwIfAborted()
   loading.value = true
   playingRomKey.value = null
   try {
-    await screen.value?.loadRom(bytes)
+    await screen.value?.loadRom(bytes, signal)
+    signal?.throwIfAborted()
     playingRomKey.value = key
     romName.value = name
     romKey.value = key
@@ -292,6 +299,7 @@ function onSystemAction(action: string) {
 }
 
 function handleBack(): BackResult {
+  if (libraryBusy.value) { libraryPanel.value?.cancelOperation(); return 'handled' }
   if (leaveConfirm.value) { leaveConfirm.value = false; return 'handled' }
   if (loading.value || leaving.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return 'handled'
   if (layoutEditing.value) {
@@ -336,9 +344,9 @@ onBeforeUnmount(() => {
   <div
     ref="appRef"
     class="app"
-    :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName && !layoutEditing }]"
+    :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName || layoutEditing }]"
   >
-    <header v-show="libraryVisible || layoutEditing" ref="toolbarRef" class="player-toolbar" data-nav-row aria-label="游戏功能区">
+    <header v-show="libraryVisible" ref="toolbarRef" class="player-toolbar" data-nav-row aria-label="游戏功能区">
       <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="requestLeave">‹ 返回</SButton>
       <span class="player-title">{{ title }}</span>
       <span class="library-header-line" aria-hidden="true"></span>

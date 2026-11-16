@@ -28,17 +28,28 @@ export function emptyRomCatalog(): RomCatalog {
   }
 }
 
-export async function loadRomCatalog(url = DEFAULT_CATALOG_URL): Promise<RomCatalog> {
-  let response: Response
+async function requestCatalog(url: string, signal?: AbortSignal): Promise<RomCatalog> {
+  const abort = new AbortController()
+  const cancel = () => abort.abort()
+  signal?.throwIfAborted()
+  signal?.addEventListener('abort', cancel, { once: true })
+  const timer = setTimeout(cancel, 8_000)
   try {
-    response = await fetch(url, { cache: 'no-store' })
+    const response = await fetch(url, { cache: 'no-store', signal: abort.signal })
+    if (!response.ok) throw new Error(`读取 ROM 目录失败: HTTP ${response.status}`)
+    return await response.json() as RomCatalog
   } catch (err) {
+    if (signal?.aborted) throw err
+    if (abort.signal.aborted) throw new Error('读取游戏目录超时，请稍后重试')
     throw new Error(`读取 ROM 目录失败: 无法访问 ${url} (${networkErrorMessage(err)})`)
+  } finally {
+    clearTimeout(timer)
+    signal?.removeEventListener('abort', cancel)
   }
-  if (!response.ok) {
-    throw new Error(`读取 ROM 目录失败: ${url} HTTP ${response.status}`)
-  }
-  const catalog = (await response.json()) as RomCatalog
+}
+
+export async function loadRomCatalog(url = DEFAULT_CATALOG_URL, options: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
+  const catalog = await requestCatalog(url, options.signal)
   if (!Array.isArray(catalog.games)) {
     throw new Error('ROM 目录格式无效')
   }

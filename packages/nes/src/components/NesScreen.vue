@@ -502,9 +502,11 @@ watch(
 // 本组件不处理全屏快捷键。
 
 // 暴露给父组件
-async function loadRom(bytes: Uint8Array) {
+async function loadRom(bytes: Uint8Array, signal?: AbortSignal) {
+  signal?.throwIfAborted()
   runner?.resumeAudio()
-  await runner?.loadRom(bytes)
+  await runner?.loadRom(bytes, signal)
+  signal?.throwIfAborted()
 }
 function reset() {
   runner?.reset()

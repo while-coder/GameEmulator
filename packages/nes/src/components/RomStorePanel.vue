@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import SCheckbox from '@qingfeng346/ui-kit/components/checkbox/SCheckbox.vue'
 import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
-import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { downloadRom, validateRomBytes, type DownloadProgress } from '../store/romDownloader'
 import {
   emptyRomCatalog,
@@ -26,10 +24,17 @@ import {
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
 import GameCardActions from '../../../player-ui/GameCardActions.vue'
+import LibraryTabs from '../../../player-ui/LibraryTabs.vue'
+import LibraryRequestStatus from '../../../player-ui/LibraryRequestStatus.vue'
+import LibraryLoading from '../../../player-ui/LibraryLoading.vue'
+import { useLibraryOperation } from '../../../player-ui/useLibraryOperation'
+import { useLibraryBrowser, type LibrarySortMode as SortMode } from '../../../player-ui/useLibraryBrowser'
+import { libraryFailureReason } from '../../../player-ui/libraryRequest'
+import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
-const props = defineProps<{ launch?: (payload: { name: string; bytes: Uint8Array; key: string }) => Promise<void> }>()
+const props = defineProps<{ launch?: (payload: { name: string; bytes: Uint8Array; key: string }, signal?: AbortSignal) => Promise<void> }>()
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{
   beforePlay: []
@@ -37,22 +42,29 @@ const emit = defineEmits<{
 }>()
 
 const catalog = ref<RomCatalog>(emptyRomCatalog())
-const query = ref('')
-const genre = ref('')
-const downloadedOnly = ref(false)
+const libraryTab = ref<'online' | 'played' | 'favorites'>('online')
+const { query, genre, sort, page, gameList } = useLibraryBrowser('nes', libraryTab)
 const cachedRoms = ref<CachedRom[]>([])
 const busyKey = ref<string | null>(null)
 const catalogLoading = ref(false)
+const refreshing = ref(false)
+const catalogError = ref('')
+const hasCatalog = ref(false)
+const refreshVersion = ref(0)
+const abort = new AbortController()
+onBeforeUnmount(() => abort.abort())
 const error = ref<string | null>(null)
 const progressByKey = ref<Record<string, DownloadProgress>>({})
+const { operation, cancelling, cancelOperation, runOperation } = useLibraryOperation()
+const loadingMessage = ref('')
+const loadingProgress = computed(() => busyKey.value ? progressByKey.value[busyKey.value] : null)
 
 const { history } = usePlayHistory('nes')
-
-type SortMode = 'recent' | 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
+const { games: rememberedGames, isFavorite, remember, toggleFavorite } = useGameCollection<RomEntry>('nes')
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+  { value: 'default', label: '默认排序' },
   { value: 'recent', label: '最近游玩' },
-  { value: 'default', label: '目录顺序' },
   { value: 'name-asc', label: '名称 A→Z' },
   { value: 'name-desc', label: '名称 Z→A' },
   { value: 'size-asc', label: '体积 小→大' },
@@ -61,8 +73,6 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 ]
 
 const PAGE_SIZE = 50
-const page = ref(1)
-const sort = ref<SortMode>('recent')
 
 function sortList<T>(
   list: T[],
@@ -96,25 +106,30 @@ const legacyPlayedAt = computed(() => new Map(cachedRoms.value.map(rom => [rom.k
 const cachedKeys = computed(() => new Set(cachedRoms.value.map((rom) => rom.key)))
 // 合并在线目录和缓存，缓存中已不在目录里的游戏仍可离线启动。
 const libraryGames = computed(() => {
-  const games = new Map(catalog.value.games.map((game) => [romKey(game), game]))
+  const games = new Map(catalog.value.games.map(game => [romKey(game), game]))
+  for (const game of rememberedGames.value) if (!games.has(romKey(game))) games.set(romKey(game), game)
   for (const rom of cachedRoms.value) {
     if (!games.has(rom.key)) {
       games.set(rom.key, {
         name: rom.name, genre: rom.genre, publisher: rom.publisher,
         mapper: rom.mapper, tags: rom.tags, file_size: rom.size,
-        sha256: rom.key, download_url: '',
+        sha256: rom.key, download_url: '', screenshot_url: rom.screenshot_url,
       })
     }
   }
   return [...games.values()]
 })
+const played = (game: RomEntry) => !!(history.value[romKey(game)]?.lastPlayedAt || legacyPlayedAt.value.get(romKey(game)))
+const inMyGames = (game: RomEntry) => played(game) || cachedKeys.value.has(romKey(game))
+const tabCounts = computed(() => ({ online: libraryGames.value.length, played: libraryGames.value.filter(inMyGames).length, favorites: libraryGames.value.filter(game => isFavorite(romKey(game))).length }))
+const tabGames = computed(() => libraryGames.value.filter(game => libraryTab.value === 'online' || (libraryTab.value === 'played' ? inMyGames(game) : isFavorite(romKey(game)))))
 const genres = computed(() => listGenres(libraryGames.value))
 const genreOptions = computed(() => [
   { value: '', label: '全部类型' },
   ...genres.value.map((item) => ({ value: item, label: item })),
 ])
 const matchedGames = computed(() =>
-  searchRoms(libraryGames.value, query.value, genre.value, downloadedOnly.value, cachedKeys.value),
+  searchRoms(tabGames.value, query.value, genre.value, false, cachedKeys.value),
 )
 const sortedMatched = computed(() => sort.value === 'recent'
   ? sortRecentlyPlayed(matchedGames.value, romKey, history.value, game => legacyPlayedAt.value.get(romKey(game)) ?? 0)
@@ -125,10 +140,13 @@ const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / PAGE_
 const pageStart = computed(() => (page.value - 1) * PAGE_SIZE)
 const pageEnd = computed(() => Math.min(pageStart.value + PAGE_SIZE, totalCount.value))
 const visibleGames = computed(() => sortedMatched.value.slice(pageStart.value, pageStart.value + PAGE_SIZE))
-watch([query, genre, sort, downloadedOnly], () => { page.value = 1 })
+watch([catalog, cachedRoms, history], () => {
+  for (const game of libraryGames.value) if (played(game) || isFavorite(romKey(game))) remember(romKey(game), game)
+})
+const emptyDescription = computed(() => query.value || genre.value ? '没有匹配的游戏' : libraryTab.value === 'played' ? '还没有游戏，下载或开始游戏后会显示在这里' : libraryTab.value === 'favorites' ? '还没有收藏，右键或长按游戏即可收藏' : catalogLoading.value ? '正在加载游戏目录…' : '暂无游戏')
 
 // 列表变短（例如删除后）时收敛当前页，避免停在空页
-watch(totalPages, (pages) => {
+watch([libraryTab, totalPages], ([, pages]) => {
   if (page.value > pages) page.value = pages
 })
 
@@ -136,20 +154,28 @@ function goPage(target: number) {
   page.value = Math.min(Math.max(1, target), totalPages.value)
 }
 
-watch(open, (value) => { if (value) { if (sort.value === 'recent') page.value = 1; void prepareStore() } }, { immediate: true })
-defineExpose({ busyKey })
+watch(open, (value) => { if (value) void prepareStore() }, { immediate: true })
+defineExpose({ busyKey, cancelOperation })
 
-async function prepareStore() {
-  await Promise.all([refreshCatalog(), refreshCached()])
+async function prepareStore(manual = false) {
+  if (refreshing.value || busyKey.value !== null) return
+  refreshing.value = true
+  error.value = null
+  try {
+    await Promise.all([refreshCatalog(), refreshCached()])
+    if (manual && !catalogError.value && !error.value) refreshVersion.value++
+  }
+  finally { refreshing.value = false }
 }
 
 async function refreshCatalog() {
   catalogLoading.value = true
-  error.value = null
+  catalogError.value = ''
   try {
-    catalog.value = await loadRomCatalog()
+    catalog.value = await loadRomCatalog(undefined, { signal: abort.signal })
+    hasCatalog.value = true
   } catch (err) {
-    error.value = formatError(err)
+    if (!abort.signal.aborted) catalogError.value = libraryFailureReason(err)
   } finally {
     catalogLoading.value = false
   }
@@ -169,25 +195,20 @@ async function play(game: RomEntry) {
   const key = romKey(game)
   busyKey.value = key
   error.value = null
+  remember(key, game)
   try {
-    let bytes: Uint8Array | null = null
-    const cached = await getCachedRom(key)
-    if (cached) {
-      try {
-        if (game.download_url) await validateRomBytes(game, cached.bytes)
-        bytes = cached.bytes
-      } catch {
-        await deleteCachedRom(key)
-      }
-    }
-    if (!bytes) {
-      if (!game.download_url) throw new Error('该 ROM 缓存已失效，请重新添加游戏')
-      bytes = await downloadAndCache(game, key)
-    }
-    await refreshCached()
-    if (props.launch) await props.launch({ name: game.name, bytes, key })
-    else emit('load', { name: game.name, bytes, key })
-    open.value = false
+    loadingMessage.value = '正在准备游戏…'
+    await runOperation(game.name, 'play', async signal => {
+      const bytes = await ensureCached(game, key, signal)
+      await refreshCached()
+      signal.throwIfAborted()
+      clearProgress(key)
+      loadingMessage.value = '正在启动游戏…'
+      if (props.launch) await props.launch({ name: game.name, bytes, key }, signal)
+      else emit('load', { name: game.name, bytes, key })
+      signal.throwIfAborted()
+      open.value = false
+    })
   } catch (err) {
     error.value = formatError(err)
   } finally {
@@ -196,11 +217,56 @@ async function play(game: RomEntry) {
   }
 }
 
-async function downloadAndCache(game: RomEntry, key = romKey(game)): Promise<Uint8Array> {
+async function ensureCached(game: RomEntry, key: string, signal: AbortSignal): Promise<Uint8Array> {
+  signal.throwIfAborted()
+  const cached = await getCachedRom(key)
+  signal.throwIfAborted()
+  if (cached) {
+    try {
+      if (game.download_url) await validateRomBytes(game, cached.bytes)
+      signal.throwIfAborted()
+      return cached.bytes
+    } catch {
+      signal.throwIfAborted()
+      await deleteCachedRom(key)
+    }
+  }
+  signal.throwIfAborted()
+  if (!game.download_url) throw new Error('该游戏缓存已失效，请联网刷新目录后重新下载')
+  return downloadAndCache(game, key, signal)
+}
+
+async function download(game: RomEntry) {
+  if (busyKey.value !== null) return
+  const key = romKey(game)
+  busyKey.value = key
+  error.value = null
+  remember(key, game)
+  try {
+    loadingMessage.value = '正在准备下载…'
+    await runOperation(game.name, 'download', async signal => {
+      await ensureCached(game, key, signal)
+      await refreshCached()
+    })
+  }
+  catch (err) { error.value = formatError(err) }
+  finally { clearProgress(key); busyKey.value = null }
+}
+
+async function downloadAndCache(game: RomEntry, key: string, signal: AbortSignal): Promise<Uint8Array> {
+  loadingMessage.value = '正在下载游戏…'
   const bytes = await downloadRom(game, {
-    onProgress: (progress) => setProgress(key, progress),
+    signal,
+    onProgress: (progress) => {
+      setProgress(key, progress)
+      if (progress.ratio === 1) loadingMessage.value = '正在校验并保存游戏…'
+    },
   })
+  signal.throwIfAborted()
   await saveCachedRom(game, bytes)
+  // A completed, verified download remains available even if launch is cancelled.
+  await refreshCached()
+  signal.throwIfAborted()
   return bytes
 }
 
@@ -228,19 +294,6 @@ function clearProgress(key: string) {
   progressByKey.value = next
 }
 
-function progressLabel(game: RomEntry): string {
-  const progress = progressByKey.value[romKey(game)]
-  if (!progress) return ''
-  if (progress.ratio !== null) return `${Math.round(progress.ratio * 100)}%`
-  return formatSize(progress.received)
-}
-
-function playLabel(game: RomEntry): string {
-  const key = romKey(game)
-  if (busyKey.value === key) return cachedKeys.value.has(key) ? '载入中' : '下载中'
-  return cachedKeys.value.has(key) ? '启动' : '下载并启动'
-}
-
 
 function metaLine(game: RomEntry): string {
   const parts = [
@@ -264,28 +317,31 @@ function formatError(err: unknown): string {
 
 <template>
   <section class="store-panel player-library">
+      <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action" :message="loadingMessage" :progress="loadingProgress" :cancelling="cancelling" @cancel="cancelOperation" />
+      <LibraryTabs v-model="libraryTab" panel-id="nes-library-games" :counts="tabCounts" />
       <div class="store-tools">
         <div class="search-tools">
-          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" />
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索游戏、厂商、标签" />
+          <button type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busyKey !== null" @click="prepareStore(true)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': refreshing }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
+          </button>
         </div>
-        <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
-        <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
-        <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedRoms.length }})</SCheckbox>
+        <RemoteSelect v-model="genre" class="select" :options="genreOptions" aria-label="游戏类型" />
+        <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" aria-label="游戏排序" />
       </div>
 
-      <div v-if="catalogLoading || error" class="store-summary">
-        <span v-if="catalogLoading" role="status">正在加载游戏目录…</span>
-        <SHint v-if="error" type="error" class="error" role="alert">{{ error }}</SHint>
-      </div>
+      <LibraryRequestStatus :loading="refreshing" :has-games="libraryGames.length > 0" :has-catalog="hasCatalog" :has-downloads="cachedKeys.size > 0" :failed="!!catalogError" :reason="catalogError" :success-version="refreshVersion" :disabled="busyKey !== null" @retry="prepareStore(true)" />
+      <p v-if="error" class="library-action-error" role="alert">{{ error }}</p>
 
-      <div class="game-list" data-nav-grid>
+      <div id="nes-library-games" ref="gameList" class="game-list" data-nav-grid role="tabpanel" :aria-labelledby="`nes-library-games-${libraryTab}`">
         <article
           v-for="game in visibleGames"
           :key="romKey(game)"
           class="game-card"
           data-nav-cell
         >
-          <GameCardActions :name="game.name" :detail="metaLine(game)" :disabled="busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="cachedKeys.has(romKey(game))" @play="play(game)" @remove="removeCachedByKey(romKey(game))" />
+          <GameCardActions :name="game.name" :detail="metaLine(game)" :disabled="busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="cachedKeys.has(romKey(game))" :can-download="!cachedKeys.has(romKey(game)) && !!game.download_url" :favorite="isFavorite(romKey(game))" @play="play(game)" @download="download(game)" @favorite="toggleFavorite(romKey(game), game)" @remove="removeCachedByKey(romKey(game))" />
+          <span v-if="isFavorite(romKey(game))" class="game-favorite-mark" aria-label="已收藏">★</span>
           <GamePreview :game-key="romKey(game)" :name="game.name" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
@@ -301,14 +357,9 @@ function formatError(err: unknown): string {
 
           </div>
 
-          <div v-if="busyKey === romKey(game)" class="game-actions">
-            <span v-if="busyKey === romKey(game)" class="progress">
-              {{ playLabel(game) }} {{ progressLabel(game) }}
-            </span>
-          </div>
         </article>
 
-        <SEmpty v-if="visibleGames.length === 0" class="empty" :description="catalogLoading ? '正在加载 ROM 目录…' : '没有匹配的 ROM'" />
+        <SEmpty v-if="visibleGames.length === 0 && !(libraryTab === 'online' && (refreshing || catalogError) && libraryGames.length === 0)" class="empty" :description="emptyDescription" />
       </div>
 
       <div class="store-pager">

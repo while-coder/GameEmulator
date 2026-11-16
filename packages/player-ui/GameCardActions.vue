@@ -3,8 +3,8 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { createHoldAction } from './holdAction'
 import { useRemoteNav } from './useRemoteNav'
 
-const props = defineProps<{ name: string; detail: string; disabled: boolean; busy: boolean; canRemove: boolean }>()
-const emit = defineEmits<{ play: []; remove: [] }>()
+const props = defineProps<{ name: string; detail: string; disabled: boolean; busy: boolean; canRemove: boolean; canDownload: boolean; favorite: boolean }>()
+const emit = defineEmits<{ play: []; remove: []; download: []; favorite: [] }>()
 const trigger = ref<HTMLButtonElement | null>(null)
 const dialog = ref<HTMLDialogElement | null>(null)
 const shown = ref(false)
@@ -41,11 +41,13 @@ async function closed() {
   await nextTick()
   if (!disposed && trigger.value?.isConnected && !props.disabled) trigger.value.focus({ preventScroll: true })
 }
-function choose(action: 'play' | 'remove') {
+function choose(action: 'play' | 'remove' | 'download' | 'favorite') {
   closeMenu()
   if (!props.disabled) {
     if (action === 'play') emit('play')
-    else if (props.canRemove) emit('remove')
+    else if (action === 'remove' && props.canRemove) emit('remove')
+    else if (action === 'download' && props.canDownload) emit('download')
+    else if (action === 'favorite') emit('favorite')
   }
 }
 function pointerDown(event: PointerEvent) {
@@ -115,6 +117,8 @@ useRemoteNav({ container: dialog, active: computed(() => shown.value), autoFocus
       @cancel.prevent="closeMenu" @close="closed" @click="event => { if (event.target === dialog) closeMenu() }">
       <h2>{{ name }}</h2>
       <button type="button" @click="choose('play')">开始游戏</button>
+      <button v-if="canDownload" type="button" @click="choose('download')">下载游戏</button>
+      <button type="button" :aria-pressed="favorite" @click="choose('favorite')">{{ favorite ? '取消收藏' : '收藏游戏' }}</button>
       <button v-if="canRemove" type="button" class="remove-cache" @click="choose('remove')">移除下载缓存</button>
       <button type="button" class="cancel-menu" @click="closeMenu">取消</button>
     </dialog>

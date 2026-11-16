@@ -47,7 +47,7 @@
 
 :root.android-tv .library-home .store-tools {
   --library-control-height: 28px;
-  grid-template-columns: minmax(0, 1fr) minmax(80px, 100px) minmax(90px, 110px) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 100px) minmax(90px, 110px);
   gap: 6px;
   padding: 0 4px 4px;
 }
@@ -126,9 +126,11 @@
 }
 
 @media (max-width: 540px) {
-  :root.android-tv .library-home .store-tools { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
-  :root.android-tv .library-home .store-tools .search-tools { grid-column: 1 / -1; }
+  :root.android-tv .library-home .store-tools { grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)); }
+  :root.android-tv .library-home .store-tools .search-tools { grid-column: auto; }
   :root.android-tv .library-home .game-list { grid-template-columns: minmax(0, 1fr); }
   :root.android-tv .library-home .store-pager { grid-template-columns: minmax(0, 1fr); }
   :root.android-tv .library-home .pager-controls { grid-column: 1; }
 }
+:root.android-tv .library-tabs { gap: 4px; padding-block: 0 5px; }
+:root.android-tv .library-tabs button { min-height: 28px; padding: 3px 10px; font-size: 12px; }

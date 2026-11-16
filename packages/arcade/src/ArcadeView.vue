@@ -35,6 +35,7 @@ const props=defineProps<{onLeave:()=>void|Promise<void>;backOnEscape?:boolean}>(
 const canvas=ref<HTMLCanvasElement|null>(null)
 const display=ref<HTMLElement|null>(null)
 const root=ref<HTMLElement|null>(null)
+const libraryPanel=ref<InstanceType<typeof RomStorePanel>|null>(null)
 const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??null)
 const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunnerApi|null>(null)
@@ -95,29 +96,60 @@ async function task(action:()=>Promise<void>){
   finally{busy.value=false;progress.value=null}
 }
 async function refresh(){[archives.value,snapshots.value]=await Promise.all([listArchives(),listSnapshots()])}
-async function startGame(source:Archive,snapshot?:Snapshot){
-  const {game,dependencies}=await prepareGame(source,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
-  await loadPreparedGame(game,dependencies,snapshot)
+async function startGame(source:Archive,snapshot?:Snapshot,signal=downloads.signal){
+  const {game,dependencies}=await prepareGame(source,{signal,onProgress:value=>{progress.value=value}})
+  await loadPreparedGame(game,dependencies,snapshot,signal)
 }
-async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Snapshot){
+async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Snapshot,signal=downloads.signal){
+  signal.throwIfAborted()
   if(snapshot&&currentBundle(game,dependencies)!==snapshotBundleKey(snapshot))throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
   progress.value=null
   await refresh()
+  signal.throwIfAborted()
   current.value=null;input.releaseAll()
-  await runner.value!.load(game,dependencies)
+  let stopping:Promise<void>|undefined
+  const cancel=()=>{
+    stopping=Promise.resolve(runner.value?.dispose())
+    void stopping.catch(()=>{}) // Await cleanup below, including native backends.
+  }
+  signal.addEventListener('abort',cancel,{once:true})
+  try{
+    await runner.value!.load(game,dependencies)
+    signal.throwIfAborted()
+    await nextTick();measure()
+    signal.throwIfAborted()
+  }finally{
+    signal.removeEventListener('abort',cancel)
+    await stopping
+  }
+  signal.throwIfAborted()
   current.value=game;currentDependencies.value=dependencies
-  await nextTick();measure()
+  void nextTick(measure)
 }
-async function play(game:Archive){await task(async()=>{await startGame(game);menuOpen.value=false})}
-async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog){
-  await task(async()=>{
-    try{
-      const {game,dependencies}=await prepareCatalogGame(entry,catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
-      await loadPreparedGame(game,dependencies);menuOpen.value=false
-    }finally{await refresh()}
+async function libraryTask(signal:AbortSignal,action:()=>Promise<void>){
+  if(busy.value||leaving.value)return
+  signal.throwIfAborted()
+  busy.value=true;error.value='';retryAction.value=null
+  try{await action()}
+  catch(error){await refresh();throw error}
+  finally{busy.value=false;progress.value=null}
+}
+async function play(game:Archive,signal:AbortSignal){
+  await libraryTask(signal,async()=>{await startGame(game,undefined,signal);menuOpen.value=false})
+}
+async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog,signal:AbortSignal){
+  await libraryTask(signal,async()=>{
+    const {game,dependencies}=await prepareCatalogGame(entry,catalog,{signal,onProgress:value=>{progress.value=value}})
+    await loadPreparedGame(game,dependencies,undefined,signal);menuOpen.value=false
   })
 }
 async function deleteGame(game:Archive){await task(async()=>{await removeArchive(game.id);await refresh()})}
+async function downloadGame(entry:CatalogGame,catalog:ArcadeCatalog,signal:AbortSignal){
+  await libraryTask(signal,async()=>{
+    try{await prepareCatalogGame(entry,catalog,{signal,onProgress:value=>{progress.value=value}})}
+    finally{await refresh()}
+  })
+}
 async function newSave(){await save('normal')}
 async function save(kind:SaveKind='quick'){
   const game=current.value
@@ -175,6 +207,7 @@ async function leave(){
   try{await stop();await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
 }
 function nativeBack(): 'handled'{
+  if(document.querySelector('dialog.library-loading[open]')){libraryPanel.value?.cancelOperation();return 'handled'}
   const gameMenu=document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
   if(gameMenu){gameMenu.close();return 'handled'}
   if(leaveConfirm.value){leaveConfirm.value=false;return 'handled'}
@@ -188,6 +221,7 @@ function nativeBack(): 'handled'{
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
+  if(event.code==='Escape'&&document.querySelector('dialog.library-loading[open]')){event.preventDefault();event.stopImmediatePropagation();if(!event.repeat)libraryPanel.value?.cancelOperation();return}
   if(event.code==='Escape'&&document.querySelector('dialog.game-card-menu[open]')){event.preventDefault();event.stopImmediatePropagation();nativeBack();return}
   if(event.code==='Escape'&&editingKey.value){event.preventDefault();event.stopImmediatePropagation();cancelEdit();return}
   if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
@@ -271,17 +305,18 @@ const time=(value:number)=>new Date(value).toLocaleString()
 </script>
 
 <template>
-  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded&&!layoutEditing}">
-    <header v-show="!loaded || layoutEditing" ref="toolbar" class="player-toolbar" data-nav-row aria-label="游戏功能区">
+  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded||layoutEditing}">
+    <header v-show="!loaded && !layoutEditing" ref="toolbar" class="player-toolbar" data-nav-row aria-label="游戏功能区">
       <SButton class="library-back" aria-label="返回模拟器列表" :disabled="busy||leaving" @click="requestLeave">‹ 返回</SButton>
       <span class="player-title">街机模拟器</span>
       <span class="library-header-line" aria-hidden="true"></span>
       <SButton :disabled="busy || leaving" @click="openMenu">⚙ 设置</SButton>
     </header>
     <section v-show="!loaded && !layoutEditing" class="library-browser" aria-label="游戏库">
-      <div v-if="busy" class="library-progress" role="status">{{progressText}}</div>
-      <RomStorePanel :active="!loaded && !layoutEditing" :archives="archives" :busy="busy||leaving" :progress="progress"
+      <RomStorePanel ref="libraryPanel" :active="!loaded && !layoutEditing" :archives="archives" :busy="busy||leaving" :progress="progress"
         :play="remoteGame"
+        :download="downloadGame"
+        :refresh="refresh"
         :play-cached="play" :remove="deleteGame" />
     </section>
     <main class="arcade-stage player-stage" :class="{'player-preparing':!loaded&&!layoutEditing,'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">

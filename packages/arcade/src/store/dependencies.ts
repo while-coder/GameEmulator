@@ -86,9 +86,11 @@ export async function prepareGame(game: Archive, options: ResolveOptions = {}): 
 }
 
 export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCatalog, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {
+  options.signal?.throwIfAborted()
   const plan = dependencyPlan(entry, catalog)
   const cached = await listArchives()
   const localGame = await verifiedCachedArchive(cached, entry)
+  options.signal?.throwIfAborted()
   const game = localGame
     ? { ...localGame, id: `game:${entry.file_name}`, kind: 'game' as const }
     : await downloadArchive(entry, options, 'game')
@@ -96,6 +98,7 @@ export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCata
   for (const entry of plan) {
     options.signal?.throwIfAborted()
     const local = await verifiedCachedArchive(cached, entry)
+    options.signal?.throwIfAborted()
     // Reuse a parent already imported as a game, as well as cached support ZIPs.
     // Verify its bytes before loading instead of relying only on the DB record.
     const archive = local ?? await downloadArchive(entry, options)
@@ -104,5 +107,6 @@ export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCata
   options.signal?.throwIfAborted()
   const resolved = { ...game, displayName: entry.name?.trim() || entry.name_en?.trim() || game.displayName, dependencies: dependencies.map(file => file.name) }
   await putArchive(resolved)
+  options.signal?.throwIfAborted()
   return { game: resolved, dependencies }
 }

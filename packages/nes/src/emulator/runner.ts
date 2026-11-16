@@ -22,7 +22,7 @@ export interface NesRunnerApi {
   readonly nativeInput?: boolean
   readonly saveNamespace?: string
   onError?: (error: Error) => void
-  loadRom(bytes: Uint8Array): Promise<void>
+  loadRom(bytes: Uint8Array, signal?: AbortSignal): Promise<void>
   dispose(): Promise<void>
   unload(): void
   reset(): void
@@ -163,19 +163,33 @@ export class NesRunner {
   }
 
   /** 载入并启动一个 ROM。 */
-  async loadRom(bytes: Uint8Array): Promise<void> {
+  async loadRom(bytes: Uint8Array, signal?: AbortSignal): Promise<void> {
+    signal?.throwIfAborted()
     await this.destroy()
-    this.instance = await Nostalgist.launch({
-      element: this.canvas,
-      core: 'fceumm',
-      rom: { fileName: 'game.nes', fileContent: new Blob([bytes as BlobPart]) },
-      resolveCoreJs: () => fceummCoreJsUrl,
-      resolveCoreWasm: () => fceummCoreWasmUrl,
-      // 不让 RetroArch 监听真实全局键盘,输入完全由前端自定义系统经 press/release 派发,
-      // 避免真实按键被 RetroArch 二次捕获导致重复输入。
-      respondToGlobalEvents: false,
-      retroarchConfig: INPUT_CONFIG,
-    })
+    signal?.throwIfAborted()
+    try {
+      this.instance = await Nostalgist.prepare({
+        signal,
+        element: this.canvas,
+        core: 'fceumm',
+        rom: { fileName: 'game.nes', fileContent: new Blob([bytes as BlobPart]) },
+        resolveCoreJs: () => fceummCoreJsUrl,
+        resolveCoreWasm: () => fceummCoreWasmUrl,
+        // Keep keyboard input under the frontend's control.
+        respondToGlobalEvents: false,
+        retroarchConfig: INPUT_CONFIG,
+      })
+      signal?.throwIfAborted()
+      // Nostalgist's default abort handler removes the Vue-owned canvas.
+      // Fetching is finished; handle cancellation during start via destroy().
+      this.instance.getOptions().signal = undefined
+      await this.instance.start()
+      signal?.throwIfAborted()
+    } catch (error) {
+      await this.destroy()
+      this.restoreCanvas()
+      throw error
+    }
     this.running = true
     // 新实例回到默认(正常速度、未静音),按当前设置重新应用。
     this.speedMode = 'normal'

@@ -10,6 +10,7 @@ export type CachedRom = {
   publisher?: string
   mapper?: number
   tags?: string[]
+  screenshot_url?: string
   savedAt: number
   lastPlayedAt?: number
 }
@@ -61,6 +62,7 @@ export async function saveCachedRom(entry: RomEntry, bytes: Uint8Array): Promise
     publisher: entry.publisher,
     mapper: entry.mapper,
     tags: entry.tags ? [...entry.tags] : undefined,
+    screenshot_url: entry.screenshot_url,
     savedAt: Date.now(),
   }
   await requestToPromise(tx.objectStore(STORE_NAME).put(record))

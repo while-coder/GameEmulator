@@ -77,16 +77,28 @@ export class NativeSession {
       this.onError?.(error)
     })
   }
-  async loadRom(bytes: Uint8Array): Promise<void> {
-    await this.enqueue(async () => {
-      if (this.disposed) throw new Error('游戏页面已关闭')
-      this.ready = false; this.running = false
-      const info = await (await this.request('info')).json()
-      if (info.build !== this.saveNamespace) throw new Error('原生内核与页面版本不匹配，请重新启动应用')
-      const result = await (await this.request('load', 'POST', new Blob([bytes as BlobPart]))).json()
-      this.hash = result.hash; this.masks = [0, 0]; this.ready = true
-      await this.command('volume', { value: this.enabled ? this.volume : 0 })
-    })
+  async loadRom(bytes: Uint8Array, signal?: AbortSignal): Promise<void> {
+    try {
+      await this.enqueue(async () => {
+        signal?.throwIfAborted()
+        if (this.disposed) throw new Error('游戏页面已关闭')
+        this.ready = false; this.running = false
+        const info = await (await this.request('info')).json()
+        signal?.throwIfAborted()
+        if (info.build !== this.saveNamespace) throw new Error('原生内核与页面版本不匹配，请重新启动应用')
+        const result = await (await this.request('load', 'POST', new Blob([bytes as BlobPart]))).json()
+        signal?.throwIfAborted()
+        this.hash = result.hash; this.masks = [0, 0]; this.ready = true
+        await this.command('volume', { value: this.enabled ? this.volume : 0 })
+      })
+      signal?.throwIfAborted()
+    } catch (error) {
+      if (signal?.aborted) {
+        this.ready = false; this.running = false
+        await this.enqueue(() => this.command('stop'))
+      }
+      throw error
+    }
     this.syncDisplay()
     this.startPolling()
     // PlayerShell resumes after loading and applies its current modal/pause state.

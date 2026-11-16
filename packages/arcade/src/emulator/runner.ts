@@ -80,6 +80,8 @@ export class ArcadeRunner {
       })
       if(generation!==this.generation){instance.exit({removeCanvas:false});return}
       this.instance=instance
+      // dispose() owns canvas preservation; Nostalgist's abort exit removes it.
+      instance.getOptions().signal=undefined
       phase='启动街机核心'
       await instance.start()
       if(failed)throw new Error(diagnostic||'核心拒绝此游戏包')

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SCheckbox from '@qingfeng346/ui-kit/components/checkbox/SCheckbox.vue'
 import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
@@ -11,6 +10,13 @@ import type { DependencyProgress } from '../store/dependencies'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
 import GamePreview from '../../../player-ui/GamePreview.vue'
 import GameCardActions from '../../../player-ui/GameCardActions.vue'
+import LibraryTabs from '../../../player-ui/LibraryTabs.vue'
+import LibraryRequestStatus from '../../../player-ui/LibraryRequestStatus.vue'
+import LibraryLoading from '../../../player-ui/LibraryLoading.vue'
+import { useLibraryOperation } from '../../../player-ui/useLibraryOperation'
+import { useLibraryBrowser, type LibrarySortMode as SortMode } from '../../../player-ui/useLibraryBrowser'
+import { libraryFailureReason } from '../../../player-ui/libraryRequest'
+import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
 
@@ -20,35 +26,51 @@ const props = defineProps<{
   archives: Archive[]
   busy: boolean
   progress: DependencyProgress | null
-  play: (game: CatalogGame, catalog: ArcadeCatalog) => Promise<void>
-  playCached: (game: Archive) => Promise<void>
+  play: (game: CatalogGame, catalog: ArcadeCatalog, signal: AbortSignal) => Promise<void>
+  download: (game: CatalogGame, catalog: ArcadeCatalog, signal: AbortSignal) => Promise<void>
+  playCached: (game: Archive, signal: AbortSignal) => Promise<void>
   remove: (game: Archive) => Promise<void>
+  refresh: () => Promise<void>
 }>()
 const catalogs = ref<ArcadeCatalog[]>([])
 const catalogLoading = ref(false)
 const error = ref('')
-const catalogNotice = computed(() => {
-  if (catalogLoading.value) return '正在更新游戏目录…'
-  if (catalogs.value.length) return '部分游戏目录暂时无法更新'
-  if (/超时|timeout|timed out/i.test(error.value)) return '游戏目录连接超时'
-  if (/abort|中断|取消/i.test(error.value)) return '游戏目录请求已中断'
-  return '游戏目录暂时无法更新'
-})
-const query = ref(''), genre = ref(''), downloadedOnly = ref(false)
+const actionError = ref('')
+const partialRefresh = ref(false)
+const refreshVersion = ref(0)
+const catalogSnapshots = new Map<string, ArcadeCatalog>()
+const libraryTab = ref<'online' | 'played' | 'favorites'>('online')
+const { query, genre, sort, page, gameList } = useLibraryBrowser('arcade', libraryTab)
+const { games: rememberedGames, isFavorite, remember, toggleFavorite } = useGameCollection<CatalogGame>('arcade')
+function metadata(game: RomEntry): CatalogGame {
+  const { local, catalog, ...entry } = game
+  return entry
+}
 const busyKey = ref<string | null>(null)
+const { operation, cancelling, cancelOperation, runOperation } = useLibraryOperation()
+defineExpose({ cancelOperation })
 const abort = new AbortController()
 onBeforeUnmount(() => abort.abort())
 onMounted(refreshCatalog)
-async function refreshCatalog() {
+async function refreshCatalog(force = false) {
   if (catalogLoading.value) return
   catalogLoading.value = true
   error.value = ''
+  partialRefresh.value = false
+  if (force) actionError.value = ''
   try {
-    const result = await loadCatalogs(abort.signal)
-    catalogs.value = result.catalogs
-    error.value = [...new Set(result.errors)].join('；')
+    const result = await loadCatalogs(abort.signal, force)
+    for (const [url, catalog] of Object.entries(result.bySource)) catalogSnapshots.set(url, catalog)
+    catalogs.value = [...catalogSnapshots.values()]
+    error.value = result.errors.length ? libraryFailureReason(result.errors.join('；')) : ''
+    partialRefresh.value = result.fresh > 0 && result.errors.length > 0
+    if (force) {
+      try { await props.refresh() }
+      catch { actionError.value = '下载状态暂时无法更新，请稍后重试' }
+      if (!error.value && !actionError.value) refreshVersion.value++
+    }
   } catch (err) {
-    if (!abort.signal.aborted) error.value = err instanceof Error ? err.message : String(err)
+    if (!abort.signal.aborted) error.value = libraryFailureReason(err)
   } finally { catalogLoading.value = false }
 }
 const romKey = (game: CatalogGame) => game.sha256.toLowerCase()
@@ -58,6 +80,7 @@ const libraryGames = computed(() => {
   for (const catalog of catalogs.value) for (const game of catalog.games) {
     if (!games.has(romKey(game))) games.set(romKey(game), { ...game, catalog })
   }
+  for (const game of rememberedGames.value) if (!games.has(romKey(game))) games.set(romKey(game), game)
   for (const local of cachedRoms.value) {
     const existing = games.get(local.hash)
     if (existing) existing.local = local
@@ -78,20 +101,25 @@ const genreOptions = computed(() => [
   ...[...new Set(libraryGames.value.map(g => g.genre).filter((g): g is string => !!g))].sort().map(value => ({ value, label: value })),
 ])
 const { history } = usePlayHistory('arcade')
+const played = (game: RomEntry) => !!history.value[romKey(game)]?.lastPlayedAt
+const inMyGames = (game: RomEntry) => played(game) || cachedKeys.value.has(romKey(game))
+const tabCounts = computed(() => ({ online: libraryGames.value.length, played: libraryGames.value.filter(inMyGames).length, favorites: libraryGames.value.filter(game => isFavorite(romKey(game))).length }))
+watch([catalogs, () => props.archives, history], () => {
+  for (const game of libraryGames.value) if (played(game) || isFavorite(romKey(game))) remember(romKey(game), metadata(game))
+})
+const emptyDescription = computed(() => query.value || genre.value ? '没有匹配的游戏' : libraryTab.value === 'played' ? '还没有游戏，下载或开始游戏后会显示在这里' : libraryTab.value === 'favorites' ? '还没有收藏，右键或长按游戏即可收藏' : catalogLoading.value ? '正在加载游戏目录…' : '暂无游戏')
 
-type SortMode = 'recent' | 'default' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'publisher'
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: 'recent', label: '最近游玩' },
-  { value: 'default', label: '目录顺序' }, { value: 'name-asc', label: '名称 A→Z' },
+  { value: 'default', label: '默认排序' }, { value: 'recent', label: '最近游玩' },
+  { value: 'name-asc', label: '名称 A→Z' },
   { value: 'name-desc', label: '名称 Z→A' }, { value: 'size-asc', label: '体积 小→大' },
   { value: 'size-desc', label: '体积 大→小' }, { value: 'publisher', label: '按厂商' },
 ]
-const sort = ref<SortMode>('recent'), page = ref(1)
 const PAGE_SIZE = 50
 const sortedMatched = computed(() => {
   const q = query.value.trim().toLocaleLowerCase()
   const games = libraryGames.value.filter(game =>
-    (!downloadedOnly.value || cachedKeys.value.has(romKey(game))) &&
+    (libraryTab.value === 'online' || (libraryTab.value === 'played' ? inMyGames(game) : isFavorite(romKey(game)))) &&
     (!genre.value || game.genre === genre.value) &&
     (!q || [game.name, game.name_en, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])].join(' ').toLocaleLowerCase().includes(q)),
   )
@@ -111,60 +139,81 @@ const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / PAGE_
 const pageStart = computed(() => (page.value - 1) * PAGE_SIZE)
 const pageEnd = computed(() => Math.min(pageStart.value + PAGE_SIZE, totalCount.value))
 const visibleGames = computed(() => sortedMatched.value.slice(pageStart.value, pageEnd.value))
-watch([query, genre, sort, downloadedOnly], () => { page.value = 1 })
-watch(totalPages, value => { page.value = Math.min(page.value, value) })
-watch(() => props.active, active => { if (active && sort.value === 'recent') page.value = 1 })
+watch([libraryTab, totalPages], ([, value]) => { if (page.value > value) page.value = value })
 function goPage(target: number) { page.value = Math.max(1, Math.min(target, totalPages.value)) }
-async function act(game: RomEntry, action: () => Promise<void>) {
+async function act(game: RomEntry, action: (signal: AbortSignal) => Promise<void>, kind?: 'play' | 'download') {
   if (props.busy || busyKey.value) return
   busyKey.value = romKey(game)
-  try { await action() } finally { busyKey.value = null }
+  actionError.value = ''
+  try {
+    if (kind) await runOperation(game.name || game.file_name, kind, action)
+    else await action(abort.signal)
+  } catch (err) { actionError.value = err instanceof Error ? err.message : String(err) } finally { busyKey.value = null }
 }
 async function play(game: RomEntry) {
-  await act(game, () => game.catalog ? props.play(game, game.catalog) : props.playCached(game.local!))
+  remember(romKey(game), metadata(game))
+  await act(game, async signal => {
+    if (game.catalog) await props.play(game, game.catalog, signal)
+    else if (game.local) await props.playCached(game.local, signal)
+    else {
+      const source = await catalogSource(game, signal)
+      signal.throwIfAborted()
+      await props.play(source.entry, source.catalog, signal)
+    }
+  }, 'play')
+}
+async function download(game: RomEntry) {
+  remember(romKey(game), metadata(game))
+  await act(game, async signal => {
+    const source = await catalogSource(game, signal)
+    signal.throwIfAborted()
+    await props.download(source.entry, source.catalog, signal)
+  }, 'download')
+}
+async function catalogSource(game: RomEntry, signal: AbortSignal) {
+  signal.throwIfAborted()
+  if (game.catalog) return { entry: game, catalog: game.catalog }
+  const result = await loadCatalogs(signal)
+  signal.throwIfAborted()
+  const catalog = result.catalogs.find(item => item.games.some(entry => romKey(entry) === romKey(game)))
+  const entry = catalog?.games.find(entry => romKey(entry) === romKey(game))
+  if (!catalog || !entry) throw new Error('暂时无法获取此游戏的下载信息，请联网刷新目录后重试')
+  return { entry, catalog }
 }
 async function removeCached(game: RomEntry) {
   if (game.local) await act(game, () => props.remove(game.local!))
 }
-function progressLabel(game: RomEntry) {
-  return busyKey.value === romKey(game) && props.progress
-    ? `${props.progress.name} · ${Math.floor(props.progress.received / props.progress.total * 100)}%` : ''
-}
-function playLabel(game: RomEntry) {
-  if (busyKey.value === romKey(game)) return '处理中'
-  return cachedKeys.value.has(romKey(game)) ? '启动' : '下载并启动'
-}
-
 const formatSize = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`
 const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, formatSize(game.file_size)].filter(Boolean).join(' · ')
 </script>
 
 <template>
   <section class="store-panel player-library">
+      <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action" :message="progress ? '正在下载并校验游戏…' : undefined" :progress="progress ? { ...progress, label: progress.name } : null" :cancelling="cancelling" @cancel="cancelOperation" />
+      <LibraryTabs v-model="libraryTab" panel-id="arcade-library-games" :counts="tabCounts" />
       <div class="store-tools">
-        <div class="search-tools"><SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" /></div>
-        <RemoteSelect v-model="genre" class="select" :options="genreOptions" />
-        <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" />
-        <SCheckbox v-model:checked="downloadedOnly" class="check" :class="{ 'is-checked': downloadedOnly }">已下载 ({{ cachedKeys.size }})</SCheckbox>
-      </div>
-
-      <div v-if="catalogLoading || error" class="store-summary catalog-notice" :class="{ 'catalog-notice-warning': !!error }" role="status" aria-live="polite">
-        <span class="catalog-notice-icon" aria-hidden="true">{{ catalogLoading ? '↻' : 'ⓘ' }}</span>
-        <div class="catalog-notice-copy">
-          <span class="catalog-notice-title">{{ catalogNotice }}</span>
-          <span class="catalog-notice-description">{{ cachedRoms.length ? '已下载游戏仍可使用' : catalogLoading ? '首次加载可能需要几秒钟' : '请检查网络后重试' }}</span>
+        <div class="search-tools">
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" />
+          <button type="button" class="library-refresh" :title="catalogLoading ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="catalogLoading ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="catalogLoading" :disabled="catalogLoading || busy || busyKey !== null" @click="refreshCatalog(true)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': catalogLoading }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
+          </button>
         </div>
-        <SButton v-if="error" class="catalog-retry" :disabled="busy || catalogLoading" @click="refreshCatalog">重新加载</SButton>
+        <RemoteSelect v-model="genre" class="select" :options="genreOptions" aria-label="游戏类型" />
+        <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" aria-label="游戏排序" />
       </div>
 
-      <div class="game-list" data-nav-grid>
+      <LibraryRequestStatus :loading="catalogLoading" :has-games="libraryGames.length > 0" :has-catalog="catalogs.length > 0" :has-downloads="cachedKeys.size > 0" :failed="!!error" :partial="partialRefresh" :reason="error" :success-version="refreshVersion" :disabled="busy || busyKey !== null" @retry="refreshCatalog(true)" />
+
+      <p v-if="actionError" class="library-action-error" role="alert">{{ actionError }}</p>
+      <div id="arcade-library-games" ref="gameList" class="game-list" data-nav-grid role="tabpanel" :aria-labelledby="`arcade-library-games-${libraryTab}`">
         <article
           v-for="game in visibleGames"
           :key="romKey(game)"
           class="game-card"
           data-nav-cell
         >
-          <GameCardActions :name="game.name || game.file_name" :detail="metaLine(game)" :disabled="busy || busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="!!game.local" @play="play(game)" @remove="removeCached(game)" />
+          <GameCardActions :name="game.name || game.file_name" :detail="metaLine(game)" :disabled="busy || busyKey !== null" :busy="busyKey === romKey(game)" :can-remove="!!game.local" :can-download="!cachedKeys.has(romKey(game)) && !!game.download_url" :favorite="isFavorite(romKey(game))" @play="play(game)" @download="download(game)" @favorite="toggleFavorite(romKey(game), metadata(game))" @remove="removeCached(game)" />
+          <span v-if="isFavorite(romKey(game))" class="game-favorite-mark" aria-label="已收藏">★</span>
           <GamePreview :game-key="romKey(game)" :name="game.name || game.file_name" :system="game.system || 'ARCADE'" :screenshot="game.screenshot_url">
             <STag v-if="cachedKeys.has(romKey(game))" size="small" type="success">已下载</STag>
           </GamePreview>
@@ -180,14 +229,9 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 
           </div>
 
-          <div v-if="busyKey === romKey(game)" class="game-actions">
-            <span v-if="busyKey === romKey(game)" class="progress">
-              {{ playLabel(game) }} {{ progressLabel(game) }}
-            </span>
-          </div>
         </article>
 
-        <SEmpty v-if="visibleGames.length === 0" class="empty" :description="catalogLoading ? '正在加载 ROM 目录…' : '没有匹配的 ROM'" />
+        <SEmpty v-if="visibleGames.length === 0 && !(libraryTab === 'online' && (catalogLoading || error) && libraryGames.length === 0)" class="empty" :description="emptyDescription" />
       </div>
 
       <div class="store-pager">
@@ -511,26 +555,6 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
 </style>
 
 <style scoped>
-.store-summary.catalog-notice {
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  min-height: 38px;
-  margin: 4px 4px 6px;
-  padding: 8px 12px;
-  border: 1px solid #3b4655;
-  border-radius: 8px;
-  background: #202731;
-  color: #a8bbd3;
-}
-.store-summary.catalog-notice-warning { border-color: #574b33; background: #2b271f; color: #d6bb84; }
-.catalog-notice-icon { flex-shrink: 0; font-size: 17px; }
-.catalog-notice-copy { display: flex; flex: 1; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-width: 0; line-height: 1.5; }
-.catalog-notice-title { font-size: 13px; }
-.catalog-notice-description { color: #a6a9ae; font-size: 12px; }
-.catalog-notice .catalog-retry { flex-shrink: 0; min-height: 32px; padding: 4px 10px; font-size: 12px; }
 .store-summary { flex-wrap: wrap; }
 .game-card { min-width: 0; }
 .game-title-row h3 { flex: 1; }

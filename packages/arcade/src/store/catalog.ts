@@ -31,7 +31,8 @@ export const DEFAULT_CATALOG_URLS = [
 ]
 const configuredUrls = String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').trim()
 const catalogUrls = [...new Set(configuredUrls ? configuredUrls.split(/[\s,]+/).filter(Boolean) : DEFAULT_CATALOG_URLS)]
-const loadedCatalogs = new Map<string, Promise<ArcadeCatalog>>()
+interface CatalogResult { catalog: ArcadeCatalog; stale: boolean; error?: string }
+const loadedCatalogs = new Map<string, Promise<CatalogResult>>()
 const downloadBase = import.meta.env.VITE_ARCADE_ROM_URL_BASE?.trim()
 const archiveName = /^[a-z0-9_+\-]+\.zip$/i
 
@@ -75,7 +76,7 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
   return catalog
 }
 
-async function readCatalog(url: string, signal?: AbortSignal): Promise<ArcadeCatalog> {
+async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogResult> {
   signal?.throwIfAborted()
   const cached = await getCachedCatalog(url)
   const abort = new AbortController()
@@ -92,11 +93,11 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<ArcadeCat
     // Cache only a fully validated manifest. A failed refresh must not replace
     // the last usable catalog or clear previously imported ROMs and snapshots.
     await putCachedCatalog({ url, catalog })
-    return catalog
+    return { catalog, stale: false }
   } catch (error) {
     if (signal?.aborted) throw error
-    if (cached) return parseCatalog(cached.catalog, url)
     const detail = abort.signal.aborted ? '连接超时' : error instanceof Error ? error.message : String(error)
+    if (cached) return { catalog: parseCatalog(cached.catalog, url), stale: true, error: detail }
     throw new Error(`读取游戏目录失败：${url}（${detail}）。首次使用需联网读取目录，请确认目录已发布。`)
   } finally {
     clearTimeout(timer)
@@ -104,22 +105,28 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<ArcadeCat
   }
 }
 
-function loadCatalog(source: string, signal?: AbortSignal): Promise<ArcadeCatalog> {
+function loadCatalog(source: string, signal?: AbortSignal): Promise<CatalogResult> {
   const url = remoteUrl(source)
   let loading = loadedCatalogs.get(url)
   if (!loading) {
-    loading = readCatalog(url, signal).catch(error => { loadedCatalogs.delete(url); throw error })
+    loading = readCatalog(url, signal).catch(error => {
+      if (loadedCatalogs.get(url) === loading) loadedCatalogs.delete(url)
+      throw error
+    })
     loadedCatalogs.set(url, loading)
   }
   return loading
 }
 
-export async function loadCatalogs(signal?: AbortSignal): Promise<{ catalogs: ArcadeCatalog[]; errors: string[] }> {
+export async function loadCatalogs(signal?: AbortSignal, refresh = false): Promise<{ catalogs: ArcadeCatalog[]; errors: string[]; fresh: number; bySource: Record<string, ArcadeCatalog> }> {
+  if (refresh) for (const url of catalogUrls) loadedCatalogs.delete(remoteUrl(url))
   const results = await Promise.allSettled(catalogUrls.map(url => loadCatalog(url, signal)))
   signal?.throwIfAborted()
   return {
-    catalogs: results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []),
-    errors: results.flatMap(result => result.status === 'rejected' ? [result.reason instanceof Error ? result.reason.message : String(result.reason)] : []),
+    catalogs: results.flatMap(result => result.status === 'fulfilled' ? [result.value.catalog] : []),
+    errors: results.flatMap(result => result.status === 'rejected' ? [result.reason instanceof Error ? result.reason.message : String(result.reason)] : result.value.error ? [result.value.error] : []),
+    fresh: results.filter(result => result.status === 'fulfilled' && !result.value.stale).length,
+    bySource: Object.fromEntries(results.flatMap((result, index) => result.status === 'fulfilled' ? [[remoteUrl(catalogUrls[index]), result.value.catalog]] : [])),
   }
 }
 
@@ -128,7 +135,7 @@ export async function findCatalogGame(hash: string, signal?: AbortSignal): Promi
   signal?.throwIfAborted()
   for (const result of results) {
     if (result.status !== 'fulfilled') continue
-    const catalog = result.value
+    const catalog = result.value.catalog
     const game = catalog.games.find(item => item.sha256.toLowerCase() === hash.toLowerCase())
     if (game) return { game, catalog }
   }
