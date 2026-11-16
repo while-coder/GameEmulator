@@ -33,6 +33,7 @@ import { libraryFailureReason } from '../../../player-ui/libraryRequest'
 import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
+import { compareGameNames } from '../../../shared/gameText'
 
 const props = defineProps<{ launch?: (payload: { name: string; bytes: Uint8Array; key: string }, signal?: AbortSignal) => Promise<void> }>()
 const open = defineModel<boolean>('open', { default: false })
@@ -84,9 +85,9 @@ function sortList<T>(
   const arr = list.slice()
   switch (sort.value) {
     case 'name-asc':
-      return arr.sort((a, b) => name(a).localeCompare(name(b), 'zh-Hans-CN'))
+      return arr.sort((a, b) => compareGameNames(name(a), name(b)))
     case 'name-desc':
-      return arr.sort((a, b) => name(b).localeCompare(name(a), 'zh-Hans-CN'))
+      return arr.sort((a, b) => compareGameNames(name(b), name(a)))
     case 'size-asc':
       return arr.sort((a, b) => size(a) - size(b))
     case 'size-desc':
@@ -95,7 +96,7 @@ function sortList<T>(
       return arr.sort(
         (a, b) =>
           publisher(a).localeCompare(publisher(b), 'zh-Hans-CN') ||
-          name(a).localeCompare(name(b), 'zh-Hans-CN'),
+          compareGameNames(name(a), name(b)),
       )
     default:
       return arr
@@ -321,7 +322,7 @@ function formatError(err: unknown): string {
       <LibraryTabs v-model="libraryTab" panel-id="nes-library-games" :counts="tabCounts" />
       <div class="store-tools">
         <div class="search-tools">
-          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索游戏、厂商、标签" />
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签，支持拼音" aria-label="搜索游戏、厂商、标签，支持拼音全拼、首字母和混输" />
           <button type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busyKey !== null" @click="prepareStore(true)">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': refreshing }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
           </button>

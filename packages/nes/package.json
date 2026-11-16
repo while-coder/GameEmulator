@@ -6,9 +6,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@qingfeng346/ui-kit": "link:../../../ui-kit/ui-kit",
     "nostalgist": "0.21.1",
-    "vue": "catalog:",
-    "@qingfeng346/ui-kit": "link:../../../ui-kit/ui-kit"
+    "pinyin-pro": "3.29.5",
+    "vue": "catalog:"
   },
   "version": "0.0.5",
   "ciDependencies": {

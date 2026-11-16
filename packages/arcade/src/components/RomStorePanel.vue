@@ -19,6 +19,7 @@ import { libraryFailureReason } from '../../../player-ui/libraryRequest'
 import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import { formatPlayTime, sortRecentlyPlayed } from '../../../shared/playHistory'
+import { compareGameNames, createGameSearch } from '../../../shared/gameText'
 
 type RomEntry = CatalogGame & { local?: Archive; catalog?: ArcadeCatalog }
 const props = defineProps<{
@@ -117,20 +118,20 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 ]
 const PAGE_SIZE = 50
 const sortedMatched = computed(() => {
-  const q = query.value.trim().toLocaleLowerCase()
+  const matches = createGameSearch(query.value)
   const games = libraryGames.value.filter(game =>
     (libraryTab.value === 'online' || (libraryTab.value === 'played' ? inMyGames(game) : isFavorite(romKey(game)))) &&
     (!genre.value || game.genre === genre.value) &&
-    (!q || [game.name, game.name_en, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])].join(' ').toLocaleLowerCase().includes(q)),
+    matches([game.name, game.name_en, game.file_name, game.genre, game.publisher, game.system, ...(game.tags ?? [])]),
   )
   const name = (g: RomEntry) => g.name || g.file_name
   if (sort.value === 'recent') return sortRecentlyPlayed(games, romKey, history.value)
   switch (sort.value) {
-    case 'name-asc': return games.sort((a, b) => name(a).localeCompare(name(b), 'zh-Hans-CN'))
-    case 'name-desc': return games.sort((a, b) => name(b).localeCompare(name(a), 'zh-Hans-CN'))
+    case 'name-asc': return games.sort((a, b) => compareGameNames(name(a), name(b)))
+    case 'name-desc': return games.sort((a, b) => compareGameNames(name(b), name(a)))
     case 'size-asc': return games.sort((a, b) => a.file_size - b.file_size)
     case 'size-desc': return games.sort((a, b) => b.file_size - a.file_size)
-    case 'publisher': return games.sort((a, b) => (a.publisher ?? '').localeCompare(b.publisher ?? '', 'zh-Hans-CN') || name(a).localeCompare(name(b)))
+    case 'publisher': return games.sort((a, b) => (a.publisher ?? '').localeCompare(b.publisher ?? '', 'zh-Hans-CN') || compareGameNames(name(a), name(b)))
     default: return games
   }
 })
@@ -193,7 +194,7 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
       <LibraryTabs v-model="libraryTab" panel-id="arcade-library-games" :counts="tabCounts" />
       <div class="store-tools">
         <div class="search-tools">
-          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签" aria-label="搜索街机游戏" />
+          <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签，支持拼音" aria-label="搜索街机游戏，支持拼音全拼、首字母和混输" />
           <button type="button" class="library-refresh" :title="catalogLoading ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="catalogLoading ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="catalogLoading" :disabled="catalogLoading || busy || busyKey !== null" @click="refreshCatalog(true)">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': catalogLoading }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
           </button>

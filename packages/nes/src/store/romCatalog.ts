@@ -1,4 +1,5 @@
 import { catalogDownloadBase } from '../../../shared/romUrl'
+import { createGameSearch } from '../../../shared/gameText'
 
 export type RomEntry = {
   name: string
@@ -90,38 +91,17 @@ export function searchRoms(
   downloadedOnly: boolean,
   cachedKeys: Set<string>,
 ): RomEntry[] {
-  const q = normalize(query)
+  const matches = createGameSearch(query)
   return games.filter((game) => {
     if (downloadedOnly && !cachedKeys.has(romKey(game))) return false
     if (genre && game.genre !== genre) return false
-    if (!q) return true
-    return searchableText(game).includes(q)
+    return matches([game.name, game.genre, game.publisher, game.mapper, ...(game.tags ?? [])])
   })
 }
 
 export function romKey(game: RomEntry): string {
   // loadRomCatalog 已强制每条目都有 sha256(见上方校验),故此处可安全断言非空。
   return game.sha256!
-}
-
-function searchableText(game: RomEntry): string {
-  return normalize(
-    [
-      game.name,
-      game.genre,
-      game.publisher,
-      game.mapper,
-      ...(game.tags ?? []),
-    ]
-      .filter((value) => value !== undefined && value !== null)
-      .join(' '),
-  )
-}
-
-function normalize(value: unknown): string {
-  return String(value ?? '')
-    .trim()
-    .toLocaleLowerCase('zh-Hans-CN')
 }
 
 function networkErrorMessage(err: unknown): string {

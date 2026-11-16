@@ -7,9 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@qingfeng346/ui-kit": "link:../../../ui-kit/ui-kit",
     "nostalgist": "0.21.1",
-    "vue": "catalog:",
-    "@qingfeng346/ui-kit": "link:../../../ui-kit/ui-kit"
+    "pinyin-pro": "3.29.5",
+    "vue": "catalog:"
   },
   "ciDependencies": {
     "@qingfeng346/ui-kit": "https://github.com/while-coder/ui-kit.git#0.0.1&path:/ui-kit"

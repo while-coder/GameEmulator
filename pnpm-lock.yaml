@@ -151,6 +151,9 @@ importers:
       nostalgist:
         specifier: 0.21.1
         version: 0.21.1
+      pinyin-pro:
+        specifier: 3.29.5
+        version: 3.29.5
       vue:
         specifier: 'catalog:'
         version: 3.5.39(typescript@5.9.3)
@@ -163,6 +166,9 @@ importers:
       nostalgist:
         specifier: 0.21.1
         version: 0.21.1
+      pinyin-pro:
+        specifier: 3.29.5
+        version: 3.29.5
       vue:
         specifier: 'catalog:'
         version: 3.5.39(typescript@5.9.3)
@@ -1813,6 +1819,9 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
+
+  pinyin-pro@3.29.5:
+    resolution: {integrity: sha512-Fk5YoRmtdHqJWqAuzYVG/NzvzeCbaG+ZEwbY6Nbps3QAIrvQQEtcm49frcyCM8i2b5najnzPDtYqrHRYTTiuwQ==}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -3940,6 +3949,8 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
+
+  pinyin-pro@3.29.5: {}
 
   possible-typed-array-names@1.1.0: {}
 
