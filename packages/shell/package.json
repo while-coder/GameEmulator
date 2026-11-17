@@ -2,7 +2,7 @@
   "name": "@game-emulator/shell",
   "private": true,
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "exports": { ".": "./src/index.ts" },
   "dependencies": {
     "dompurify": "^3.4.17",
