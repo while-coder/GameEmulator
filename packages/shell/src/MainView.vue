@@ -89,6 +89,22 @@ defineExpose({ focusCard })
               <circle cx="137" cy="96" r="3" fill="#e0b777" /><circle cx="149" cy="96" r="3" fill="#d45359" /><circle cx="161" cy="96" r="3" fill="#8facbe" />
               <rect x="97" y="114" width="46" height="12" rx="3" fill="#222831" />
             </svg>
+            <svg v-else-if="emulator.id === 'gba'" viewBox="0 0 240 140" fill="none">
+              <path d="M48 28h144c20 0 34 17 34 42s-14 42-34 42H48c-20 0-34-17-34-42s14-42 34-42Z" fill="#7770b4" />
+              <rect x="73" y="35" width="94" height="70" rx="8" fill="#353449" />
+              <rect x="82" y="43" width="76" height="51" rx="3" fill="#839ba6" />
+              <path d="M41 56v10H31v10h10v10h10V76h10V66H51V56H41Z" fill="#252738" />
+              <circle cx="199" cy="64" r="8" fill="#a9a5cd" /><circle cx="181" cy="80" r="8" fill="#a9a5cd" />
+              <rect x="178" y="96" width="12" height="4" rx="2" fill="#36344c" />
+              <path d="m91 78 12-16 13 9 14-17 20 24" stroke="#cee3ce" stroke-width="3" />
+            </svg>
+            <svg v-else-if="emulator.id === 'sfc'" viewBox="0 0 240 140" fill="none">
+              <path d="M44 55c9-14 24-17 41-12l22 7h26l22-7c17-5 32-2 41 12l20 43c9 22-9 34-25 18l-28-23H77l-28 23c-16 16-34 4-25-18l20-43Z" fill="#c8cad1" />
+              <path d="M59 57v12H47v12h12v12h12V81h12V69H71V57H59Z" fill="#4a4c59" />
+              <circle cx="178" cy="61" r="9" fill="#4b78ba" /><circle cx="194" cy="77" r="9" fill="#d55d68" /><circle cx="162" cy="77" r="9" fill="#50a577" /><circle cx="178" cy="93" r="9" fill="#e5bd4e" />
+              <path d="m104 80 10-7m12 7 10-7" stroke="#585a67" stroke-width="5" stroke-linecap="round" />
+              <path d="M120 49V24" stroke="#7e8591" stroke-width="4" />
+            </svg>
             <svg v-else viewBox="0 0 240 140" fill="none">
               <rect x="20" y="30" width="200" height="92" rx="12" fill="#d3d3d0" />
               <path d="M20 79h200v31a12 12 0 0 1-12 12H32a12 12 0 0 1-12-12V79Z" fill="#3d4147" />

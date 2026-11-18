@@ -10,14 +10,14 @@ pub struct EmulatorViews(#[cfg(desktop)] pub std::sync::Mutex<()>);
 
 #[tauri::command]
 pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Result<(), String> {
-    if caller.label() != "main" || !["nes", "arcade"].contains(&id.as_str()) {
+    if caller.label() != "main" || !["nes", "arcade", "gba", "sfc"].contains(&id.as_str()) {
         return Err("不支持的模拟器入口".into());
     }
     #[cfg(desktop)]
     {
         let state = app.state::<EmulatorViews>();
         let _guard = state.0.lock().map_err(|e| e.to_string())?;
-        if ["emulator-nes", "emulator-arcade"]
+        if ["emulator-nes", "emulator-arcade", "emulator-gba", "emulator-sfc"]
             .iter()
             .any(|label| app.get_webview(label).is_some())
         {
@@ -65,7 +65,7 @@ pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Resul
 
 #[tauri::command]
 pub async fn close_emulator(app: AppHandle, caller: Webview) -> Result<(), String> {
-    if !["main", "emulator-nes", "emulator-arcade"].contains(&caller.label()) {
+    if !["main", "emulator-nes", "emulator-arcade", "emulator-gba", "emulator-sfc"].contains(&caller.label()) {
         return Err("无效的模拟器视图".into());
     }
     #[cfg(desktop)]
@@ -75,7 +75,7 @@ pub async fn close_emulator(app: AppHandle, caller: Webview) -> Result<(), Strin
         let main = app.get_webview("main").ok_or("主视图不存在")?;
         main.window().set_fullscreen(false).map_err(|e| e.to_string())?;
         main.show().map_err(|e| e.to_string())?;
-        for label in ["emulator-nes", "emulator-arcade"] {
+        for label in ["emulator-nes", "emulator-arcade", "emulator-gba", "emulator-sfc"] {
             if let Some(view) = app.get_webview(label) {
                 view.close().map_err(|e| e.to_string())?;
             }

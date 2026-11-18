@@ -22,7 +22,8 @@
     "ios:init": "pnpm --filter @game-emulator/app run ios:init",
     "sync:versions": "node scripts/sync-versions.cjs",
     "sync:icons": "node scripts/sync-icons.cjs",
-    "debug:app": "node scripts/debug-app.cjs"
+    "debug:app": "node scripts/debug-app.cjs",
+    "test:console": "node scripts/test-console.cjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

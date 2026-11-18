@@ -1,0 +1,27 @@
+{
+  "classic": {
+    "repository": "AlexBlackmore/roms",
+    "revision": "d76e034c11599ea9da7f775bde15a45634798d12",
+    "source_page": "https://github.com/AlexBlackmore/roms",
+    "platforms": {
+      "gba": "^(Advance Wars|Astro Boy|Castlevania|ChuChu|Drill Dozer|Final Fantasy|Fire Emblem|Golden Sun|Gunstar|Kirby|Kuru Kuru|Legend of Zelda|Mario & Luigi|Mario Kart|Mario Tennis|Mario Golf|Mega Man Zero|Metroid|Pokemon|Sonic Advance|Super Mario Advance|Wario Land|WarioWare, Inc|F-Zero|Harvest Moon)",
+      "gb": "^(Alleyway|Balloon Kid|Bionic Commando|Bomberman|Castlevania|Contra|Donkey Kong|Dr. Mario|DuckTales|Gargoyle|Kirby|Legend of Zelda|Mega Man|Metroid|Pokemon|Super Mario Land|Tetris|Wario Land)",
+      "gbc": "^(Bionic Commando|Bomberman|Crystalis|Dragon Warrior|Harvest Moon|Legend of Zelda|Lufia|Mario Golf|Mario Tennis|Metal Gear|Pokemon|Shantae|Super Mario Bros|Tetris|Wario Land)",
+      "snes": "^(ActRaiser|Axelay|Breath of Fire|Castlevania|Chrono Trigger|Contra|Demon|Donkey Kong Country|EarthBound|F-Zero|Final Fantasy|Final Fight|Gradius|Harvest Moon|Illusion of Gaia|Kirby|Legend of Zelda|Mega Man X|Ogre Battle|Pilotwings|Secret of|Seiken Densetsu|Shadowrun|Soul Blazer|Star Fox|Super Bomberman|Super Castlevania|Super Ghouls|Super Mario|Super Metroid|Super Punch|Super R-Type|Super Street Fighter|Tales of Phantasia|Tetris Attack|Yoshi's Cookie)"
+    }
+  },
+  "homebrew": [
+    {
+      "system": "gba",
+      "repository": "retrobrews/gba-games",
+      "revision": "add86969f1a7a3b9534822a9a015d05ed20a0dcf",
+      "source_page": "https://github.com/retrobrews/gba-games"
+    },
+    {
+      "system": "sfc",
+      "repository": "retrobrews/snes-games",
+      "revision": "2329cb432b4cad13aa6a9d2ad0699c771780b378",
+      "source_page": "https://github.com/retrobrews/snes-games"
+    }
+  ]
+}

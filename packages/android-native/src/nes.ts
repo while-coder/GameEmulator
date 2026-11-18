@@ -42,8 +42,8 @@ export class NativeSession {
     this.onError?.(new Error('游戏已暂停'))
   }
   constructor(private readonly canvas: HTMLCanvasElement, private readonly transport: NativeTransport = httpNativeTransport,
-              private readonly system: 'nes' | 'arcade' = 'nes') {
-    this.saveNamespace = system === 'arcade' ? ARCADE_BUILD : BUILD
+              private readonly system: 'nes' | 'arcade' | 'gba' | 'sfc' = 'nes') {
+    this.saveNamespace = system === 'gba' ? 'mgba-7a12d6d4-native-v1' : system === 'sfc' ? 'snes9x-204ea1c0-native-v1' : system === 'arcade' ? ARCADE_BUILD : BUILD
     this.output.style.cssText = 'position:absolute;top:4px;left:4px;z-index:3;background:#000b;color:white;padding:4px;font:12px monospace;pointer-events:none;display:none'
     canvas.parentElement?.append(this.output)
     this.observer = new ResizeObserver(() => this.syncDisplay())
@@ -77,7 +77,7 @@ export class NativeSession {
       this.onError?.(error)
     })
   }
-  async loadRom(bytes: Uint8Array, signal?: AbortSignal): Promise<void> {
+  async loadRom(bytes: Uint8Array, signal?: AbortSignal, fileName?: string): Promise<void> {
     try {
       await this.enqueue(async () => {
         signal?.throwIfAborted()
@@ -86,7 +86,7 @@ export class NativeSession {
         const info = await (await this.request('info')).json()
         signal?.throwIfAborted()
         if (info.build !== this.saveNamespace) throw new Error('原生内核与页面版本不匹配，请重新启动应用')
-        const result = await (await this.request('load', 'POST', new Blob([bytes as BlobPart]))).json()
+        const result = await (await this.request(fileName ? `load/${encodeURIComponent(fileName.split('.').pop()!.toLowerCase())}` : 'load', 'POST', new Blob([bytes as BlobPart]))).json()
         signal?.throwIfAborted()
         this.hash = result.hash; this.masks = [0, 0]; this.ready = true
         await this.command('volume', { value: this.enabled ? this.volume : 0 })

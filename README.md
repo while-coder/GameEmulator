@@ -1,15 +1,17 @@
 # GameEmulator
 
-GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白机）和街机游戏，让你在电脑、手机和平板上重温经典，也可通过 Android TV 版本在电视上游玩。
+GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白机）、GBA / GB / GBC、SFC / SNES 和街机游戏，让你在电脑、手机和平板上重温经典，也可通过 Android TV 版本在电视上游玩。
 
 ## 支持的游戏类型
 
 - **NES / FC（红白机）**：重温经典 8 位主机游戏。
+- **GBA / GB / GBC**：mGBA 内核，支持单机掌机游戏。
+- **SFC / SNES（超级任天堂）**：Snes9x 内核，支持两个标准手柄。
 - **街机**：支持 CPS、Neo Geo 等经典街机游戏，体验投币开局与双人同玩。
 
 支持浏览在线游戏库，并提供键盘、手柄、触屏操作及即时存档功能。
 
-普通 Android 版与独立 Android TV 版的 NES / FC、街机使用共用的原生 `.so` 引擎；其他平台使用 WASM。原生即时存档与旧 WASM 存档分开保存，旧档保留但不能直接互读。构建与兼容性说明见 [Android 原生引擎](packages/android-native/README.md)。
+普通 Android 版与独立 Android TV 版的 NES / FC、街机、mGBA 和 SFC 使用共用宿主的原生 `.so` 引擎；其他平台使用 WASM。原生即时存档与旧 WASM 存档分开保存，旧档保留但不能直接互读。构建与兼容性说明见 [Android 原生引擎](packages/android-native/README.md)。
 
 ## 在线体验
 
@@ -49,3 +51,32 @@ NES / FC 与街机（含 Neo Geo）使用一致的存档方式：暂停菜单「
 搜索框旁的刷新按钮会重新获取目录并同步下载状态，刷新期间保留当前列表与筛选。成功提示会自动消失；请求超时、离线或部分目录更新失败时显示简短说明与重试按钮。街机目录回退到缓存时会明确提示，不会误报更新成功；首次加载失败时也不会同时显示「暂无游戏」。
 
 「在线游戏库」和「收藏」初次使用「默认排序」（游戏源中的目录顺序），「我的游戏」初次按「最近游玩」排序，未玩过的已下载游戏排在其后。NES 和街机的各分类分别将排序选择保存到本地，刷新或下次打开时恢复；搜索、类型筛选、页码和滚动位置在切换分类时保留。卡片显示累计游玩时长，仅成功启动后记录历史，单独下载也会加入「我的游戏」，但不产生游玩记录；暂停、设置和后台时间不计入游玩时长。返回游戏库、切换游戏或退出时保存，游玩中每 15 秒更新一次；排序菜单也可切换回「默认排序」。
+
+## mGBA 与 SFC
+
+在模拟器选择页进入「GBA / GB / GBC」或「SFC / SNES」，点击「导入游戏」导入本地 ROM。mGBA 接受 `.gba`、`.gb`、`.gbc`；SFC 接受 `.sfc`、`.smc`。ZIP 等压缩包需先解压；单个文件最多 64 MB。导入后的 ROM 保存在本机「我的游戏」，无需重复选择。mGBA 当前只提供单机游玩。
+
+两个新入口共用 `packages/console` 播放器和现有公共游戏库组件，支持拼音搜索、分类、收藏、排序、下载缓存、游玩时长、暂停、全屏、键盘改键、标准手柄和可编辑触屏布局。GBA / GB / GBC 与 SFC 分别保存设置与数据，GB / GBC 自动使用 10:9 显示比例。Android TV 的自动触屏模式保持隐藏。
+
+新平台未预设在线 ROM 源。在「设置 → 游戏源」填写自有 `catalog.json` 地址后可浏览、下载和启动；浏览器访问的源需要允许跨域请求。目录格式与现有 NES 目录一致，新增可选 `file_name` 用于下载地址没有 ROM 扩展名的情况：
+
+```json
+{
+  "rom_url_base": "https://example.com/gba/",
+  "games": [
+    {
+      "name": "My Homebrew",
+      "download_url": "homebrew.gba",
+      "file_name": "homebrew.gba",
+      "file_size": 32768,
+      "sha256": "<ROM 文件的 64 位 SHA-256>"
+    }
+  ]
+}
+```
+
+还可提供 `genre`、`publisher`、`tags`、`screenshot_url`。目录按 SHA-256 去重，下载时校验大小和哈希；失败时保留已有缓存。内核已随应用打包，PWA 在成功安装缓存后支持离线启动已下载游戏。
+
+默认键盘：方向键移动，X/Z 对应 A/B，Q/W 对应 L/R，Enter 开始，右 Shift 选择；SFC 的 S/A 对应 X/Y。Esc / 返回键暂停，F11 全屏，Ctrl+S / F8 覆盖快速存档，F9 读取快速存档。手柄可同时按 L3 + R3 暂停。暂停菜单「保存进度」新增普通存档，存档页支持重命名和删除。游戏内存档定期、暂停和正常退出时保存；即时存档按平台、ROM 与内核构建隔离，Android 原生和 WASM 不互读。
+
+内核来源、校验值和许可证见 [WASM 核心说明](packages/console/src/assets/CORES.md) 和 [Android 原生源码说明](packages/android-native/android/src/main/cpp/vendor/README.md)。

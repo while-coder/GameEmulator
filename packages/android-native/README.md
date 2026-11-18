@@ -1,17 +1,18 @@
 # Shared Android emulator backend
 
 Both the ordinary Tauri Android APK and the standalone Android TV APK use this
-module for **NES/FC and arcade**. Desktop, iOS and PWA continue using WASM.
+module for **NES/FC, arcade, mGBA (GBA/GB/GBC) and SFC/SNES**. Desktop, iOS and PWA continue using WASM.
 
 The TypeScript adapters are a workspace package, `@game-emulator/android-native`,
-with `/nes`, `/arcade` and `/transport` exports. Both apps declare this dependency;
+with `/nes`, `/arcade`, `/console` and `/transport` exports. Both apps declare this dependency;
 the package declares its own NES/arcade dependencies so TypeScript and Vite can
 resolve them from the shared source directory after a clean pnpm install.
 
 - FCEUmm: `libfceumm.so`.
 - FB Alpha 2012 / FBA 0.2.97.29 ROM sets: `libfbalpha2012.so`.
+- mGBA: `libmgba.so`; Snes9x: `libsnes9x.so`.
 - Common libretro host, EGL/OpenGL ES and Oboe audio: `libgameemulator.so`.
-- All three libraries build for ARM32, ARM64, x86 and x86_64; the TV app packages ARM32/ARM64.
+- All five libraries build for ARM32, ARM64, x86 and x86_64; the TV app packages ARM32/ARM64.
 - Native sources, checksums and licenses: [vendor](android/src/main/cpp/vendor/README.md).
 
 ## Integration and builds

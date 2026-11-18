@@ -34,6 +34,9 @@ importers:
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../../packages/arcade
+      '@game-emulator/console':
+        specifier: workspace:*
+        version: link:../../packages/console
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../../packages/nes
@@ -65,6 +68,9 @@ importers:
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../../packages/arcade
+      '@game-emulator/console':
+        specifier: workspace:*
+        version: link:../../packages/console
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../../packages/nes
@@ -108,6 +114,9 @@ importers:
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../../packages/arcade
+      '@game-emulator/console':
+        specifier: workspace:*
+        version: link:../../packages/console
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../../packages/nes
@@ -139,6 +148,9 @@ importers:
       '@game-emulator/arcade':
         specifier: workspace:*
         version: link:../arcade
+      '@game-emulator/console':
+        specifier: workspace:*
+        version: link:../console
       '@game-emulator/nes':
         specifier: workspace:*
         version: link:../nes
@@ -148,6 +160,18 @@ importers:
       '@qingfeng346/ui-kit':
         specifier: link:../../../ui-kit/ui-kit
         version: link:../../../ui-kit/ui-kit
+      nostalgist:
+        specifier: 0.21.1
+        version: 0.21.1
+      pinyin-pro:
+        specifier: 3.29.5
+        version: 3.29.5
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.39(typescript@5.9.3)
+
+  packages/console:
+    dependencies:
       nostalgist:
         specifier: 0.21.1
         version: 0.21.1

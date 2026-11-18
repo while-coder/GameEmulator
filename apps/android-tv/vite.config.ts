@@ -8,7 +8,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     rollupOptions: {
-      input: Object.fromEntries(['index', 'nes', 'arcade'].map(name => [
+      input: Object.fromEntries(['index', 'nes', 'arcade', 'gba', 'sfc'].map(name => [
         name, fileURLToPath(new URL(`./${name}.html`, import.meta.url)),
       ])),
     },

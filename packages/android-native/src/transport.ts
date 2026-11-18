@@ -1,7 +1,7 @@
 export type NativeTransport = (path: string, method: string, body?: BodyInit) => Promise<Response>
 
 export const httpNativeTransport: NativeTransport = async (path, method, body) => fetch(path, {
-  method, body, headers: { 'X-GameEmulator-TV': '1' }, signal: AbortSignal.timeout(path.endsWith('/load') ? 120000 : 30000),
+  method, body, headers: { 'X-GameEmulator-TV': '1' }, signal: AbortSignal.timeout(/\/load(?:\/|$)/.test(path) ? 120000 : 30000),
 })
 
 /** Called only after the user confirms the Vue exit dialog. */
@@ -44,7 +44,7 @@ export function createWebViewTransport(): NativeTransport {
     const bytes = body === undefined ? new Uint8Array() : new Uint8Array(await new Response(body).arrayBuffer())
     const id = ++sequence
     return new Promise<Response>((resolve, reject) => {
-      const timer = window.setTimeout(() => { pending.delete(id); reject(new Error('原生模拟器操作超时')) }, path.endsWith('/load') ? 120000 : 30000)
+      const timer = window.setTimeout(() => { pending.delete(id); reject(new Error('原生模拟器操作超时')) }, /\/load(?:\/|$)/.test(path) ? 120000 : 30000)
       pending.set(id, { resolve, reject, timer })
       try { bridge.postMessage(JSON.stringify({ id, path, method, body: encode(bytes) })) }
       catch (error) { pending.delete(id); clearTimeout(timer); reject(error) }

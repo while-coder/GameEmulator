@@ -1,0 +1,12 @@
+{
+  "name": "@game-emulator/console",
+  "private": true,
+  "type": "module",
+  "version": "0.0.6",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "nostalgist": "0.21.1",
+    "pinyin-pro": "3.29.5",
+    "vue": "catalog:"
+  }
+}

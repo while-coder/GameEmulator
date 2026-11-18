@@ -74,7 +74,7 @@ class AssetServer(private val openAsset: (String) -> InputStream) : Closeable {
                 if (method != "GET" && method != "POST") { reply(client, 405, "Method Not Allowed"); return }
                 val endpoint = nativeHandler ?: run { reply(client, 503, "Unavailable"); return }
                 val length = headers["content-length"]?.toIntOrNull() ?: 0
-                val limit = if (path.matches(Regex("/native/(nes|arcade)/(load|restore)"))) 8 * 1024 * 1024 else if (path.startsWith("/native/arcade/upload/")) 256 * 1024 else 16384
+                val limit = if (path.matches(Regex("/native/(gba|sfc)/load/[a-z]+"))) 64 * 1024 * 1024 else if (path.matches(Regex("/native/(nes|arcade|gba|sfc)/(load|restore)"))) 8 * 1024 * 1024 else if (path.startsWith("/native/arcade/upload/")) 256 * 1024 else 16384
                 if (length !in 0..limit || headers.containsKey("transfer-encoding")) { reply(client, 413, "Payload Too Large"); return }
                 val body = ByteArray(length)
                 var read = 0

@@ -135,13 +135,15 @@ public:
         pixels.clear(); rom.clear(); options.clear(); lastBattery.clear(); width = height = 0;
         if (failure) std::rethrow_exception(failure);
     }
-    void load(std::vector<uint8_t> bytes, const std::string& hash, bool arcade, std::string path) {
+    void load(std::vector<uint8_t> bytes, const std::string& hash, const std::string& system, std::string path, const std::string& extension) {
         std::lock_guard<std::mutex> guard(mutex);
         paused = true; audible = false; closeAudio(); unload(); error.clear();
-        core.open(arcade ? "libfbalpha2012.so" : "libfceumm.so");
-        gamePath = arcade ? std::move(path) : baseDirectory + "/game.nes";
+        const bool arcade = system == "arcade";
+        const bool cartridge = system == "gba" || system == "sfc";
+        core.open(arcade ? "libfbalpha2012.so" : system == "gba" ? "libmgba.so" : system == "sfc" ? "libsnes9x.so" : "libfceumm.so");
+        gamePath = arcade ? std::move(path) : baseDirectory + "/game." + extension;
         directory = arcade ? gamePath.substr(0,gamePath.find_last_of('/')) : baseDirectory;
-        saveDirectory = arcade ? baseDirectory + "/arcade" : baseDirectory;
+        saveDirectory = arcade || cartridge ? baseDirectory + "/" + system : baseDirectory;
         rom = std::move(bytes); batteryPath = saveDirectory + "/" + hash + ".srm";
         rotation = 0; geometryAspect = 4.0/3.0;
         pixelFormat = RETRO_PIXEL_FORMAT_RGB565;
@@ -159,7 +161,7 @@ public:
             core.set_input_poll([] {}); core.set_input_state(input);
             core.init(); initialized = true;
             retro_game_info game{gamePath.c_str(), arcade ? nullptr : rom.data(), arcade ? 0 : rom.size(), nullptr};
-            if (!core.load_game(&game)) throw std::runtime_error(arcade ? "FB Alpha 无法加载此游戏，请检查 FBA 0.2.97.29 ROM、父包和 BIOS" : "FCEUmm 无法加载此游戏");
+            if (!core.load_game(&game)) throw std::runtime_error(arcade ? "FB Alpha 无法加载此游戏，请检查 FBA 0.2.97.29 ROM、父包和 BIOS" : "内核无法加载此游戏，请检查 ROM 格式");
             loaded = true;
             retro_system_av_info av{}; core.get_system_av_info(&av);
             geometryAspect = av.geometry.aspect_ratio > 0 ? av.geometry.aspect_ratio : static_cast<double>(av.geometry.base_width) / std::max(1u,av.geometry.base_height);
@@ -418,11 +420,11 @@ extern "C" JNIEXPORT jlong JNICALL JNI(create)(JNIEnv* env,jobject,jstring direc
 extern "C" JNIEXPORT void JNICALL JNI(destroy)(JNIEnv* env,jobject,jlong handle) {
     try { delete engine(handle); } catch(const std::exception& e) { fail(env,e); }
 }
-extern "C" JNIEXPORT void JNICALL JNI(load)(JNIEnv* env,jobject,jlong handle,jbyteArray bytes,jstring hash,jboolean arcade,jstring path) {
+extern "C" JNIEXPORT void JNICALL JNI(load)(JNIEnv* env,jobject,jlong handle,jbyteArray bytes,jstring hash,jstring system,jstring path,jstring extension) {
     try {
         std::vector<uint8_t> data(env->GetArrayLength(bytes));
         env->GetByteArrayRegion(bytes,0,data.size(),reinterpret_cast<jbyte*>(data.data()));
-        engine(handle)->load(std::move(data),string(env,hash),arcade,string(env,path));
+        engine(handle)->load(std::move(data),string(env,hash),string(env,system),string(env,path),string(env,extension));
     } catch(const std::exception& e) { fail(env,e); }
 }
 extern "C" JNIEXPORT void JNICALL JNI(setSurface)(JNIEnv* env,jobject,jlong handle,jobject value) {

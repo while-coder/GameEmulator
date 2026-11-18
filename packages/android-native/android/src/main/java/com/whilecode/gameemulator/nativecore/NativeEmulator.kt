@@ -26,11 +26,17 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
     companion object {
         const val BUILD = "fceumm-e0f3086-native-v1"
         const val ARCADE_BUILD = "fbalpha2012-0ce3153-native-v1"
+        private fun build(system: String) = when (system) {
+            "gba" -> "mgba-7a12d6d4-native-v1"
+            "sfc" -> "snes9x-204ea1c0-native-v1"
+            "arcade" -> ARCADE_BUILD
+            else -> BUILD
+        }
         init { System.loadLibrary("gameemulator") }
     }
     private external fun create(directory: String): Long
     private external fun destroy(handle: Long)
-    private external fun load(handle: Long, bytes: ByteArray, hash: String, arcade: Boolean, path: String)
+    private external fun load(handle: Long, bytes: ByteArray, hash: String, system: String, path: String, extension: String)
     private external fun setSurface(handle: Long, surface: Surface?)
     private external fun control(handle: Long, action: String, value: Double)
     private external fun buttons(handle: Long, player: Int, mask: Int)
@@ -87,7 +93,7 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
     private var statsPresented = 0L
 
     init {
-        File(activity.filesDir, "native-nes/arcade").mkdirs()
+        for (id in listOf("arcade", "gba", "sfc")) File(activity.filesDir, "native-nes/$id").mkdirs()
         root.addView(texture, FrameLayout.LayoutParams(1, 1))
         root.addView(metrics, FrameLayout.LayoutParams(-2, -2))
         texture.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
@@ -162,11 +168,18 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
             activity.runOnUiThread { activity.finish() }
             return json(JSONObject().put("ok", true))
         }
-        require(path.matches(Regex("/native/(nes|arcade)/[a-zA-Z0-9_+./-]+"))) { "无效的原生接口" }
+        require(path.matches(Regex("/native/(nes|arcade|gba|sfc)/[a-zA-Z0-9_+./-]+"))) { "无效的原生接口" }
         val requestedSystem = path.split('/')[2]
-        val route = path.removePrefix("/native/$requestedSystem/")
+        val rawRoute = path.removePrefix("/native/$requestedSystem/")
+        val route = if (rawRoute.startsWith("load/")) "load" else rawRoute
+        val extension = if (rawRoute.startsWith("load/")) rawRoute.removePrefix("load/") else "nes"
+        if (route == "load" && requestedSystem != "arcade") require(extension in when (requestedSystem) {
+            "gba" -> listOf("gba", "gb", "gbc")
+            "sfc" -> listOf("sfc", "smc")
+            else -> listOf("nes")
+        }) { "不支持的 ROM 格式" }
         require(method in listOf("GET", "POST"))
-        require(body.size <= if (route in listOf("load", "restore")) 8 * 1024 * 1024 else if (route.startsWith("upload/")) 256 * 1024 else 16384)
+        require(body.size <= if (route == "load" && requestedSystem in listOf("gba", "sfc")) 64 * 1024 * 1024 else if (route in listOf("load", "restore")) 8 * 1024 * 1024 else if (route.startsWith("upload/")) 256 * 1024 else 16384)
         if (route == "frame" && method == "GET") {
             var bitmap: android.graphics.Bitmap? = null
             ui { bitmap = texture.getBitmap(256, 240) }
@@ -195,7 +208,7 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
         val result = synchronized(this) {
             check(!closed) { "游戏会话已关闭" }
             when {
-                route == "info" -> { require(method == "GET"); json(JSONObject().put("build", if (requestedSystem == "arcade") ARCADE_BUILD else BUILD)) }
+                route == "info" -> { require(method == "GET"); json(JSONObject().put("build", build(requestedSystem))) }
                 route == "prepare" && requestedSystem == "arcade" -> {
                     require(method == "POST")
                     playing = false; releaseInputs(); control(handle, "stop", 0.0)
@@ -237,14 +250,14 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
                             require(digest.digest().joinToString("") { "%02x".format(it) } == expected.hash) { "$name 游戏文件校验失败" }
                         }
                         romHash = arcadeFiles.getValue(primary).hash
-                        load(handle, ByteArray(0), romHash, true, File(work, primary).absolutePath)
+                        load(handle, ByteArray(0), romHash, system, File(work, primary).absolutePath, "zip")
                     } else {
-                        require(body.size in 16..8 * 1024 * 1024)
+                        require(body.size in 16..(if (system in listOf("gba", "sfc")) 64 else 8) * 1024 * 1024)
                         romHash = MessageDigest.getInstance("SHA-256").digest(body).joinToString("") { "%02x".format(it) }
-                        load(handle, body, romHash, false, "")
+                        load(handle, body, romHash, system, "", extension)
                     }
                     statsTime = android.os.SystemClock.elapsedRealtime(); statsFrames = 0; statsPresented = 0
-                    json(JSONObject(stats(handle)).put("hash", romHash).put("build", if (system == "arcade") ARCADE_BUILD else BUILD))
+                    json(JSONObject(stats(handle)).put("hash", romHash).put("build", build(system)))
                 }
                 route == "state" -> {
                     require(method == "GET")
@@ -279,7 +292,7 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
                             val maps = value.getJSONArray("maps"); require(maps.length() == 2)
                             mappings = Array(2) { player ->
                                 val map = maps.getJSONObject(player)
-                                (0..if (requestedSystem == "arcade") 15 else 9).associateWith { map.optString(it.toString(), "").also { signal ->
+                                (0..if (requestedSystem != "nes") 15 else 9).associateWith { map.optString(it.toString(), "").also { signal ->
                                     require(signal.isEmpty() || signal.matches(Regex("b([0-9]|[12][0-9]|3[01])|a[0-7][+-]")))
                                 } }
                             }
@@ -312,7 +325,7 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
         var mask = injected[player]; var turboMask = 0
         val held = signals[player] + digital[player]
         for ((button, signal) in mappings[player]) if (signal in held) {
-            if (system == "arcade") mask = mask or (1 shl button)
+            if (system != "nes") mask = mask or (1 shl button)
             else if (button in 6..7) turboMask = turboMask or (1 shl retro[button])
             else mask = mask or (1 shl retro[button])
         }

@@ -23,3 +23,16 @@ The native state identities are `fceumm-e0f3086-native-v1` and `fbalpha2012-0ce3
 the core or build options in a way that can affect state compatibility. WASM states
 remain separate. Release distributions must retain component licenses and provide
 these corresponding sources and build instructions.
+
+## Cartridge cores
+
+- mGBA: https://github.com/libretro/mgba/tree/7a12d6d4b9acb14c0ae62c9166b6a2f3d08007f6
+  - Archive: `mgba-7a12d6d4.tar.gz`, downloaded from https://codeload.github.com/libretro/mgba/tar.gz/7a12d6d4b9acb14c0ae62c9166b6a2f3d08007f6.
+  - SHA-256: `5cbf639e527fb586bf33e14d59037eab35f78f45154e0b79c784fff474c3bc37`.
+  - MPL-2.0; full terms in archive `LICENSE`. Upstream libretro CMake target with GB and GBA enabled, RGB565, no external dependencies or standalone frontends.
+- Snes9x: https://github.com/libretro/snes9x/tree/204ea1c0b851f960cbf223075eb1c25641cb483c
+  - Archive: `snes9x-204ea1c0.tar.gz`, downloaded from https://codeload.github.com/libretro/snes9x/tar.gz/204ea1c0b851f960cbf223075eb1c25641cb483c.
+  - SHA-256: `506b07a775401f9357258fdae0fb0638a6e0f82093657d294aa51c046dcee67c`.
+  - Non-commercial Snes9x license; full terms and component notices in archive `LICENSE`. Source list follows `libretro/Makefile.common` and Android definitions from `libretro/jni/Android.mk`.
+
+`cartridge.cmake` builds `libmgba.so` and `libsnes9x.so` offline. Both share the existing libretro host, EGL renderer and Oboe audio engine. APK assets retain the licenses. Native state IDs are `mgba-7a12d6d4-native-v1` and `snes9x-204ea1c0-native-v1`.

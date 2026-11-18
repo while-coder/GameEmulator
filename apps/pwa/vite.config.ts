@@ -60,6 +60,8 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         nes: fileURLToPath(new URL('./nes.html', import.meta.url)),
         arcade: fileURLToPath(new URL('./arcade.html', import.meta.url)),
+        gba: fileURLToPath(new URL('./gba.html', import.meta.url)),
+        sfc: fileURLToPath(new URL('./sfc.html', import.meta.url)),
       },
     },
   },

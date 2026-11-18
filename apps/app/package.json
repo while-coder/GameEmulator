@@ -25,7 +25,8 @@
     "vue": "catalog:",
     "@game-emulator/nes": "workspace:*",
     "@game-emulator/shell": "workspace:*",
-    "@game-emulator/arcade": "workspace:*"
+    "@game-emulator/arcade": "workspace:*",
+    "@game-emulator/console": "workspace:*"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.3",

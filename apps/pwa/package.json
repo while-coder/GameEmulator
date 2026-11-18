@@ -11,7 +11,8 @@
     "vue": "catalog:",
     "@game-emulator/nes": "workspace:*",
     "@game-emulator/shell": "workspace:*",
-    "@game-emulator/arcade": "workspace:*"
+    "@game-emulator/arcade": "workspace:*",
+    "@game-emulator/console": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

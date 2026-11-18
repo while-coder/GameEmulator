@@ -23,7 +23,7 @@ class NativeWebViewBridge(private val webView: WebView, private val emulator: Na
             val trusted = origin.host == "tauri.localhost" && origin.scheme in listOf("http", "https") || debug && origin.scheme == "http" && origin.port == 1801
             if (!mainFrame || !trusted || closed) return@addWebMessageListener
             val raw = message.data ?: return@addWebMessageListener
-            if (raw.length > 12 * 1024 * 1024) return@addWebMessageListener
+            if (raw.length > 88 * 1024 * 1024) return@addWebMessageListener
             try {
                 worker.execute {
                     val response = JSONObject()

@@ -1,0 +1,69 @@
+@import '../../player-ui/interaction.css';
+:root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; color: #e8eaed; background: #1a1c20; }
+* { box-sizing: border-box; }
+html, body, #app { margin: 0; min-height: 100%; }
+.console-player { height: 100dvh; display: flex; flex-direction: column; padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); gap: 14px; }
+.console-player button, .console-dialog button, .console-player input, .console-dialog input, .console-player select, .console-dialog select { min-height: 42px; border: 1px solid #4a5260; border-radius: 7px; color: inherit; background: #282e37; padding: 8px 12px; font: inherit; }
+.console-player button, .console-dialog button { cursor: pointer; }
+.console-player button:disabled, .console-dialog button:disabled { opacity: .5; cursor: default; }
+.console-player :focus-visible, .console-dialog :focus-visible { outline: 3px solid #9fc4f4; outline-offset: 3px; }
+.console-toolbar { display: flex; align-items: center; gap: 10px; }
+.console-toolbar h1 { flex: 1; margin: 0; font-size: clamp(16px, 3vw, 24px); }
+.console-library { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+.console-filters { display: flex; gap: 8px; min-width: 0; }
+.console-filters input { flex: 1; width: 0; min-width: 70px; }
+.console-filters select { min-width: 0; max-width: 130px; }
+.console-games { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); align-content: start; gap: 14px; padding: 4px; overflow: auto; }
+.console-games > .console-game { display: flex; flex-direction: column; text-align: left; gap: 8px; padding: 10px; min-width: 0; }
+.console-games > .console-game > strong { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.console-games > .console-game > span { color: #aebaca; font-size: 12px; }
+.console-cache-badge { background: #244a39; color: #c5efce; padding: 3px 5px; border-radius: 4px; font-size: 11px; }
+.console-empty { grid-column: 1 / -1; text-align: center; padding: 8vh 15px; color: #acb7c6; }
+.console-empty button { margin: 8px; }
+.console-pagination { display: flex; gap: 16px; align-items: center; justify-content: center; }
+.console-player.in-game { padding: 0; background: #080a0c; }
+.console-stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.console-frame { width: min(100vw, calc((100dvh - var(--stage-inset, 0px)) * var(--console-aspect))); max-height: 100%; max-width: 100%; display: flex; justify-content: center; }
+.console-frame canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+.console-pause { position: absolute; z-index: 3; right: max(12px, env(safe-area-inset-right)); top: max(12px, env(safe-area-inset-top)); opacity: .8; }
+.console-pause-overlay { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111a; overflow: auto; padding: 20px; }
+.console-pause-overlay h2 { font-size: 18px; text-align: center; }
+.console-pause-overlay .pause-menu { width: min(360px, 100%); }
+.console-notice { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 100; max-width: calc(100vw - 24px); background: #283240f5; border: 1px solid #586b82; border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.console-dialog { width: min(680px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); padding: 20px; border: 1px solid #566273; border-radius: 12px; background: #20252d; color: #e8eaed; overflow: auto; }
+.console-dialog::backdrop { background: #0009; }
+.console-dialog header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.console-dialog h2 { margin: 0; font-size: 20px; }
+.console-dialog fieldset { border: 0; padding: 12px 0 0; margin: 0; min-width: 0; }
+.console-dialog label { display: flex; gap: 12px; align-items: center; margin: 10px 0; }
+.console-dialog input[type=url], .console-dialog input:not([type]) { flex: 1; min-width: 0; }
+.console-dialog p { color: #b4bfce; font-size: 14px; line-height: 1.7; }
+.console-dialog pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; max-height: 300px; overflow: auto; }
+.console-dialog details { margin-top: 20px; }
+.console-keymap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.console-state { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid #45505f; }
+.console-state > div { flex: 1; min-width: 140px; }
+.console-state small { display: block; color: #aab8ca; margin-top: 4px; }
+.console-touch { --pad-size: 144px; --action-size: 52px; position: absolute; z-index: 2; inset: 0; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.console-touch button { pointer-events: auto; touch-action: none; min-height: 0; padding: 0; background: #344357a6; border: 1px solid #b9cce470; color: #edf4ff; }
+.console-touch .pressed { background: #819ebac9; }
+.console-dpad { position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(24px, env(safe-area-inset-bottom)); width: 144px; height: 144px; pointer-events: auto; }
+.console-dpad button { position: absolute; width: 48px; height: 48px; }
+.console-dpad .up { left: 48px; top: 0; }.console-dpad .down { left: 48px; bottom: 0; }.console-dpad .left { left: 0; top: 48px; }.console-dpad .right { right: 0; top: 48px; }
+.console-touch-button { position: absolute; width: 52px; height: 52px; border-radius: 50% !important; bottom: max(40px, env(safe-area-inset-bottom)); right: 26px; }
+.console-touch-button.b { right: 88px; bottom: max(18px, env(safe-area-inset-bottom)); }.console-touch-button.x { right: 26px; bottom: 102px; }.console-touch-button.y { right: 88px; bottom: 80px; }
+.console-touch-button.l { left: 20px; right: auto; top: 60%; width: 64px; height: 36px; border-radius: 12px !important; }.console-touch-button.r { top: 60%; right: 26px; width: 64px; height: 36px; border-radius: 12px !important; }
+.console-touch-button.start, .console-touch-button.select { bottom: 18px; width: 62px; height: 30px; border-radius: 10px !important; font-size: 11px; }.console-touch-button.start { right: calc(50% - 70px); }.console-touch-button.select { right: calc(50% + 8px); }
+.console-touch.editing { background: #18233188; }.console-touch.editing button { pointer-events: auto; }.console-touch.editing .console-dpad { outline: 2px dashed #9fc4f4; }.console-touch.editing .console-dpad button { pointer-events: none; }
+.console-layout-tools { position: absolute; z-index: 5; top: 0; left: 0; right: 0; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; background: #20252df0; }.console-layout-tools .touch-layout-editor { width: 100%; }
+@media (max-width: 560px) { .console-player { padding-inline: 10px; gap: 8px; }.console-toolbar { gap: 6px; }.console-toolbar button { padding-inline: 8px; }.console-games { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }.console-filters { gap: 5px; }.console-filters select { max-width: 100px; padding-inline: 4px; } }
+@media (orientation: portrait) { .console-stage { --stage-inset: 55px; align-items: flex-start; padding-top: max(55px, env(safe-area-inset-top)); }.console-frame { width: 100%; }.console-dpad { bottom: 85px; }.console-touch-button.a { bottom: 115px; }.console-touch-button.b { bottom: 85px; }.console-touch-button.x { bottom: 177px; }.console-touch-button.y { bottom: 147px; }.console-touch-button.l, .console-touch-button.r { top: auto; bottom: 255px; } }
+@media (max-height: 440px) { .console-pause-overlay { padding: 10px; }.console-pause-overlay h2 { margin: 0 0 10px; }.console-toolbar button { min-height: 36px; }.console-touch-button.l, .console-touch-button.r { top: 24%; } }
+
+.console-game { position: relative; isolation: isolate; border: 1px solid #3a4452; border-radius: 10px; background: #242a33; }
+.console-game > .game-launch { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; min-height: 0; padding: 0; border: 0; background: transparent; }
+.console-game > .game-launch:hover { background: #9fc4f40a; }
+.console-game > .game-favorite-mark { position: absolute; left: 16px; top: 16px; z-index: 2; pointer-events: none; color: #ffd178; }
+.console-dpad button { width: 33.333%; height: 33.333%; }
+.console-dpad .up { left: 33.333%; }.console-dpad .down { left: 33.333%; }.console-dpad .left { top: 33.333%; }.console-dpad .right { top: 33.333%; }
+.console-player .library-tabs { display: flex; gap: 8px; }.console-player .library-tabs button[aria-selected=true] { background: #334b67; border-color: #7ba7db; }

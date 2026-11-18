@@ -6,10 +6,12 @@
   "exports": {
     "./nes": "./src/nes.ts",
     "./arcade": "./src/arcade.ts",
-    "./transport": "./src/transport.ts"
+    "./transport": "./src/transport.ts",
+    "./console": "./src/console.ts"
   },
   "dependencies": {
     "@game-emulator/nes": "workspace:*",
-    "@game-emulator/arcade": "workspace:*"
+    "@game-emulator/arcade": "workspace:*",
+    "@game-emulator/console": "workspace:*"
   }
 }
