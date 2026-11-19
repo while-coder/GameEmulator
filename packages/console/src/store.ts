@@ -4,7 +4,7 @@ import { romExtension, type ConsoleSystem } from './systems'
 
 export type Game = { hash: string; name: string; fileName: string; file_size: number; download_url?: string; screenshot_url?: string; genre?: string; publisher?: string; tags?: string[] }
 export type SavedGame = Game & { file: Blob }
-export type Snapshot = { key: string; system: ConsoleSystem; hash: string; build: string; slot: string; kind: SaveKind; label: string; savedAt: number; data: Uint8Array }
+export type Snapshot = { key: string; system: ConsoleSystem; hash: string; build: string; slot: string; kind: SaveKind; label: string; gameName?: string; savedAt: number; data: Uint8Array }
 type Battery = { key: string; data: Blob }
 let database: Promise<IDBDatabase> | undefined
 function db() {
@@ -42,13 +42,13 @@ export async function sha256(bytes: ArrayBuffer): Promise<string> {
 export const listGames = async (system: ConsoleSystem) => (await read<(SavedGame & { key: string })[]>('games')).filter(game => game.key.startsWith(system + ':'))
 export const getGame = (system: ConsoleSystem, hash: string) => read<SavedGame | undefined>('games', `${system}:${hash}`)
 export const removeGame = (system: ConsoleSystem, hash: string) => write('games', `${system}:${hash}`, true)
-export const listStates = async (system: ConsoleSystem, hash: string, build: string) => (await read<Snapshot[]>('states')).filter(state => state.system === system && state.hash === hash && state.build === build).sort((a, b) => b.savedAt - a.savedAt)
+export const listStates = async (system: ConsoleSystem, hash?: string, build?: string) => (await read<Snapshot[]>('states')).filter(state => state.system === system && (!hash || state.hash === hash) && (!build || state.build === build)).sort((a, b) => b.savedAt - a.savedAt)
 export const removeState = (state: Snapshot) => write('states', state.key, true)
 export const renameState = (state: Snapshot, label: string) => write('states', { ...state, label })
-export async function putState(system: ConsoleSystem, hash: string, build: string, kind: SaveKind, label: string, data: Uint8Array) {
+export async function putState(system: ConsoleSystem, hash: string, build: string, kind: SaveKind, label: string, data: Uint8Array, gameName?: string) {
   if (!data.length) throw new Error('内核返回了空存档')
   const slot = kind === 'quick' ? 'quick' : newSaveSlot()
-  await write('states', { key: `${system}:${hash}:${build}:${slot}`, system, hash, build, slot, kind, label, data, savedAt: Date.now() } satisfies Snapshot)
+  await write('states', { key: `${system}:${hash}:${build}:${slot}`, system, hash, build, slot, kind, label, gameName, data, savedAt: Date.now() } satisfies Snapshot)
 }
 export const getBattery = async (key: string) => (await read<Battery | undefined>('battery', key))?.data
 export const putBattery = (key: string, data: Blob) => write('battery', { key, data })
@@ -59,7 +59,14 @@ export async function importGame(system: ConsoleSystem, file: File): Promise<Gam
   await cacheGame(system, game, file)
   return game
 }
-export const cacheGame = (system: ConsoleSystem, game: Game, file: Blob) => write('games', { ...game, key: `${system}:${game.hash}`, file })
+export const cacheGame = (system: ConsoleSystem, game: Game, file: Blob) => write('games', {
+  ...game,
+  // Catalog entries can contain Vue proxies. IndexedDB cannot clone a proxied
+  // tags array, even after spreading the outer entry into a plain object.
+  tags: game.tags ? [...game.tags] : undefined,
+  key: `${system}:${game.hash}`,
+  file,
+})
 export async function loadCatalog(system: ConsoleSystem, source: string, signal?: AbortSignal): Promise<Game[]> {
   const url = new URL(source)
   if (!['https:', 'http:'].includes(url.protocol)) throw new Error('游戏源需使用 HTTP 或 HTTPS 地址')

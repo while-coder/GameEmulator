@@ -172,6 +172,9 @@ importers:
 
   packages/console:
     dependencies:
+      '@qingfeng346/ui-kit':
+        specifier: link:../../../ui-kit/ui-kit
+        version: link:../../../ui-kit/ui-kit
       nostalgist:
         specifier: 0.21.1
         version: 0.21.1

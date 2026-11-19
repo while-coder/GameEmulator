@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { emulators, type EmulatorId } from './registry'
-import { appName } from './branding'
 import '../../player-ui/interaction.css'
 import { createNavigationRepeatGuard, focusNavigationElement, pickNeighbor, type NavigationDirection } from '../../player-ui/remoteNavigation'
 
 const props = withDefaults(defineProps<{ launch: (id: EmulatorId) => Promise<void>; active?: boolean }>(), { active: true })
-const busy = ref(false)
+const launching = ref<EmulatorId | null>(null)
 const error = ref('')
 const cards = ref<HTMLButtonElement[]>([])
 let focusedIndex = 0
 async function enter(id: EmulatorId) {
-  if (busy.value) return
-  busy.value = true
+  if (launching.value) return
+  launching.value = id
   error.value = ''
   try { await props.launch(id) }
   catch (err) { error.value = err instanceof Error ? err.message : String(err) }
-  finally { busy.value = false }
+  finally { launching.value = null }
 }
 function focusCard() {
   const card = cards.value[focusedIndex]
@@ -30,7 +29,7 @@ function moveFocus(dir: NavigationDirection) {
 }
 const allowNavigationRepeat = createNavigationRepeatGuard()
 function onKey(event: KeyboardEvent) {
-  if (props.active === false || busy.value || event.defaultPrevented) return
+  if (props.active === false || launching.value || event.defaultPrevented) return
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
     event.preventDefault()
     if (allowNavigationRepeat(event)) moveFocus(event.key.slice(5).toLowerCase() as NavigationDirection)
@@ -46,7 +45,7 @@ function pollGamepads() {
     : pads.some(pad => pad && (pad.buttons[14]?.pressed || (pad.axes[0] ?? 0) < -.5)) ? 'left'
     : pads.some(pad => pad && (pad.buttons[13]?.pressed || (pad.axes[1] ?? 0) > .5)) ? 'down'
     : pads.some(pad => pad && (pad.buttons[12]?.pressed || (pad.axes[1] ?? 0) < -.5)) ? 'up' : null
-  if (props.active !== false && !document.hidden && !busy.value) {
+  if (props.active !== false && !document.hidden && !launching.value) {
     if (down && !pressed) {
       if (cards.value.some(card => card === document.activeElement)) (document.activeElement as HTMLButtonElement).click()
       else focusCard()
@@ -69,15 +68,14 @@ defineExpose({ focusCard })
 </script>
 
 <template>
-  <main class="launcher" :aria-busy="busy">
+  <main class="launcher" :aria-busy="launching !== null">
     <div class="launcher-content">
       <header class="launcher-header">
-        <span class="eyebrow">{{ appName }}</span>
         <h1>选择模拟器</h1>
       </header>
       <section class="emulator-grid" aria-label="模拟器列表">
         <button v-for="emulator in emulators" :key="emulator.id" ref="cards"
-          class="emulator-card" :disabled="busy || active === false" @focus="focusedIndex = emulators.findIndex(item => item.id === emulator.id)" @click="enter(emulator.id)">
+          class="emulator-card" :disabled="launching !== null || active === false" @focus="focusedIndex = emulators.findIndex(item => item.id === emulator.id)" @click="enter(emulator.id)">
           <span class="console-art" aria-hidden="true">
             <svg v-if="emulator.id === 'arcade'" viewBox="0 0 240 140" fill="none">
               <path d="M72 8h96l10 31-10 43 18 16v34H54V98l18-16-10-43L72 8Z" fill="#414955" />
@@ -117,14 +115,16 @@ defineExpose({ focusCard })
               <path d="M159 30V18h38v12" stroke="#d3d3d0" stroke-width="8" />
             </svg>
           </span>
-          <span class="card-heading"><strong>{{ emulator.name }}</strong><span class="badge">可游玩</span></span>
-          <span class="console-name">{{ emulator.description }}</span>
-          <span class="detail">{{ emulator.detail }}</span>
-          <span class="enter-label">{{ busy ? '正在进入…' : '进入模拟器' }} <span aria-hidden="true">→</span></span>
+          <span class="emulator-info">
+            <strong>{{ emulator.name }}</strong>
+            <span class="console-name">{{ emulator.description }}</span>
+            <span class="detail">{{ launching === emulator.id ? '正在进入…' : emulator.detail }}</span>
+          </span>
+          <span class="enter-arrow" aria-hidden="true">→</span>
         </button>
       </section>
       <p v-if="error" class="launch-error" role="alert">进入失败：{{ error }}</p>
-      <footer>更多模拟器将陆续加入<slot name="footer" /></footer>
+      <footer v-if="$slots.footer"><slot name="footer" /></footer>
     </div>
   </main>
 </template>
@@ -134,41 +134,51 @@ defineExpose({ focusCard })
 * { box-sizing: border-box; }
 html, body, #app { margin: 0; min-height: 100%; }
 body { margin: 0; }
-.launcher { --accent: #d45359; height: 100dvh; overflow: hidden; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
-.launcher-content { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 1440px; height: 100%; min-height: 0; margin: 0 auto; }
-.launcher-header { flex: 0 0 auto; text-align: center; }
-.eyebrow { color: #b8b8b8; font-size: 11px; letter-spacing: .18em; }
-.launcher h1 { display: flex; align-items: center; gap: 16px; font-size: clamp(20px, 3vw, 28px); line-height: 1.3; letter-spacing: -.03em; margin: 4px 0 0; }
-.launcher h1::before, .launcher h1::after { content: ''; flex: 1; height: 1px; background: #404040; }
-/* A single horizontal rail owns scrolling; the page itself always fits the viewport. */
-.emulator-grid { display: flex; flex: 1; min-height: 0; min-width: 0; align-items: center; gap: 16px; padding: 6px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 6px; scrollbar-width: thin; }
-.emulator-card { display: flex; flex: 0 0 clamp(220px, 30vw, 300px); flex-direction: column; min-width: 0; height: 100%; max-height: 400px; text-align: left; font: inherit; color: inherit; background: #242424; border: 1px solid #404040; border-radius: 12px; padding: 16px; cursor: pointer; scroll-snap-align: start; transition: border-color .18s, background .18s; }
+.launcher {
+  height: 100dvh;
+  overflow-y: auto;
+  padding: max(clamp(20px, 7vh, 72px), env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  scroll-padding-block: 8px;
+}
+.launcher-content { display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 1040px; margin: 0 auto; }
+.launcher h1 { font-size: clamp(22px, 3vw, 32px); line-height: 1.3; margin: 0; }
+.emulator-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.emulator-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(12px, 2vw, 20px);
+  min-width: 0;
+  min-height: 112px;
+  padding: clamp(14px, 2vw, 22px);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: #242424;
+  border: 1px solid #404040;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+}
 .emulator-card:hover { background: #2b2b2b; border-color: #a96569; }
-.emulator-card:focus-visible { outline: 3px solid #82b1ff; outline-offset: 5px; }
+.emulator-card:focus-visible { background: #292e36; border-color: #82b1ff; outline: 3px solid #82b1ff; outline-offset: 3px; }
 .emulator-card:disabled { cursor: wait; opacity: .7; }
-.console-art { display: grid; flex: 1; min-height: 0; place-items: center; width: 100%; overflow: hidden; background: #1c1e21; border-radius: 8px; margin-bottom: 14px; }
-.console-art svg { width: min(100%, 240px); height: 100%; max-height: 160px; }
-.card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.card-heading strong { font-size: 22px; }
-.badge { background: #253b30; color: #a2dbb4; padding: 4px 8px; border-radius: 5px; font-size: 12px; }
-.console-name { margin-top: 8px; color: #c9c9c9; }
-.detail { margin-top: 8px; color: #b8b8b8; font-size: 12px; line-height: 1.5; }
-.enter-label { display: flex; justify-content: space-between; border-top: 1px solid #404040; padding-top: 12px; margin-top: 14px; color: #f0b3b6; font-size: 14px; font-weight: 600; }
-.card-heading, .console-name, .detail, .enter-label { flex-shrink: 0; }
-.launcher footer { flex-shrink: 0; color: #aaa; font-size: 12px; text-align: center; }
-.launch-error { flex-shrink: 0; margin: 0; color: #ffb4b4; font-size: 12px; line-height: 1.4; }
+.console-art { display: grid; place-items: center; width: clamp(80px, 16vw, 152px); aspect-ratio: 4 / 3; background: #1c1e21; border-radius: 8px; }
+.console-art svg { display: block; width: 90%; }
+.emulator-info { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.emulator-info strong { font-size: clamp(18px, 2.4vw, 26px); line-height: 1.2; }
+.console-name { color: #d0d0d0; font-size: 15px; }
+.detail { color: #b8b8b8; font-size: 13px; line-height: 1.5; }
+.enter-arrow { color: #f0b3b6; font-size: 22px; }
+.launcher footer { color: #aaa; font-size: 12px; text-align: center; }
+.launch-error { margin: 0; color: #ffb4b4; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+@media (max-width: 679px) {
+  .emulator-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
 @media (max-height: 440px) {
-  .launcher { padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-  .launcher-content { gap: 6px; }
-  .launcher h1 { font-size: 20px; }
-  .emulator-grid { gap: 12px; }
-  .emulator-card { padding: 12px; }
-  .console-art { margin-bottom: 8px; }
-  .card-heading strong { font-size: 18px; }
-  .badge { padding: 3px 6px; font-size: 11px; }
-  .console-name { margin-top: 4px; font-size: 13px; }
-  .detail { margin-top: 4px; }
-  .enter-label { padding-top: 8px; margin-top: 8px; font-size: 13px; }
+  .launcher { padding-block: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-bottom)); }
+  .launcher-content { gap: 12px; }
+  .console-art { width: clamp(80px, 12vw, 112px); }
 }
 @media (prefers-reduced-motion: reduce) { .emulator-card { transition: none; } }
 </style>

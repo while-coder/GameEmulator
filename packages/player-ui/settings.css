@@ -165,3 +165,14 @@
 }
 
 .player-modal .player-saves .rename-input { flex: 1; min-width: 0; max-width: 100%; }
+
+/* Settings use the same modal frame on every emulator. */
+.player-modal .s-modal-body { flex: 1; }
+.player-modal .s-modal-header { flex-shrink: 0; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .player-modal.s-modal-overlay { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  .player-modal .s-modal-box.fill-height { position: relative; width: 100% !important; height: 100%; max-height: 100%; border: none; border-radius: 0; }
+  .player-modal .s-modal-header { position: absolute; top: 4px; right: 6px; z-index: 1; padding: 0; border: none; }
+  .player-modal .s-modal-titles { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .player-modal .s-icon-close { width: 44px; height: 44px; }
+}

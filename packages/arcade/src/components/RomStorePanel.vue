@@ -38,7 +38,6 @@ const catalogLoading = ref(false)
 const error = ref('')
 const actionError = ref('')
 const partialRefresh = ref(false)
-const refreshVersion = ref(0)
 const catalogSnapshots = new Map<string, ArcadeCatalog>()
 const libraryTab = ref<'online' | 'played' | 'favorites'>('online')
 const { query, genre, sort, page, gameList } = useLibraryBrowser('arcade', libraryTab)
@@ -68,7 +67,6 @@ async function refreshCatalog(force = false) {
     if (force) {
       try { await props.refresh() }
       catch { actionError.value = '下载状态暂时无法更新，请稍后重试' }
-      if (!error.value && !actionError.value) refreshVersion.value++
     }
   } catch (err) {
     if (!abort.signal.aborted) error.value = libraryFailureReason(err)
@@ -203,7 +201,7 @@ const metaLine = (game: RomEntry) => [game.system, game.genre, game.publisher, f
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" aria-label="游戏排序" />
       </div>
 
-      <LibraryRequestStatus :loading="catalogLoading" :has-games="libraryGames.length > 0" :has-catalog="catalogs.length > 0" :has-downloads="cachedKeys.size > 0" :failed="!!error" :partial="partialRefresh" :reason="error" :success-version="refreshVersion" :disabled="busy || busyKey !== null" @retry="refreshCatalog(true)" />
+      <LibraryRequestStatus :loading="catalogLoading" :has-games="libraryGames.length > 0" :has-catalog="catalogs.length > 0" :has-downloads="cachedKeys.size > 0" :failed="!!error" :partial="partialRefresh" :reason="error" :disabled="busy || busyKey !== null" @retry="refreshCatalog(true)" />
 
       <p v-if="actionError" class="library-action-error" role="alert">{{ actionError }}</p>
       <div id="arcade-library-games" ref="gameList" class="game-list" data-nav-grid role="tabpanel" :aria-labelledby="`arcade-library-games-${libraryTab}`">

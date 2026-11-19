@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps<{
   loading: boolean
@@ -9,25 +9,12 @@ const props = defineProps<{
   failed: boolean
   partial?: boolean
   reason?: string
-  successVersion: number
   disabled?: boolean
 }>()
 defineEmits<{ retry: [] }>()
-const showSuccess = ref(false)
-let timer: ReturnType<typeof setTimeout> | undefined
-watch(() => props.successVersion, () => {
-  clearTimeout(timer)
-  showSuccess.value = true
-  timer = setTimeout(() => { showSuccess.value = false }, 3000)
-})
-watch(() => props.loading, loading => {
-  if (loading) { clearTimeout(timer); showSuccess.value = false }
-})
-onBeforeUnmount(() => clearTimeout(timer))
-const visible = computed(() => props.loading ? !props.hasGames : props.failed || showSuccess.value)
+const visible = computed(() => props.loading ? !props.hasGames : props.failed)
 const title = computed(() => {
   if (props.loading) return '正在加载游戏目录…'
-  if (!props.failed) return '游戏库已更新'
   if (props.partial) return '部分目录未能更新'
   return props.hasCatalog ? '目录暂时无法更新' : '暂时无法加载在线目录'
 })
@@ -43,9 +30,9 @@ const description = computed(() => {
 </script>
 
 <template>
-  <div v-if="visible" class="library-request-status" :class="{ warning: failed && !loading, success: !failed && !loading }"
+  <div v-if="visible" class="library-request-status" :class="{ warning: failed && !loading }"
     :role="failed && !loading && !hasGames ? 'alert' : 'status'">
-    <span class="request-icon" aria-hidden="true">{{ loading ? '↻' : failed ? 'ⓘ' : '✓' }}</span>
+    <span class="request-icon" aria-hidden="true">{{ loading ? '↻' : 'ⓘ' }}</span>
     <div class="request-copy"><span>{{ title }}</span><span v-if="description" class="request-description">{{ description }}</span></div>
     <button v-if="failed && !loading" type="button" :disabled="disabled" @click="$emit('retry')">重试</button>
   </div>
@@ -55,7 +42,6 @@ const description = computed(() => {
 <style scoped>
 .library-request-status { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; margin: 0 4px 6px; padding: 6px 8px; border-radius: 6px; background: #242b35; color: #b2c4dc; font-size: 12px; line-height: 1.5; }
 .library-request-status.warning { background: #302a20; color: #e1c187; }
-.library-request-status.success { background: transparent; color: #9fcbb0; }
 .request-icon { flex-shrink: 0; font-size: 15px; }
 .request-copy { display: flex; flex: 1; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-width: 0; }
 .request-description { color: #a8adb5; overflow-wrap: anywhere; }

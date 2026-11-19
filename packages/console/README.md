@@ -5,7 +5,8 @@ Shared mGBA (GBA/GB/GBC) and Snes9x (SFC/SNES) frontend. Each app has separate `
 - `systems.ts`: extensions, buttons, keyboard/gamepad mappings and display aspect.
 - `runner.ts`: pinned local WASM cores, pause/input/state and SRAM persistence.
 - `store.ts`: transactional IndexedDB ROM/state/SRAM storage; catalog and verified downloads.
-- `ConsoleView.vue`: shared library, playback, input, settings and save UI.
+- `ConsoleView.vue`: shared library, playback and input. Library markup uses the NES/arcade components and shared styles.
+- `ConsoleSettings.vue`: the same five settings tabs, modal frame and save-card layout as NES/arcade; supports all-game save search and cross-game restore.
 - `TouchControls.vue`: shared layout editor with platform-specific buttons.
 - Android entries register `NativeConsoleRunner`; other entries use WASM. Saves include the core build identity in their storage keys.
 
@@ -35,4 +36,4 @@ Run from the repository root. Pinned repositories and classic-title selection ru
 
 Every included ROM is downloaded and checked against the source repository's file size and Git blob identity before its SHA-256 is recorded. Fresh downloads must allow browser CORS and must not return HTML or Git LFS pointers. Duplicate SHA-256 values are combined. Catalogs use pinned upstream raw URLs, so uploading a catalog does not require mirroring its ROM files. Game names retain the source names and language tags describe the selected release; a Chinese interface does not imply a Chinese ROM translation. Hardware-specific tilt, solar-sensor and light-gun titles are omitted from the classic selections. File integrity checks do not establish gameplay compatibility.
 
-To use a generated catalog, serve the JSON through HTTP(S), then enter that URL in the player's game-source settings. No remote repository is created and no catalog is published by the generator. Upstream Retrobrews distribution permissions apply to its own repository; the generator links to that source and does not grant additional redistribution rights.
+The player uses the fixed catalog URLs in `src/systems.ts`: `while-coder/gba-roms` and `while-coder/sfc-roms`. Game-source URL settings are not exposed in the UI; old local overrides are removed when the player opens. No remote repository is created and no catalog is published by the generator. Upstream Retrobrews distribution permissions apply to its own repository; the generator links to that source and does not grant additional redistribution rights.

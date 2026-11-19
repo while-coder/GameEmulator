@@ -51,7 +51,6 @@ const catalogLoading = ref(false)
 const refreshing = ref(false)
 const catalogError = ref('')
 const hasCatalog = ref(false)
-const refreshVersion = ref(0)
 const abort = new AbortController()
 onBeforeUnmount(() => abort.abort())
 const error = ref<string | null>(null)
@@ -158,13 +157,12 @@ function goPage(target: number) {
 watch(open, (value) => { if (value) void prepareStore() }, { immediate: true })
 defineExpose({ busyKey, cancelOperation })
 
-async function prepareStore(manual = false) {
+async function prepareStore() {
   if (refreshing.value || busyKey.value !== null) return
   refreshing.value = true
   error.value = null
   try {
     await Promise.all([refreshCatalog(), refreshCached()])
-    if (manual && !catalogError.value && !error.value) refreshVersion.value++
   }
   finally { refreshing.value = false }
 }
@@ -323,7 +321,7 @@ function formatError(err: unknown): string {
       <div class="store-tools">
         <div class="search-tools">
           <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签，支持拼音" aria-label="搜索游戏、厂商、标签，支持拼音全拼、首字母和混输" />
-          <button type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busyKey !== null" @click="prepareStore(true)">
+          <button type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busyKey !== null" @click="prepareStore()">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': refreshing }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
           </button>
         </div>
@@ -331,7 +329,7 @@ function formatError(err: unknown): string {
         <RemoteSelect v-model="sort" class="select" :options="SORT_OPTIONS" aria-label="游戏排序" />
       </div>
 
-      <LibraryRequestStatus :loading="refreshing" :has-games="libraryGames.length > 0" :has-catalog="hasCatalog" :has-downloads="cachedKeys.size > 0" :failed="!!catalogError" :reason="catalogError" :success-version="refreshVersion" :disabled="busyKey !== null" @retry="prepareStore(true)" />
+      <LibraryRequestStatus :loading="refreshing" :has-games="libraryGames.length > 0" :has-catalog="hasCatalog" :has-downloads="cachedKeys.size > 0" :failed="!!catalogError" :reason="catalogError" :disabled="busyKey !== null" @retry="prepareStore()" />
       <p v-if="error" class="library-action-error" role="alert">{{ error }}</p>
 
       <div id="nes-library-games" ref="gameList" class="game-list" data-nav-grid role="tabpanel" :aria-labelledby="`nes-library-games-${libraryTab}`">
