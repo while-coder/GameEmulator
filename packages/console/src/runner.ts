@@ -14,8 +14,9 @@ export interface ConsoleRunner {
   load(game: SavedGame, signal: AbortSignal): Promise<void>
   pause(): void
   resume(): void
-  reset(): void
+  reset(): void | Promise<void>
   input(player: number, action: Action, down: boolean): void
+  analog?(x: number, y: number): void
   setSmoothing?(smoothing: boolean): void
   setMuted(muted: boolean): void
   save(): Promise<Uint8Array>
@@ -23,10 +24,16 @@ export interface ConsoleRunner {
   flush(): Promise<void>
   dispose(): Promise<void>
 }
-type Factory = (canvas: HTMLCanvasElement, system: ConsoleSystem) => ConsoleRunner
+type Factory = (canvas: HTMLCanvasElement, system: Exclude<ConsoleSystem, 'psp'>) => ConsoleRunner
 let factory: Factory | undefined
 export function registerConsoleRunnerFactory(value: Factory) { factory = value }
-export function createConsoleRunner(canvas: HTMLCanvasElement, system: ConsoleSystem): ConsoleRunner { return factory?.(canvas, system) ?? new WasmConsoleRunner(canvas, system) }
+export async function createConsoleRunner(canvas: HTMLCanvasElement, system: ConsoleSystem): Promise<ConsoleRunner> {
+  if (system === 'psp') {
+    const { PspRunner } = await import('./pspRunner')
+    return new PspRunner(canvas)
+  }
+  return factory?.(canvas, system) ?? new WasmConsoleRunner(canvas, system)
+}
 const actions: Action[] = ['b', 'y', 'select', 'start', 'up', 'down', 'left', 'right', 'a', 'x', 'l', 'r']
 const keys = ['z', 'a', 'rshift', 'enter', 'up', 'down', 'left', 'right', 'x', 's', 'q', 'w', 'c', 'd', 't', 'g', 'i', 'k', 'j', 'l', 'v', 'f', 'u', 'o']
 const inputConfig = Object.fromEntries([0, 1].flatMap(player => actions.map((action, index) => [`input_player${player + 1}_${action}`, keys[player * 12 + index]])))

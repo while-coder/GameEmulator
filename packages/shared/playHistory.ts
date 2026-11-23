@@ -1,4 +1,4 @@
-export type GameSystem = 'nes' | 'arcade' | 'gba' | 'sfc'
+export type GameSystem = 'nes' | 'arcade' | 'gba' | 'sfc' | 'psp'
 export type PlayRecord = { lastPlayedAt: number; totalPlayTimeMs: number }
 export type PlayHistory = Record<string, PlayRecord>
 const prefix = (system: GameSystem) => `game-emulator:play-history:${system}:`

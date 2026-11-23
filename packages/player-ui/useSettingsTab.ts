@@ -1,9 +1,10 @@
+import type { GameSystem } from '../shared/playHistory'
 import { ref, watch } from 'vue'
 
 const SETTINGS_TABS = ['saves', 'keys', 'display', 'audio', 'misc'] as const
 type SettingsTab = typeof SETTINGS_TABS[number]
 
-export function useSettingsTab(system: 'nes' | 'arcade' | 'gba' | 'sfc') {
+export function useSettingsTab(system: GameSystem) {
   const storageKey = `${system}:settingsTab`
   let initial: SettingsTab = 'saves'
   try {

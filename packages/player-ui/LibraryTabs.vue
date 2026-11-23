@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
-defineProps<{ panelId: string; counts: Record<'online' | 'played' | 'favorites', number> }>()
+import { computed, nextTick, ref } from 'vue'
+const props = defineProps<{ panelId: string; counts: Record<'online' | 'played' | 'favorites', number>; localOnly?: boolean }>()
 const model = defineModel<'online' | 'played' | 'favorites'>({ default: 'online' })
-const tabs = [{ id: 'online', label: '在线游戏库' }, { id: 'played', label: '我的游戏' }, { id: 'favorites', label: '收藏' }] as const
+const allTabs = [{ id: 'online', label: '在线游戏库' }, { id: 'played', label: '我的游戏' }, { id: 'favorites', label: '收藏' }] as const
+const tabs = computed(() => props.localOnly ? allTabs.slice(1) : allTabs)
 const root = ref<HTMLElement | null>(null)
 async function navigate(event: KeyboardEvent) {
-  const index = tabs.findIndex(tab => tab.id === model.value)
+  const index = tabs.value.findIndex(tab => tab.id === model.value)
   let next = index
-  if (event.key === 'ArrowRight') next = (index + 1) % tabs.length
-  else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length
+  if (event.key === 'ArrowRight') next = (index + 1) % tabs.value.length
+  else if (event.key === 'ArrowLeft') next = (index + tabs.value.length - 1) % tabs.value.length
   else if (event.key === 'Home') next = 0
-  else if (event.key === 'End') next = tabs.length - 1
+  else if (event.key === 'End') next = tabs.value.length - 1
   else return
   event.preventDefault(); event.stopPropagation()
-  model.value = tabs[next].id
+  model.value = tabs.value[next].id
   await nextTick()
   root.value?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus()
 }

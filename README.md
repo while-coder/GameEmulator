@@ -1,6 +1,6 @@
 # GameEmulator
 
-GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白机）、GBA / GB / GBC、SFC / SNES 和街机游戏，让你在电脑、手机和平板上重温经典，也可通过 Android TV 版本在电视上游玩。
+GameEmulator 是一款多平台经典游戏模拟器，支持 NES / FC（红白机）、GBA / GB / GBC、SFC / SNES、PSP 和街机游戏，让你在电脑、手机和平板上重温经典，也可通过 Android TV 版本在电视上游玩。
 
 ## 支持的游戏类型
 
@@ -80,3 +80,7 @@ GBA / GB / GBC 与 SFC 分别固定使用 `while-coder/gba-roms`、`while-coder/
 默认键盘：方向键移动，X/Z 对应 A/B，Q/W 对应 L/R，Enter 开始，右 Shift 选择；SFC 的 S/A 对应 X/Y。Esc / 返回键暂停，F11 全屏，Ctrl+S / F8 覆盖快速存档，F9 读取快速存档。手柄可同时按 L3 + R3 暂停。暂停菜单「保存进度」新增普通存档，存档页支持重命名和删除。游戏内存档定期、暂停和正常退出时保存；即时存档按平台、ROM 与内核构建隔离，Android 原生和 WASM 不互读。
 
 内核来源、校验值和许可证见 [WASM 核心说明](packages/console/src/assets/CORES.md) 和 [Android 原生源码说明](packages/android-native/android/src/main/cpp/vendor/README.md)。
+
+### PSP
+
+PSP 使用 PPSSPP Web 的多线程 WASM 核心。在「设置 → 其他 → 导入游戏」添加本地 ISO、CSO、CHD、PBP 或 ELF。游戏库、暂停菜单、存档和设置沿用掌机播放器，触屏布局额外提供可独立移动的模拟摇杆。浏览环境需要支持 WebGL 和跨源隔离。镜像载入内存，可运行的文件大小取决于设备。构建来源见 [PPSSPP Web 核心说明](packages/console/src/assets/psp/README.md)。

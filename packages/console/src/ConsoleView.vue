@@ -28,13 +28,14 @@ import type { TouchControlLayout } from '../../player-ui/touchLayout'
 import { readTouchControl } from '../../player-ui/touchLayout'
 import { acquireGame, importGame, listGames, listStates, loadCatalog, putState, removeGame, removeState, renameState, type Game, type Snapshot } from './store'
 import { createConsoleRunner, type ConsoleRunner } from './runner'
-import { gameAspect, defaultKeymap, PADMAP, systems, type ConsoleSystem, type Action, type ConsoleSettings as Settings } from './systems'
+import { gameAspect, defaultKeymap, isStickKey, keyboardActions, PADMAP, systems, type ConsoleSystem, type Action, type KeyboardAction, type StickKey, type ConsoleSettings as Settings } from './systems'
 import TouchControls from './TouchControls.vue'
 import '../../player-ui/library.css'
 import '../../player-ui/player.css'
 
 const props = defineProps<{ system: ConsoleSystem; onLeave: () => void | Promise<void> }>()
 const system = props.system, config = systems[system]
+const keyActions = keyboardActions(system)
 const root = ref<HTMLElement | null>(null), canvas = ref<HTMLCanvasElement | null>(null), pausePanel = ref<HTMLElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const fullscreen = useFullscreen(computed(() => document.documentElement))
@@ -44,14 +45,14 @@ const settingsOpen = ref(false), settingsTab = useSettingsTab(system), settingsP
 const error = ref(''), message = ref('')
 const busyAction = ref(false), editingLayout = ref(false), layoutDraft = ref<Layout>()
 const catalog = ref<Game[]>([]), downloaded = ref<Game[]>([]), refreshing = ref(false), catalogError = ref('')
-const tab = ref<'online' | 'played' | 'favorites'>('online')
+const tab = ref<'online' | 'played' | 'favorites'>(config.catalogUrl ? 'online' : 'played')
 const { query, genre, sort, page, gameList } = useLibraryBrowser(system, tab)
 const { operation, cancelling, cancelOperation, runOperation } = useLibraryOperation()
 const progress = ref<{ received: number; total: number } | null>(null)
 const { history } = usePlayHistory(system), collection = useGameCollection<Game>(system)
 const catalogKey = `console:${system}:catalog`, settingsKey = `console:${system}:settings`
 type Layout = Record<'portrait' | 'landscape', Partial<Record<string, TouchControlLayout>>>
-const settings = reactive<Settings>({ muted: false, smoothing: false, aspect: 'auto', touch: 'auto', keymaps: [defaultKeymap(0), defaultKeymap(1)], touchLayout: { portrait: {}, landscape: {} } })
+const settings = reactive<Settings>({ muted: false, smoothing: false, aspect: 'auto', touch: 'auto', keymaps: [defaultKeymap(0, system), defaultKeymap(1)], touchLayout: { portrait: {}, landscape: {} } })
 try {
   const legacySourceKey = `console:${system}:source`
   const legacySource = localStorage.getItem(legacySourceKey)
@@ -62,15 +63,15 @@ try {
   const saved = JSON.parse(localStorage.getItem(settingsKey) ?? 'null')
   if (saved) {
     settings.muted = saved.muted === true; settings.smoothing = saved.smoothing === true
-    if (['auto', '4:3', '3:2', '10:9', '1:1'].includes(saved.aspect)) settings.aspect = saved.aspect
+    if (['auto', '4:3', '3:2', '10:9', '1:1', '16:9'].includes(saved.aspect)) settings.aspect = saved.aspect
     if (['auto', 'always', 'never'].includes(saved.touch)) settings.touch = saved.touch
-    for (let player = 0; player < config.players; player++) for (const action of config.actions) {
+    for (let player = 0; player < config.players; player++) for (const action of keyActions) {
       const code = saved.keymaps?.[player]?.[action]
       if (typeof code === 'string' && code.length < 40) settings.keymaps[player][action] = code
     }
     for (const orientation of ['portrait', 'landscape'] as const) for (const [key, value] of Object.entries(saved.touchLayout?.[orientation] ?? {})) {
       const layout = readTouchControl(value)
-      if (layout && (key === 'dpad' || config.actions.includes(key as Action))) settings.touchLayout[orientation][key] = layout
+      if (layout && (key === 'dpad' || system === 'psp' && key === 'analog' || config.actions.includes(key as Action))) settings.touchLayout[orientation][key] = layout
     }
   }
 } catch { /* Use defaults if storage is unavailable or damaged. */ }
@@ -110,7 +111,7 @@ function notify(text: string) { message.value = text; clearTimeout(messageTimer)
 async function guard(action: () => Promise<void>) { try { error.value = ''; await action() } catch (reason) { error.value = reason instanceof Error ? reason.message : String(reason) } }
 async function syncDownloads() { downloaded.value = (await listGames(system)).map(({ file: _, ...game }) => game) }
 async function refreshCatalog() {
-  if (refreshing.value) return
+  if (refreshing.value || !config.catalogUrl) return
   refreshing.value = true; catalogError.value = ''; refreshController = new AbortController()
   try {
     const games = await loadCatalog(system, config.catalogUrl, refreshController.signal)
@@ -140,7 +141,7 @@ async function launch(game: Game, action: 'play' | 'download' = 'play') {
       collection.remember(game.hash, game); await syncDownloads(); signal.throwIfAborted()
       if (action === 'download') { notify('下载完成'); return }
       await runner.value?.dispose(); current.value = null
-      const next = createConsoleRunner(canvas.value!, system); runner.value = next
+      const next = await createConsoleRunner(canvas.value!, system); runner.value = next
       next.onError = reason => { paused.value = true; error.value = reason.message }
       try {
         await next.load(saved, signal); signal.throwIfAborted()
@@ -150,6 +151,32 @@ async function launch(game: Game, action: 'play' | 'download' = 'play') {
   })
 }
 const sources = new Map<string, Set<string>>()
+const heldStickKeys = new Set<StickKey>()
+let touchStick: [number, number] = [0, 0]
+let padStick: [number, number] = [0, 0]
+let lastStick: [number, number] = [0, 0]
+function updateStick() {
+  const keyboardStick = [
+    Number(heldStickKeys.has('stickRight')) - Number(heldStickKeys.has('stickLeft')),
+    Number(heldStickKeys.has('stickDown')) - Number(heldStickKeys.has('stickUp')),
+  ]
+  const activeStick = touchStick.some(Boolean) ? touchStick : keyboardStick.some(Boolean) ? keyboardStick : padStick
+  const [x, y] = playing.value ? activeStick : [0, 0]
+  if (x !== lastStick[0] || y !== lastStick[1]) {
+    runner.value?.analog?.(x, y)
+    lastStick = [x, y]
+  }
+}
+function touchAnalog(x: number, y: number) {
+  touchStick = [x, y]
+  updateStick()
+}
+function keyboardInput(player: number, action: KeyboardAction, down: boolean) {
+  if (!isStickKey(action)) { input('keyboard', player, action, down); return }
+  if (down) heldStickKeys.add(action)
+  else heldStickKeys.delete(action)
+  updateStick()
+}
 function input(sourceId: string, player: number, action: Action, down: boolean) {
   const key = `${player}:${action}`, held = sources.get(key) ?? new Set<string>(), previous = held.size > 0
   if (down && playing.value) held.add(sourceId); else held.delete(sourceId)
@@ -158,7 +185,9 @@ function input(sourceId: string, player: number, action: Action, down: boolean) 
 }
 function releaseInputs() {
   for (const key of sources.keys()) { const [player, action] = key.split(':'); runner.value?.input(Number(player), action as Action, false) }
-  sources.clear()
+  sources.clear(); heldStickKeys.clear()
+  touchStick = [0, 0]; padStick = [0, 0]
+  runner.value?.analog?.(0, 0); lastStick = [0, 0]
 }
 watch(playing, value => {
   releaseInputs()
@@ -205,6 +234,12 @@ async function restore(state: Snapshot) {
   await guard(async () => { await runner.value!.restore(state.data); notify('进度已读取'); paused.value = true; settingsOpen.value = false })
   busyAction.value = false
 }
+async function restart() {
+  if (!runner.value || busy.value) return
+  busyAction.value = true
+  await guard(async () => { await runner.value?.reset(); paused.value = true; settingsOpen.value = false })
+  busyAction.value = false
+}
 async function quickLoad() { await guard(async () => { await syncStates(); const state = states.value.find(state => state.kind === 'quick'); if (!state) throw new Error('此游戏还没有快速存档'); await restore(state) }) }
 async function backToLibrary() {
   if (busy.value) return
@@ -239,17 +274,22 @@ function keydown(event: KeyboardEvent) {
   if (event.code === 'F8' || event.ctrlKey && event.code === 'KeyS') { event.preventDefault(); if (!event.repeat) void save('quick'); return }
   if (event.code === 'F9') { event.preventDefault(); if (!event.repeat) void quickLoad(); return }
   if (!playing.value) return
-  for (let player = 0; player < config.players; player++) for (const action of config.actions) if (settings.keymaps[player][action] === event.code) { event.preventDefault(); input('keyboard', player, action, true) }
+  for (let player = 0; player < config.players; player++) for (const action of keyActions) if (settings.keymaps[player][action] === event.code) { event.preventDefault(); keyboardInput(player, action, true) }
 }
-function keyup(event: KeyboardEvent) { for (let player = 0; player < config.players; player++) for (const action of config.actions) if (settings.keymaps[player][action] === event.code) input('keyboard', player, action, false) }
+function keyup(event: KeyboardEvent) { for (let player = 0; player < config.players; player++) for (const action of keyActions) if (settings.keymaps[player][action] === event.code) keyboardInput(player, action, false) }
 let menuPressed = false
 function poll() {
   const pads = Array.from(navigator.getGamepads?.() ?? []).filter((pad): pad is Gamepad => !!pad)
   const menu = pads.some(pad => pad.buttons[16]?.pressed || pad.buttons[10]?.pressed && pad.buttons[11]?.pressed)
   if (playing.value && menu && !menuPressed) paused.value = true
   menuPressed = menu
+  if (system === 'psp' && playing.value) {
+    const deadZone = (value: number) => Math.abs(value) < .18 ? 0 : Math.max(-1, Math.min(1, value))
+    padStick = [deadZone(pads[0]?.axes[0] ?? 0), deadZone(pads[0]?.axes[1] ?? 0)]
+    updateStick()
+  }
   if (!runner.value?.nativeInput) for (let player = 0; player < config.players; player++) for (const action of config.actions) {
-    const pad = pads[player], axis = action === 'left' ? (pad?.axes[0] ?? 0) < -.5 : action === 'right' ? (pad?.axes[0] ?? 0) > .5 : action === 'up' ? (pad?.axes[1] ?? 0) < -.5 : action === 'down' ? (pad?.axes[1] ?? 0) > .5 : false
+    const pad = pads[player], axis = system === 'psp' ? false : action === 'left' ? (pad?.axes[0] ?? 0) < -.5 : action === 'right' ? (pad?.axes[0] ?? 0) > .5 : action === 'up' ? (pad?.axes[1] ?? 0) < -.5 : action === 'down' ? (pad?.axes[1] ?? 0) > .5 : false
     input('gamepad', player, action, !!pad?.buttons[PADMAP[action]]?.pressed || axis)
   }
   raf = requestAnimationFrame(poll)
@@ -287,11 +327,11 @@ onBeforeUnmount(() => {
     <input ref="fileInput" type="file" hidden multiple :accept="config.extensions.map(extension => '.' + extension).join(',')" @change="importFiles" />
     <section v-show="!current && !editingLayout" class="library-browser" aria-label="游戏库">
       <section class="store-panel player-library console-library">
-        <LibraryTabs v-model="tab" panel-id="console-games" :counts="counts" />
+        <LibraryTabs v-model="tab" panel-id="console-games" :counts="counts" :local-only="!config.catalogUrl" />
         <div class="store-tools">
           <div class="search-tools">
             <SInput v-model:value="query" class="search" type="search" placeholder="搜索游戏、厂商、标签，支持拼音" aria-label="搜索游戏、厂商、标签，支持拼音全拼、首字母和混输" />
-            <button type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busy" @click="guard(async () => { await syncDownloads(); await refreshCatalog() })">
+            <button v-if="config.catalogUrl" type="button" class="library-refresh" :title="refreshing ? '正在刷新游戏库…' : '刷新游戏库'" :aria-label="refreshing ? '正在刷新游戏库' : '刷新游戏库'" :aria-busy="refreshing" :disabled="refreshing || busy" @click="guard(async () => { await syncDownloads(); await refreshCatalog() })">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-refreshing': refreshing }" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" /></svg>
             </button>
           </div>
@@ -319,12 +359,12 @@ onBeforeUnmount(() => {
       <div v-if="editingLayout" class="layout-edit-tools" data-layout-toolbar><div class="layout-edit-header"><span>拖动调整位置 · 保存后生效</span><SButton @click="resetLayout">重置当前方向</SButton><SButton @click="finishLayout(false)">返回</SButton><SButton class="layout-done" @click="finishLayout(true)">保存</SButton></div></div>
       <div class="console-frame" :style="{ aspectRatio: aspect, '--console-aspect': aspect }"><canvas ref="canvas" :style="{ imageRendering: settings.smoothing ? 'auto' : 'pixelated' }" /></div>
       <button v-if="current && !editingLayout" class="play-menu-button console-pause" @click="paused = true">暂停 · Esc / 返回</button>
-      <TouchControls v-if="(current || editingLayout) && (touchVisible || editingLayout) && (playing || editingLayout)" :actions="config.actions" :editing="editingLayout" :layout="layoutDraft ?? settings.touchLayout" @input="(action, down) => input('touch', 0, action, down)" />
+      <TouchControls v-if="(current || editingLayout) && (touchVisible || editingLayout) && (playing || editingLayout)" :actions="config.actions" :psp="system === 'psp'" :editing="editingLayout" :layout="layoutDraft ?? settings.touchLayout" @input="(action, down) => input('touch', 0, action, down)" @analog="touchAnalog" />
     </section>
     <SModal v-model:show="pauseOpen" class="player-pause-modal" :title="current?.name || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy" :close-on-esc="false"><div ref="pausePanel" class="console-pause-overlay"><PauseMenu :busy="busy" :message="error || message" @resume="paused = false" @save="save()" @load="showSettings('saves')" @settings="showSettings()" @help="showSettings('keys')" @exit="backToLibrary" /></div></SModal>
     <div v-if="(error || message) && !settingsOpen && !pauseOpen" class="console-notice" :role="error ? 'alert' : 'status'"><span>{{ error || message }}</span><SButton v-if="error" aria-label="关闭提示" @click="error = ''">×</SButton></div>
     <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action" :progress="progress" :cancelling="cancelling" @cancel="cancelOperation" />
     <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leave" />
-    <ConsoleSettings ref="settingsPanel" v-model:show="settingsOpen" v-model:tab="settingsTab" :system="system" :settings="settings" :states="allStates" :games="known" :current="current" :busy="busy" :error="error" @save="save()" @restore="restore" @remove="deleteSave" @rename="renameSave" @import="fileInput?.click()" @edit-layout="beginLayout" @reset-keys="player => settings.keymaps[player] = defaultKeymap(player)" @restart="guard(async () => { runner?.reset(); paused = true; settingsOpen = false })" />
+    <ConsoleSettings ref="settingsPanel" v-model:show="settingsOpen" v-model:tab="settingsTab" :system="system" :settings="settings" :states="allStates" :games="known" :current="current" :busy="busy" :error="error" @save="save()" @restore="restore" @remove="deleteSave" @rename="renameSave" @import="fileInput?.click()" @edit-layout="beginLayout" @reset-keys="player => settings.keymaps[player] = defaultKeymap(player, system)" @restart="restart" />
   </main>
 </template>

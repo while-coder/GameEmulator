@@ -52,9 +52,16 @@ export async function putState(system: ConsoleSystem, hash: string, build: strin
 }
 export const getBattery = async (key: string) => (await read<Battery | undefined>('battery', key))?.data
 export const putBattery = (key: string, data: Blob) => write('battery', { key, data })
+export type PspSaveFile = { path: string; data: Uint8Array }
+const pspSavedataKey = 'psp:memory-stick'
+export const getPspSavedata = async () => (await read<{ files: PspSaveFile[] } | undefined>('battery', pspSavedataKey))?.files ?? []
+export const putPspSavedata = (files: PspSaveFile[]) => write('battery', { key: pspSavedataKey, files })
+
+const maxGameSize = (system: ConsoleSystem) => (system === 'psp' ? 2048 : 64) * 1024 * 1024
+
 export async function importGame(system: ConsoleSystem, file: File): Promise<Game> {
   romExtension(system, file.name)
-  if (!file.size || file.size > 64 * 1024 * 1024) throw new Error('ROM 需在 1 字节至 64 MB 之间')
+  if (!file.size || file.size > maxGameSize(system)) throw new Error(`ROM 需在 1 字节至 ${system === 'psp' ? '2 GB' : '64 MB'} 之间`)
   const game: Game = { hash: await sha256(await file.arrayBuffer()), name: file.name.replace(/\.[^.]+$/, ''), fileName: file.name, file_size: file.size }
   await cacheGame(system, game, file)
   return game
@@ -76,7 +83,7 @@ export async function loadCatalog(system: ConsoleSystem, source: string, signal?
   if (!Array.isArray(catalog.games)) throw new Error('游戏目录缺少 games 数组')
   const base = catalogDownloadBase(url.href, catalog.rom_url_base)
   const games: Game[] = catalog.games.map((entry: Record<string, unknown>) => {
-    if (typeof entry.name !== 'string' || typeof entry.download_url !== 'string' || typeof entry.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(entry.sha256) || typeof entry.file_size !== 'number' || !Number.isSafeInteger(entry.file_size) || entry.file_size <= 0 || entry.file_size > 64 * 1024 * 1024) throw new Error('游戏目录条目需包含 name、download_url、sha256 和有效的 file_size')
+    if (typeof entry.name !== 'string' || typeof entry.download_url !== 'string' || typeof entry.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(entry.sha256) || typeof entry.file_size !== 'number' || !Number.isSafeInteger(entry.file_size) || entry.file_size <= 0 || entry.file_size > maxGameSize(system)) throw new Error('游戏目录条目需包含 name、download_url、sha256 和有效的 file_size')
     const download = new URL(entry.download_url, base)
     if (!['https:', 'http:'].includes(download.protocol)) throw new Error('无效的 ROM 下载地址')
     const fileName = typeof entry.file_name === 'string' ? entry.file_name : decodeURIComponent(download.pathname.split('/').pop() ?? '')

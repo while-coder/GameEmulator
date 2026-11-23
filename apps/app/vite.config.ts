@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { pspIsolation } from '../../scripts/psp-isolation'
 import { fileURLToPath } from 'node:url'
 
 // Tauri 移动端开发时会注入 TAURI_DEV_HOST（局域网 IP），
@@ -7,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), pspIsolation()],
   define: {
     __TAURI_ANDROID__: JSON.stringify(process.env.TAURI_ENV_PLATFORM === 'android'),
     __TAURI_DESKTOP__: JSON.stringify(['windows', 'win32', 'linux', 'darwin'].includes(process.env.TAURI_ENV_PLATFORM ?? process.platform)),
@@ -21,6 +22,7 @@ export default defineConfig({
         arcade: fileURLToPath(new URL('./arcade.html', import.meta.url)),
         gba: fileURLToPath(new URL('./gba.html', import.meta.url)),
         sfc: fileURLToPath(new URL('./sfc.html', import.meta.url)),
+        psp: fileURLToPath(new URL('./psp.html', import.meta.url)),
       },
     },
   },

@@ -108,9 +108,12 @@ class AssetServer(private val openAsset: (String) -> InputStream) : Closeable {
                     "woff2" -> "font/woff2"
                     else -> "application/octet-stream"
                 }
+                val isolation = if (asset == "psp.html" || asset.substringAfterLast('/').startsWith("PPSSPPSDL")) {
+                    "Cross-Origin-Opener-Policy: same-origin\r\nCross-Origin-Embedder-Policy: require-corp\r\n"
+                } else ""
                 val output = client.getOutputStream()
                 output.write(("HTTP/1.1 200 OK\r\nContent-Type: $mime\r\n" +
-                    "Cache-Control: no-cache\r\nX-Content-Type-Options: nosniff\r\n" +
+                    "Cache-Control: no-cache\r\nX-Content-Type-Options: nosniff\r\n" + isolation +
                     "Connection: close\r\n\r\n").toByteArray(Charsets.US_ASCII))
                 if (method == "GET") it.copyTo(output)
                 output.flush()

@@ -7,7 +7,7 @@ export class NativeConsoleRunner implements ConsoleRunner {
   readonly build: string
   private readonly session: NativeSession
   onError?: (error: Error) => void
-  constructor(canvas: HTMLCanvasElement, system: ConsoleSystem, transport: NativeTransport = httpNativeTransport) {
+  constructor(canvas: HTMLCanvasElement, system: Exclude<ConsoleSystem, 'psp'>, transport: NativeTransport = httpNativeTransport) {
     this.session = new NativeSession(canvas, transport, system)
     this.build = this.session.saveNamespace
     this.session.onError = error => this.onError?.(error)

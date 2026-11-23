@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { pspIsolation } from '../../scripts/psp-isolation'
 import { VitePWA, type ManifestOptions } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 
@@ -29,6 +30,7 @@ const manifest: Partial<ManifestOptions> = {
 export default defineConfig({
   plugins: [
     vue(),
+    pspIsolation(),
     localizedManifests(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -40,6 +42,8 @@ export default defineConfig({
       workbox: {
         // Preserve separate emulator documents when navigating offline.
         navigateFallback: null,
+        importScripts: ['psp-isolation-worker.js'],
+        globIgnores: ['**/psp.html', '**/PPSSPPSDL*', '**/psp-isolation-worker.js'],
         // 纳入 wasm:libretro 核心(fceumm_libretro.wasm)需被 PWA 预缓存以支持离线。
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,webmanifest}'],
         // NES 与街机核心均预缓存；街机 WASM 约 12 MB。
@@ -62,6 +66,7 @@ export default defineConfig({
         arcade: fileURLToPath(new URL('./arcade.html', import.meta.url)),
         gba: fileURLToPath(new URL('./gba.html', import.meta.url)),
         sfc: fileURLToPath(new URL('./sfc.html', import.meta.url)),
+        psp: fileURLToPath(new URL('./psp.html', import.meta.url)),
       },
     },
   },

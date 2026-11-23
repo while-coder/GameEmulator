@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
         session.navigationDelegate = object : GeckoSession.NavigationDelegate {
             override fun onLoadRequest(session: GeckoSession, request: GeckoSession.NavigationDelegate.LoadRequest): GeckoResult<AllowOrDeny> {
                 val uri = Uri.parse(request.uri)
-                if (uri.host == "127.0.0.1" && uri.port == AssetServer.PORT && uri.path in listOf("/", "/index.html", "/nes.html", "/arcade.html", "/gba.html", "/sfc.html")) {
+                if (uri.host == "127.0.0.1" && uri.port == AssetServer.PORT && uri.path in listOf("/", "/index.html", "/nes.html", "/arcade.html", "/gba.html", "/sfc.html", "/psp.html")) {
                     nativeNes.stop()
                 }
                 // Keep the document on our origin; remote ROM/catalog fetches are unaffected.

@@ -103,6 +103,16 @@ defineExpose({ focusCard })
               <path d="m104 80 10-7m12 7 10-7" stroke="#585a67" stroke-width="5" stroke-linecap="round" />
               <path d="M120 49V24" stroke="#7e8591" stroke-width="4" />
             </svg>
+            <svg v-else-if="emulator.id === 'psp'" viewBox="0 0 240 140" fill="none">
+              <rect x="10" y="30" width="220" height="80" rx="24" fill="#47515c" />
+              <rect x="51" y="34" width="138" height="72" rx="7" fill="#151b24" />
+              <rect x="59" y="40" width="122" height="60" rx="2" fill="#667f9e" />
+              <path d="m70 83 24-21 15 11 20-18 39 28" stroke="#b4d6e9" stroke-width="4" stroke-linejoin="round" />
+              <path d="M32 52h5v8h8v5h-8v8h-5v-8h-8v-5h8z" fill="#202731" />
+              <circle cx="35" cy="89" r="7" fill="#8293a5" />
+              <circle cx="207" cy="56" r="4" fill="#b4c3d2" /><circle cx="217" cy="66" r="4" fill="#b4c3d2" />
+              <circle cx="197" cy="66" r="4" fill="#b4c3d2" /><circle cx="207" cy="76" r="4" fill="#b4c3d2" />
+            </svg>
             <svg v-else viewBox="0 0 240 140" fill="none">
               <rect x="20" y="30" width="200" height="92" rx="12" fill="#d3d3d0" />
               <path d="M20 79h200v31a12 12 0 0 1-12 12H32a12 12 0 0 1-12-12V79Z" fill="#3d4147" />
