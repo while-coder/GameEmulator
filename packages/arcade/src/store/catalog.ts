@@ -143,6 +143,14 @@ export async function findCatalogGame(hash: string, signal?: AbortSignal): Promi
   if (failure?.status === 'rejected') throw failure.reason
 }
 
+export async function findCachedCatalogGame(hash: string) {
+  for (const source of catalogUrls) {
+    const cached = await getCachedCatalog(remoteUrl(source))
+    const game = cached?.catalog.games.find(item => item.sha256.toLowerCase() === hash)
+    if (cached && game) return { game, catalog: cached.catalog }
+  }
+}
+
 export function dependencyPlan(game: CatalogGame, catalog: ArcadeCatalog): CatalogFile[] {
   // A parent may itself be a game with dependencies. Preserve those edges even
   // when dependency_files also supplies the same archive's download metadata.

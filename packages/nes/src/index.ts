@@ -1,7 +1,5 @@
 export { default as NesScreen } from './components/NesScreen.vue'
 export { default as SettingsModal } from './components/SettingsModal.vue'
-export { default as RomStorePanel } from './components/RomStorePanel.vue'
-export { default as SaveStatePanel } from './components/SaveStatePanel.vue'
 export { default as ToolbarMenu } from './components/ToolbarMenu.vue'
 export { default as PlayerFooter } from './components/PlayerFooter.vue'
 export { default as PlayerShell } from './components/PlayerShell.vue'

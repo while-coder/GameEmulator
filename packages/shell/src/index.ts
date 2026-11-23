@@ -1,4 +1,7 @@
 export { default as MainView } from './MainView.vue'
+export { default as GameLobby } from './lobby/GameLobby.vue'
+export { openPlayerPage, playerEntry, returnToLobby } from './lobby/playerRoute'
+export type { PlayerEntry } from '../../player-ui/playerEntry'
 export { default as CurrentReleaseDialog } from './CurrentReleaseDialog.vue'
 export { mountShell } from './mount'
 export { appName, appLocale, configureAppLocale, configureAppBranding, configureAppMetadata } from './branding'

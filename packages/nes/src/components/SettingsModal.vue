@@ -26,23 +26,16 @@ import {
 } from '../emulator/settings'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 import RemoteSelect from '../../../player-ui/RemoteSelect.vue'
-import SaveStatePanel, { type LoadSavePayload } from './SaveStatePanel.vue'
 
 const open = defineModel<boolean>('open', { default: false })
 
-type Tab = 'saves' | 'keys' | 'display' | 'audio' | 'misc'
-const tab = defineModel<Tab>('tab', { default: 'saves' })
-withDefaults(defineProps<{ currentRomKey?: string | null; audioOn?: boolean }>(), { audioOn: true })
+type Tab = 'keys' | 'display' | 'audio' | 'misc'
+const tab = defineModel<Tab>('tab', { default: 'keys' })
+withDefaults(defineProps<{ audioOn?: boolean }>(), { audioOn: true })
 const emit = defineEmits<{
-  loadSave: [LoadSavePayload]
   toggleAudio: []
   editTouchLayout: []
 }>()
-const savePanel = ref<InstanceType<typeof SaveStatePanel> | null>(null)
-const busy = computed(() => savePanel.value?.busyKey != null)
-defineExpose({ busy, cancelRename: () => savePanel.value?.cancelRename() ?? false, refreshSaves: () => savePanel.value?.refreshCreatedSave() })
-const savesOpen = computed({ get: () => open.value && tab.value === 'saves', set: (v) => { if (!v) open.value = false } })
-
 watch(tab, () => {
   capturing.value = null
   stopCapturePad()
@@ -71,7 +64,6 @@ const speedOptions = SPEED_OPTIONS.map((s) => ({ value: s, label: `${s}×` }))
 const turboOptions = TURBO_HZ_OPTIONS.map((h) => ({ value: h, label: `${h} 次/秒` }))
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'saves', label: '存档' },
   { key: 'keys', label: '按键' },
   { key: 'display', label: '显示' },
   { key: 'audio', label: '音频' },
@@ -191,7 +183,6 @@ function onOverlayKey(e: KeyboardEvent) {
 }
 
 function close() {
-  if (busy.value) return
   capturing.value = null
   stopCapturePad()
   open.value = false
@@ -243,8 +234,6 @@ onBeforeUnmount(() => {
     title="设置"
     width="1040px"
     fill-height
-    :closable="!busy"
-    :mask-closable="!busy"
     class="player-modal settings-modal"
     :close-on-esc="false"
     :body-scrollable="false"
@@ -261,22 +250,16 @@ onBeforeUnmount(() => {
           role="tab"
           :aria-selected="tab === t.key"
           :aria-controls="`settings-panel-${tab}`"
-          :disabled="busy"
           @click="tab = t.key"
         >
           {{ t.label }}
         </SButton>
       </nav>
 
-      <fieldset v-if="tab !== 'saves' && $slots.actions" class="settings-actions player-settings-actions" :disabled="busy"><slot name="actions" :tab="tab" /></fieldset>
-      <section :id="`settings-panel-${tab}`" class="body player-settings-body" :class="{ 'list-body': tab === 'saves', 'player-settings-list': tab === 'saves' }" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
-        <SaveStatePanel v-if="tab === 'saves'" ref="savePanel" v-model:open="savesOpen" :current-rom-key="currentRomKey" @load="emit('loadSave', $event)">
-          <template #actions>
-            <fieldset class="list-actions" :disabled="busy"><slot name="list-actions" :tab="tab as Tab" /></fieldset>
-          </template>
-        </SaveStatePanel>
+      <fieldset v-if="$slots.actions" class="settings-actions player-settings-actions"><slot name="actions" :tab="tab" /></fieldset>
+      <section :id="`settings-panel-${tab}`" class="body player-settings-body" role="tabpanel" :aria-labelledby="`settings-tab-${tab}`">
         <!-- 按键 -->
-        <div v-else-if="tab === 'keys'" class="keys">
+        <div v-if="tab === 'keys'" class="keys">
           <section class="keyboard-shortcuts" aria-labelledby="keyboard-shortcuts-title">
             <h3 id="keyboard-shortcuts-title">快捷键</h3>
             <dl>
@@ -584,13 +567,10 @@ onBeforeUnmount(() => {
 .settings-content { flex: 1; overflow: hidden; }
 .settings-actions { display: flex; flex-wrap: wrap; flex-shrink: 0; gap: 8px; min-width: 0; margin: 0; padding: 8px 16px; border: none; }
 .settings-actions:empty { display: none; }
-.list-actions { display: flex; align-items: center; flex-wrap: wrap; flex: 0 0 auto; gap: 8px; min-width: 0; margin: 0; padding: 0; border: none; }
-.list-actions :deep(.s-button) { flex-shrink: 0; white-space: nowrap; }
 .tabs { flex-shrink: 0; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid #3a3a3a; }
 .tab { min-height: 44px; border-radius: 6px; }
 .tab:focus-visible { outline: 2px solid #4ea1ff; outline-offset: -2px; }
 .body { flex: 1; min-height: 0; }
-.body.list-body { display: flex; overflow: hidden; padding: 0; }
 .keys, .form { max-width: 640px; margin: 0 auto; }
 @media (max-width: 480px) {
   .tabs { gap: 2px; padding: 4px; }
@@ -627,9 +607,6 @@ onBeforeUnmount(() => {
   }
   .settings-actions:empty { display: flex; }
   .body { grid-column: 2; grid-row: 2; padding: 8px 12px; }
-  .body.list-body { grid-row: 1 / -1; }
-  .list-body :deep(.store-tools) { padding-right: 56px; }
-  .body.list-body { padding: 0; }
 }
 </style>
 
@@ -676,7 +653,7 @@ onBeforeUnmount(() => {
     gap: var(--player-control-gap);
     padding-block: var(--player-tools-padding);
   }
-  .body:not(.list-body) { padding: 8px 12px; }
+  .body { padding: 8px 12px; }
   .row, .pad-assign { min-height: calc(var(--player-control-height) + 8px); padding-block: 4px; gap: 8px; }
   .row .remote-select, .row input[type='range'] { min-width: 0; width: 60%; max-width: 240px; }
   .key-head, .key-row { padding-block: 3px; }

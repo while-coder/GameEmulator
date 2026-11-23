@@ -8,13 +8,76 @@ use tauri::{webview::PageLoadEvent, Emitter, LogicalPosition, Manager, WebviewBu
 #[derive(Default)]
 pub struct EmulatorViews(#[cfg(desktop)] pub std::sync::Mutex<()>);
 
+#[derive(serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum EmulatorEntry {
+    Play { key: String, name: String, #[serde(rename = "saveKey")] save_key: Option<String> },
+    Settings,
+}
+
+#[cfg(desktop)]
+fn child_url(id: &str, entry: EmulatorEntry) -> Result<WebviewUrl, String> {
+    let mut url = tauri::Url::parse("http://localhost/").map_err(|e| e.to_string())?;
+    let mut query = url.query_pairs_mut();
+    query.append_pair("child", "1");
+    match entry {
+        EmulatorEntry::Play { key, name, save_key } => {
+            if key.len() != 64 || !key.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                return Err("无效的游戏标识".into());
+            }
+            query.append_pair("game", &key);
+            query.append_pair("name", &name.chars().take(180).collect::<String>());
+            if let Some(save) = save_key {
+                if save.is_empty() || save.len() > 8192 {
+                    return Err("无效的存档标识".into());
+                }
+                query.append_pair("save", &save);
+            }
+        }
+        EmulatorEntry::Settings => { query.append_pair("view", "settings"); }
+    }
+    drop(query);
+    Ok(WebviewUrl::App(format!("{id}.html?{}", url.query().unwrap_or_default()).into()))
+}
+
+#[cfg(all(test, desktop))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn desktop_child_receives_the_selected_arcade_save() {
+        let key = "a".repeat(64);
+        let save = format!("fbalpha2012:{key}:parent.zip=abcd,bios.zip=ef01:s-123");
+        let entry = serde_json::from_value(serde_json::json!({
+            "kind": "play",
+            "key": key,
+            "name": "恐龙新世纪 (930201 etc)",
+            "saveKey": save,
+        }))
+        .unwrap();
+        let WebviewUrl::App(path) = child_url("arcade", entry).unwrap() else {
+            panic!("expected a local player page");
+        };
+        let url = tauri::Url::parse("http://localhost:1801/")
+            .unwrap()
+            .join(path.to_str().unwrap())
+            .unwrap();
+        let query: std::collections::HashMap<_, _> = url.query_pairs().collect();
+        assert_eq!(url.path(), "/arcade.html");
+        assert_eq!(query["child"], "1");
+        assert_eq!(query["game"], key);
+        assert_eq!(query["save"], save);
+    }
+}
+
 #[tauri::command]
-pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Result<(), String> {
+pub async fn open_emulator_with_entry(app: AppHandle, caller: Webview, id: String, entry: EmulatorEntry) -> Result<(), String> {
     if caller.label() != "main" || !["nes", "arcade", "gba", "sfc", "psp"].contains(&id.as_str()) {
         return Err("不支持的模拟器入口".into());
     }
     #[cfg(desktop)]
     {
+        let url = child_url(&id, entry)?;
         let state = app.state::<EmulatorViews>();
         let _guard = state.0.lock().map_err(|e| e.to_string())?;
         if ["emulator-nes", "emulator-arcade", "emulator-gba", "emulator-sfc", "emulator-psp"]
@@ -30,7 +93,7 @@ pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Resul
             .add_child(
                 WebviewBuilder::new(
                     format!("emulator-{id}"),
-                    WebviewUrl::App(format!("{id}.html?child=1").into()),
+                    url,
                 )
                 .on_web_resource_request(|request, response| {
                     let path = request.uri().path();
@@ -66,7 +129,7 @@ pub async fn open_emulator(app: AppHandle, caller: Webview, id: String) -> Resul
     }
     #[cfg(mobile)]
     {
-        let _ = app;
+        let _ = (app, entry);
         Err("移动端使用独立页面入口".into())
     }
 }

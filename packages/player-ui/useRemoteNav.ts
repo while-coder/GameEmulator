@@ -74,15 +74,19 @@ interface NavInstance {
   move: (dir: Dir) => void
   ok: () => void
   back: () => void
+  rememberFocus: (el: Element | null) => void
+  restoreFocus: () => boolean
 }
 
 // ===== 模块级单例:活跃实例栈 + 唯一 rAF + 唯一 keydown =====
 const instances: NavInstance[] = []
 let rafId = 0
 let listening = false
+let keepTvFocus = false
 
-// 手柄边沿检测状态(跨整个栈共享,按键只发给栈顶)。
+// 手柄边沿检测状态与当前接收按键的导航容器绑定。
 const padPrev = { up: false, down: false, left: false, right: false, ok: false, back: false }
+let padNavTarget: NavInstance | null = null
 let padConfirmTarget: HTMLElement | null = null
 function releasePadConfirm(cancel = false) {
   if (!padConfirmTarget) return
@@ -96,6 +100,8 @@ function topInstance(): NavInstance | null {
   let top: NavInstance | null = null
   for (const inst of instances) {
     if (!inst.opts.active.value) continue
+    // Native dialog.close() hides the dialog before Vue receives its close event.
+    if (inst.opts.container.value?.closest('dialog:not([open])')) continue
     if (!top || inst.priority >= top.priority) top = inst
   }
   return top
@@ -103,7 +109,7 @@ function topInstance(): NavInstance | null {
 
 function isFocusable(el: Element): el is HTMLElement {
   if (!(el instanceof HTMLElement)) return false
-  if ((el as HTMLButtonElement).disabled) return false
+  if (el.matches(':disabled') || el.closest('[inert]')) return false
   // 不可见(display:none / 不在渲染树)时 offsetParent 为 null;position:fixed 例外,故再看尺寸。
   if (el.offsetParent === null && el.getClientRects().length === 0) return false
   const r = el.getBoundingClientRect()
@@ -135,6 +141,7 @@ function adjustControl(el: HTMLElement, dir: 'left' | 'right'): boolean {
 
 /** OK / 确定键:按控件类型分流(checkbox 切换、其余 click)。 */
 function activate(el: HTMLElement): void {
+  if (el.getAttribute('aria-disabled') === 'true') return
   if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
     el.checked = el.type === 'checkbox' ? !el.checked : true
     el.dispatchEvent(new Event('change', { bubbles: true }))
@@ -155,17 +162,16 @@ function isMultilineTextEntry(el: Element | null): boolean {
 function pollPads(): void {
   rafId = requestAnimationFrame(pollPads)
   const top = topInstance()
-  // 无活跃实例(如当前无导航):跳过手柄读取并清边沿状态,
-  // 既省掉每帧 getGamepads,也避免下次激活时把"按住未松"误判成新按下。
   if (!top) {
     releasePadConfirm(true)
-    padPrev.up = false
-    padPrev.down = false
-    padPrev.left = false
-    padPrev.right = false
-    padPrev.ok = false
-    padPrev.back = false
+    padNavTarget = null
     return
+  }
+  if (keepTvFocus && top.opts.autoFocus) {
+    const active = document.activeElement
+    top.rememberFocus(active)
+    // Gecko can drop focus when Vue removes or disables a focused node.
+    if (active === document.body && document.hasFocus()) top.restoreFocus()
   }
   const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : []
   let up = false
@@ -189,20 +195,25 @@ function pollPads(): void {
     if (pad.buttons[0]?.pressed) ok = true
     if (pad.buttons[1]?.pressed) back = true
   }
-  // 边沿触发,仅发给栈顶实例。
-  if (up && !padPrev.up) top.move('up')
-  if (down && !padPrev.down) top.move('down')
-  if (left && !padPrev.left) top.move('left')
-  if (right && !padPrev.right) top.move('right')
-  if (ok && !padPrev.ok) {
-    const target = document.activeElement
-    if (target instanceof HTMLElement && target.hasAttribute('data-nav-hold')) {
-      padConfirmTarget = target
-      target.dispatchEvent(new Event('nav-confirm-start'))
-    } else top.ok()
+  if (padNavTarget !== top) {
+    // 菜单接管时记录当前按键状态，避免游戏中已经按下的 A/B 触发菜单操作。
+    releasePadConfirm(true)
+    padNavTarget = top
+  } else {
+    if (up && !padPrev.up) top.move('up')
+    if (down && !padPrev.down) top.move('down')
+    if (left && !padPrev.left) top.move('left')
+    if (right && !padPrev.right) top.move('right')
+    if (ok && !padPrev.ok) {
+      const target = document.activeElement
+      if (target instanceof HTMLElement && target.hasAttribute('data-nav-hold')) {
+        padConfirmTarget = target
+        target.dispatchEvent(new Event('nav-confirm-start'))
+      } else top.ok()
+    }
+    if (!ok && padPrev.ok) releasePadConfirm()
+    if (back && !padPrev.back) top.back()
   }
-  if (!ok && padPrev.ok) releasePadConfirm()
-  if (back && !padPrev.back) top.back()
   padPrev.up = up
   padPrev.down = down
   padPrev.left = left
@@ -217,6 +228,7 @@ function onKeyDown(e: KeyboardEvent): void {
   const top = topInstance()
   if (!top) return
   const active = document.activeElement
+  if (keepTvFocus) top.rememberFocus(active)
   // 单行输入框保留文字编辑；光标到边界后允许左右移焦，上下直接导航。
   const typing = isTextEntry(active) && !isTextNavigationIdle(active)
   const multilineTyping = typing && isMultilineTextEntry(active)
@@ -272,10 +284,16 @@ function onTextInputDismissed(event: Event): void {
   if (topInstance() && navEnabled.value && finishTextEditing()) event.preventDefault()
 }
 
+function onTvFocusIn(event: FocusEvent): void {
+  if (event.target instanceof HTMLElement) topInstance()?.rememberFocus(event.target)
+}
+
 function ensureGlobalListeners(): void {
   if (listening) return
   if (typeof window === 'undefined') return
   listening = true
+  keepTvFocus = document.documentElement.classList.contains('android-tv')
+  if (keepTvFocus) window.addEventListener('focusin', onTvFocusIn)
   // 用 capture 阶段:在元素默认行为(<select> 上下切选项 / 文本框光标移动)之前 preventDefault,
   // 否则即便我们调用了 move() 把焦点移走,select 的选项也已经被切到下一项,左右键调值会"双重生效"。
   window.addEventListener('keydown', onKeyDown, true)
@@ -289,6 +307,8 @@ function teardownGlobalListeners(): void {
   if (instances.length > 0) return
   listening = false
   releasePadConfirm(true)
+  padNavTarget = null
+  if (keepTvFocus) window.removeEventListener('focusin', onTvFocusIn)
   window.removeEventListener('keydown', onKeyDown, true)
   window.removeEventListener('tv-text-input-dismissed', onTextInputDismissed)
   if (rafId) cancelAnimationFrame(rafId)
@@ -297,6 +317,37 @@ function teardownGlobalListeners(): void {
 
 export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
   const priority = opts.priority ?? 0
+  let lastFocus: HTMLElement | null = null
+  let lastCell: HTMLElement | null = null
+  let lastRegion: HTMLElement | null = null
+  let fallbackSelector = ''
+
+  function rememberFocus(el: Element | null): void {
+    const container = opts.container.value
+    if (!(el instanceof HTMLElement) || el === lastFocus || !container?.contains(el) || !el.matches(FOCUSABLE)) return
+    lastFocus = el
+    lastCell = el.closest('[data-nav-cell]')
+    lastRegion = el.closest('[data-nav-grid], [data-nav-row]')
+    fallbackSelector = el.closest('[data-nav-fallback]')?.getAttribute('data-nav-fallback') ?? ''
+  }
+
+  function restoreFocus(): boolean {
+    const container = opts.container.value
+    if (!container || !lastFocus) return false
+    if (container.contains(lastFocus) && isFocusable(lastFocus)) {
+      focusNavigationElement(lastFocus)
+      return document.activeElement === lastFocus
+    }
+    const candidates = focusableIn(container)
+    const target = candidates.find(el => lastCell?.contains(el))
+      ?? candidates.find(el => lastRegion?.contains(el))
+      ?? (fallbackSelector ? candidates.find(el => el.matches(fallbackSelector)) : undefined)
+      ?? candidates.find(el => el.matches('[role="tab"][aria-selected="true"]'))
+      ?? candidates[0]
+    if (!target) return false
+    focusNavigationElement(target)
+    return document.activeElement === target
+  }
 
   function move(dir: Dir): void {
     const container = opts.container.value
@@ -310,6 +361,7 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
     if (cands.length === 0) return
     const current = active instanceof HTMLElement && container.contains(active) ? active : null
     if (!current) {
+      if (keepTvFocus && restoreFocus()) return
       focusNavigationElement(cands[0])
       return
     }
@@ -325,6 +377,13 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
       const inside = cands.filter(el => grid.contains(el) && (horizontal || el.hasAttribute('data-nav-primary')))
       next = pickNeighbor(from, inside, dir)
       if (!next && !horizontal) next = pickNeighbor(from, cands.filter(el => !grid.contains(el)), dir)
+      if (!next && horizontal) {
+        const exit = grid.getAttribute(`data-nav-exit-${dir}`)
+        if (exit) {
+          const targets = cands.filter(el => el.matches(exit))
+          next = pickNeighbor(from, targets, dir) ?? targets[0] ?? null
+        }
+      }
     } else {
       const candidates = row && container.contains(row) ? cands.filter(el => row.contains(el)) : cands
       next = pickNeighbor(from, candidates, dir)
@@ -360,7 +419,7 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
     if (cands.length) focusElement(cands[0])
   }
 
-  const inst: NavInstance = { opts, priority, move, ok, back }
+  const inst: NavInstance = { opts, priority, move, ok, back, rememberFocus, restoreFocus }
   instances.push(inst)
   ensureGlobalListeners()
 
@@ -374,6 +433,7 @@ export function useRemoteNav(opts: RemoteNavOptions): RemoteNavApi {
           const active = document.activeElement
           // Keep focus restored by a popup or moved by the activating key.
           if (active instanceof HTMLElement && opts.container.value?.contains(active) && isFocusable(active)) return
+          if (keepTvFocus && restoreFocus()) return
           focusFirst()
         })
       }

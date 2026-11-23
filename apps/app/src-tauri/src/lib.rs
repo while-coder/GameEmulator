@@ -12,7 +12,7 @@ pub fn run() {
   builder
     .manage(emulator_views::EmulatorViews::default())
     .invoke_handler(tauri::generate_handler![
-      emulator_views::open_emulator,
+      emulator_views::open_emulator_with_entry,
       emulator_views::close_emulator,
       updater::native_update_permission_status,
       updater::native_update_request_permission,

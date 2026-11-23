@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 defineProps<{ busy?: boolean; message?: string }>()
-defineEmits<{ resume: []; save: []; load: []; help: []; settings: []; exit: [] }>()
+defineEmits<{ resume: []; save: []; load: []; settings: []; exit: [] }>()
 const panel = ref<HTMLElement | null>(null)
 defineExpose({ panel })
 </script>
@@ -12,7 +12,6 @@ defineExpose({ panel })
       <button type="button" class="s-button pause-resume" @click="$emit('resume')">继续游戏</button>
       <button type="button" class="s-button" @click="$emit('save')">保存进度</button>
       <button type="button" class="s-button pause-load" @click="$emit('load')">读取进度</button>
-      <button type="button" class="s-button" @click="$emit('help')">操作说明</button>
       <button type="button" class="s-button" @click="$emit('settings')">设置</button>
       <button type="button" class="s-button" @click="$emit('exit')">返回游戏库</button>
     </fieldset>
@@ -24,9 +23,21 @@ defineExpose({ panel })
 <style scoped>
 .pause-menu { display: flex; flex-direction: column; gap: 16px; }
 .pause-menu-actions { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; border: 0; min-width: 0; }
-.pause-menu-actions .s-button { width: 100%; min-height: 44px; font-size: 15px; }
-.pause-menu-actions .pause-resume { background: #2f6f9f; border-color: #2f6f9f; color: #fff; }
-.pause-menu-actions .pause-load { background: var(--player-load-background); border-color: var(--player-load-border); color: var(--player-load-text); }
+.pause-menu-actions .s-button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 15px;
+  background: #30343b;
+  border-color: #606872;
+  color: #f7f9fc;
+}
+.pause-menu-actions .s-button:focus {
+  --player-focus-shadow: inset 0 0 0 3px #fff;
+  background: #a9d2ff;
+  border-color: #a9d2ff;
+  color: #10243a;
+  box-shadow: var(--player-focus-shadow);
+}
 .pause-message, .pause-hint { margin: 0; text-align: center; font-size: 13px; color: #aaa; }
 @media (max-height: 500px) and (orientation: landscape) {
   .pause-menu { gap: 10px; }

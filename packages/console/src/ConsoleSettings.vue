@@ -2,40 +2,30 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
-import SIconButton from '@qingfeng346/ui-kit/components/button/SIconButton.vue'
-import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
 import SSwitch from '@qingfeng346/ui-kit/components/SSwitch.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
-import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
-import STag from '@qingfeng346/ui-kit/components/STag.vue'
 import RemoteSelect from '../../player-ui/RemoteSelect.vue'
 import { useRemoteNav } from '../../player-ui/useRemoteNav'
-import { createGameSearch, compareGameNames } from '../../shared/gameText'
 import { isStickKey, keyboardActions, PADMAP, PSP_BUTTON_LABELS, systems, type KeyboardAction, type ConsoleSettings, type ConsoleSystem } from './systems'
-import type { Game, Snapshot } from './store'
+import type { Game } from './store'
 import mgbaLicense from './assets/MGBA-LICENSE.txt?raw'
 import pspLicense from './assets/psp/PPSSPP-LICENSE.txt?raw'
 import snesLicense from './assets/SNES9X-LICENSE.txt?raw'
 import retroarchLicense from '../../arcade/src/assets/cores/RETROARCH-COPYING.txt?raw'
 import '../../player-ui/settings.css'
 
-type Tab = 'saves' | 'keys' | 'display' | 'audio' | 'misc'
+type Tab = 'keys' | 'display' | 'audio' | 'misc'
 const props = defineProps<{
   system: ConsoleSystem
   settings: ConsoleSettings
-  states: Snapshot[]
-  games: Game[]
   current: Game | null
   busy: boolean
   error: string
+  message?: string
 }>()
 const show = defineModel<boolean>('show', { required: true })
 const tab = defineModel<Tab>('tab', { required: true })
 const emit = defineEmits<{
-  save: []
-  restore: [state: Snapshot]
-  remove: [state: Snapshot]
-  rename: [state: Snapshot, label: string]
   import: []
   editLayout: []
   resetKeys: [player: number]
@@ -43,40 +33,22 @@ const emit = defineEmits<{
 }>()
 const config = systems[props.system]
 const keyActions = keyboardActions(props.system)
-const tabs = [{ id: 'saves', label: '存档' }, { id: 'keys', label: '按键' }, { id: 'display', label: '显示' }, { id: 'audio', label: '音频' }, { id: 'misc', label: '其他' }] as const
+const tabs = [{ id: 'keys', label: '按键' }, { id: 'display', label: '显示' }, { id: 'audio', label: '音频' }, { id: 'misc', label: '其他' }] as const
 const panel = ref<HTMLElement | null>(null)
 const player = ref(0), capturing = ref<KeyboardAction | null>(null)
-const editingKey = ref<string | null>(null), editingText = ref('')
-const saveQuery = ref(''), saveFilter = ref('all')
-const gameNames = computed(() => new Map(props.games.map(game => [game.hash, game.name])))
-const gameName = (state: Snapshot) => gameNames.value.get(state.hash) || state.gameName || '未收录游戏'
-const saveFilterOptions = computed(() => [
-  { value: 'all', label: '全部游戏' },
-  ...(props.current ? [{ value: 'current', label: '本游戏' }] : []),
-  ...[...new Map(props.states.map(state => [state.hash, { value: state.hash, label: gameName(state) }])).values()].sort((a, b) => compareGameNames(a.label, b.label)),
-])
-const filteredStates = computed(() => {
-  const matches = createGameSearch(saveQuery.value)
-  return props.states.filter(state => (saveFilter.value === 'all' || state.hash === (saveFilter.value === 'current' ? props.current?.hash : saveFilter.value)) && matches([state.label, gameName(state)]))
-})
 const actionNames: Partial<Record<KeyboardAction, string>> = { up: '↑ 上', down: '↓ 下', left: '← 左', right: '→ 右', start: '开始 Start', select: '选择 Select', l: 'L 肩键', r: 'R 肩键', stickUp: '摇杆 ↑', stickDown: '摇杆 ↓', stickLeft: '摇杆 ←', stickRight: '摇杆 →' }
 const padNames: Record<number, string> = { 0: 'A / ×', 1: 'B / ○', 2: 'X / □', 3: 'Y / △', 4: 'LB / L1', 5: 'RB / R1', 8: 'Select / Back', 9: 'Start', 12: '↑', 13: '↓', 14: '←', 15: '→' }
 const keyLabel = (code?: string) => code ? code.replace(/^Key/, '').replace(/^Digit/, '').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→') : '未绑定'
 
 function cancelEdit() {
   if (capturing.value) { capturing.value = null; return true }
-  if (editingKey.value) { editingKey.value = null; return true }
   return false
 }
 function close() {
   if (props.busy || cancelEdit()) return
+  const filter = document.querySelector<HTMLElement>('.rs-backdrop')
+  if (filter) { filter.click(); return }
   show.value = false
-}
-function commitRename(state: Snapshot) {
-  if (editingKey.value !== state.key) return
-  if (!editingText.value.trim()) return
-  editingKey.value = null
-  emit('rename', state, editingText.value.trim())
 }
 function captureKey(event: KeyboardEvent) {
   if (!capturing.value) return false
@@ -93,9 +65,7 @@ watch(capturing, value => {
   if (value) window.addEventListener('keydown', captureKey, true)
   else window.removeEventListener('keydown', captureKey, true)
 }, { flush: 'sync' })
-watch([show, tab, player], () => { capturing.value = null; editingKey.value = null })
-watch([show, tab, () => props.current?.hash], () => { saveFilter.value = props.current ? 'current' : 'all'; saveQuery.value = '' })
-watch(saveFilterOptions, options => { if (!options.some(option => option.value === saveFilter.value)) saveFilter.value = 'all' })
+watch([show, tab, player], () => { capturing.value = null })
 useRemoteNav({ container: panel, active: computed(() => show.value && !props.busy && !capturing.value), priority: 10, autoFocus: true, onBack: close })
 onBeforeUnmount(() => window.removeEventListener('keydown', captureKey, true))
 defineExpose({ cancelEdit, captureKey })
@@ -108,32 +78,9 @@ defineExpose({ cancelEdit, captureKey })
         <SButton v-for="item in tabs" :id="`console-tab-${item.id}`" :key="item.id" :class="{ active: tab === item.id }" role="tab" :aria-selected="tab === item.id" :aria-controls="`console-panel-${item.id}`" :disabled="busy" @click="tab = item.id">{{ item.label }}</SButton>
       </nav>
       <p v-if="error" class="library-action-error" role="alert">{{ error }}</p>
-      <fieldset :id="`console-panel-${tab}`" class="player-settings-body" :class="{ 'player-settings-list': tab === 'saves' }" :disabled="busy" role="tabpanel" :aria-labelledby="`console-tab-${tab}`">
-        <section v-if="tab === 'saves'" class="store-panel player-saves">
-          <div class="store-tools">
-            <div class="search-tools"><SButton :disabled="!current" @click="emit('save')">新建存档</SButton><SInput v-model:value="saveQuery" type="search" placeholder="搜索存档名、游戏名" aria-label="搜索存档" /></div>
-            <RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" />
-          </div>
-          <div class="store-summary">显示 {{ filteredStates.length }} 条</div>
-          <SHint class="load-hint">「新建存档」保留多份普通存档；Ctrl+S / F8 覆盖本游戏快速存档，F9 仅读取快速存档。跨游戏读档会切换到对应游戏，当前未保存进度不会保留。</SHint>
-          <div class="save-list">
-            <article v-for="state in filteredStates" :key="state.key" class="save-card console-state">
-              <div class="save-main">
-                <div class="save-title-row">
-                  <STag size="small" :type="state.kind === 'quick' ? 'warning' : 'info'">{{ state.kind === 'quick' ? '快速' : '普通' }}</STag>
-                  <SInput v-if="editingKey === state.key" v-model:value="editingText" class="rename-input" maxlength="80" aria-label="存档名称" @keydown.enter.prevent="commitRename(state)" @keydown.esc.prevent.stop="editingKey = null" @blur="commitRename(state)" />
-                  <h3 v-else>{{ state.label }}</h3>
-                  <SIconButton v-if="editingKey !== state.key" :size="44" title="重命名" aria-label="重命名" @click="editingKey = state.key; editingText = state.label">✎</SIconButton>
-                </div>
-                <p class="meta">{{ gameName(state) }} · {{ state.build.includes('-native-') ? '原生内核' : 'WASM 内核' }}</p>
-                <p class="meta">{{ new Date(state.savedAt).toLocaleString() }}</p>
-              </div>
-              <div class="save-actions"><SButton class="btn primary" @click="emit('restore', state)">{{ current && current.hash !== state.hash ? '切换并读档' : '读档' }}</SButton><SButton class="btn" @click="emit('remove', state)">删除</SButton></div>
-            </article>
-            <SEmpty v-if="!filteredStates.length" :description="states.length ? '没有匹配的存档' : '还没有任何存档'" />
-          </div>
-        </section>
-        <section v-else-if="tab === 'keys'" class="keys-page">
+      <p v-else-if="message" role="status">{{ message }}</p>
+      <fieldset :id="`console-panel-${tab}`" class="player-settings-body" :disabled="busy" role="tabpanel" :aria-labelledby="`console-tab-${tab}`">
+        <section v-if="tab === 'keys'" class="keys-page">
           <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>游戏中打开暂停菜单，再按一次继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>保存本游戏快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
           <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="emit('editLayout')">编辑布局</SButton></div>
           <SHint>方向键可调整大小，每个动作按钮可独立移动、缩放或隐藏；横屏与竖屏分别保存。</SHint>

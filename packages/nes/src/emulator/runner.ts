@@ -9,6 +9,7 @@
  * player 源码作为 Vite asset 打包,保证离线(Tauri)与 PWA 可用。
  */
 import { Nostalgist } from 'nostalgist'
+import { RetroArchStateLoader, retroArchStateLogging } from '../../../shared/retroArchState'
 import fceummCoreJsUrl from '../assets/cores/fceumm_libretro.js?url'
 import fceummCoreWasmUrl from '../assets/cores/fceumm_libretro.wasm?url'
 
@@ -34,8 +35,8 @@ export interface NesRunnerApi {
   setSpeed(value: number): void
   press(button: Button): void
   release(button: Button): void
-  saveState(): Promise<SaveState | null>
-  loadState(state: SaveState): Promise<boolean>
+  saveState(onPreview?: (preview: Blob) => void): Promise<SaveState | null>
+  loadState(state: SaveState, signal?: AbortSignal): Promise<boolean>
   configureInput?(maps: Record<number, string>[], turboHz: number): void
   syncDisplay?(smoothing: boolean, scanlines: boolean): void
   setDebug?(enabled: boolean): void
@@ -122,6 +123,7 @@ type SpeedMode = 'normal' | 'ff' | 'slow'
 
 export class NesRunner {
   private readonly canvas: HTMLCanvasElement
+  private readonly stateLoader = new RetroArchStateLoader()
   private instance: NostalgistInstance | null = null
   private running = false
 
@@ -177,7 +179,8 @@ export class NesRunner {
         resolveCoreWasm: () => fceummCoreWasmUrl,
         // Keep keyboard input under the frontend's control.
         respondToGlobalEvents: false,
-        retroarchConfig: INPUT_CONFIG,
+        retroarchConfig: { ...INPUT_CONFIG, ...retroArchStateLogging },
+        emscriptenModule: { printErr: this.stateLoader.readLog },
       })
       signal?.throwIfAborted()
       // Nostalgist's default abort handler removes the Vue-owned canvas.
@@ -200,6 +203,7 @@ export class NesRunner {
 
   /** 销毁当前实例(幂等)。 */
   private async destroy(): Promise<void> {
+    this.stateLoader.cancel()
     if (this.instance) {
       try {
         // 关键:removeCanvas: false 保留 Vue 持有的 <canvas>。
@@ -294,9 +298,10 @@ export class NesRunner {
   }
 
   /** 导出当前引擎状态为存档快照;未载入 ROM 时返回 null。 */
-  async saveState(): Promise<SaveState | null> {
+  async saveState(onPreview?: (preview: Blob) => void): Promise<SaveState | null> {
     if (!this.instance) return null
-    const { state } = await this.instance.saveState()
+    const { state, thumbnail } = await this.instance.saveState()
+    if (thumbnail?.size) onPreview?.(thumbnail)
     return new Uint8Array(await state.arrayBuffer())
   }
 
@@ -304,14 +309,15 @@ export class NesRunner {
    * 从存档快照恢复引擎状态。需先载入对应 ROM(同一卡带)。
    * 返回是否成功调用读档接口;核心仍负责校验快照内容。
    */
-  async loadState(state: SaveState): Promise<boolean> {
+  async loadState(state: SaveState, signal?: AbortSignal): Promise<boolean> {
     if (!this.instance) return false
     if (!state.byteLength) return false
     const instance = this.instance
     try {
-      await instance.loadState(new Blob([state as BlobPart]))
+      await this.stateLoader.load(instance, new Blob([state as BlobPart]), signal)
       return true
     } catch (err) {
+      signal?.throwIfAborted()
       console.error('[NES] 读取存档失败', err)
       return false
     } finally {

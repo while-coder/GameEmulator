@@ -1,8 +1,7 @@
 import { Button, type NesRunnerApi, type SaveState } from '@game-emulator/nes'
 import { httpNativeTransport, type NativeTransport } from './transport'
+import { nativeSaveBuilds } from '../../shared/saveBuilds'
 
-const BUILD = 'fceumm-e0f3086-native-v1'
-const ARCADE_BUILD = 'fbalpha2012-0ce3153-native-v1'
 const buttons: Partial<Record<Button, [number, number]>> = {
   [Button.Joypad1A]: [0, 8], [Button.Joypad1B]: [0, 0],
   [Button.Joypad1Up]: [0, 4], [Button.Joypad1Down]: [0, 5],
@@ -22,7 +21,7 @@ async function sha256(bytes: Uint8Array): Promise<string> {
 export class NativeSession {
   readonly nativeInput = true
   readonly saveNamespace: string
-  onError?: (error: Error) => void
+  onError?: (error: Error, reason?: 'native-pause') => void
   private ready = false
   private running = false
   private hash = ''
@@ -34,16 +33,17 @@ export class NativeSession {
   private disposed = false
   private polling = 0
   private debug = false
+  private pausedPreview?: Blob
   private readonly output = document.createElement('output')
   private readonly observer: ResizeObserver
   private readonly nativePause = () => {
     if (!this.ready || !this.running || this.disposed) return
     this.running = false
-    this.onError?.(new Error('游戏已暂停'))
+    this.onError?.(new Error('游戏已暂停'), 'native-pause')
   }
   constructor(private readonly canvas: HTMLCanvasElement, private readonly transport: NativeTransport = httpNativeTransport,
               private readonly system: 'nes' | 'arcade' | 'gba' | 'sfc' = 'nes') {
-    this.saveNamespace = system === 'gba' ? 'mgba-7a12d6d4-native-v1' : system === 'sfc' ? 'snes9x-204ea1c0-native-v1' : system === 'arcade' ? ARCADE_BUILD : BUILD
+    this.saveNamespace = nativeSaveBuilds[system]
     this.output.style.cssText = 'position:absolute;top:4px;left:4px;z-index:3;background:#000b;color:white;padding:4px;font:12px monospace;pointer-events:none;display:none'
     canvas.parentElement?.append(this.output)
     this.observer = new ResizeObserver(() => this.syncDisplay())
@@ -61,6 +61,12 @@ export class NativeSession {
       throw new Error(error?.error ?? `原生模拟器请求失败 (${response.status})`)
     }
     return response
+  }
+  private async captureFrame() {
+    try {
+      const frame = await (await this.request('frame')).blob()
+      if (frame.size && frame.type === 'image/png') return frame
+    } catch { /* A missing surface must not interrupt the emulator. */ }
   }
   private enqueue<T>(action: () => Promise<T>): Promise<T> {
     const result = this.tail.then(action)
@@ -82,7 +88,7 @@ export class NativeSession {
       await this.enqueue(async () => {
         signal?.throwIfAborted()
         if (this.disposed) throw new Error('游戏页面已关闭')
-        this.ready = false; this.running = false
+        this.ready = false; this.running = false; this.pausedPreview = undefined
         const info = await (await this.request('info')).json()
         signal?.throwIfAborted()
         if (info.build !== this.saveNamespace) throw new Error('原生内核与页面版本不匹配，请重新启动应用')
@@ -106,7 +112,7 @@ export class NativeSession {
   async loadArcade(game: { name: string; hash: string; file: Blob }, dependencies: { name: string; hash: string; file: Blob }[]) {
     await this.enqueue(async () => {
       if (this.disposed) throw new Error('游戏页面已关闭')
-      this.ready = false; this.running = false
+      this.ready = false; this.running = false; this.pausedPreview = undefined
       const info = await (await this.request('info')).json()
       if (info.build !== this.saveNamespace) throw new Error('原生内核与页面版本不匹配')
       const files = [game, ...dependencies]
@@ -124,6 +130,19 @@ export class NativeSession {
     })
     this.syncDisplay(); this.startPolling()
   }
+  async waitForFirstFrame(signal: AbortSignal): Promise<void> {
+    const deadline = AbortSignal.any([signal, AbortSignal.timeout(6000)])
+    this.resume()
+    while (!deadline.aborted) {
+      const status = await this.enqueue(async () => (await this.request('stats')).json())
+      signal.throwIfAborted()
+      if (status.failed) throw new Error(status.error || '街机核心无法运行')
+      if (status.frames > 0) return
+      await new Promise(resolve => setTimeout(resolve, 25))
+    }
+    signal.throwIfAborted()
+    throw new Error('街机核心尚未开始运行，无法读取存档')
+  }
   pause(): void {
     if (!this.ready || !this.running || this.disposed) return
     this.running = false; this.masks = [0, 0]
@@ -131,8 +150,8 @@ export class NativeSession {
       // One still frame on pause keeps the existing page's paused background.
       // It is intentionally not a per-frame transport.
       try {
-        const blob = await (await this.request('frame')).blob()
-        if (blob.size) {
+        const blob = this.pausedPreview = await this.captureFrame()
+        if (blob) {
           const image = await createImageBitmap(blob)
           this.canvas.width = image.width; this.canvas.height = image.height
           this.canvas.getContext('2d')?.drawImage(image, 0, 0); image.close()
@@ -143,7 +162,11 @@ export class NativeSession {
   }
   resume(): void {
     if (!this.ready || this.running || this.disposed) return
-    this.running = true; this.syncDisplay(); this.send('resume')
+    this.running = true; this.syncDisplay()
+    void this.enqueue(async () => {
+      this.pausedPreview = undefined
+      await this.command('resume')
+    }).catch(error => { this.running = false; this.onError?.(error) })
   }
   unload(): void {
     this.ready = false; this.running = false; clearInterval(this.polling)
@@ -156,7 +179,10 @@ export class NativeSession {
     window.removeEventListener('tv-native-pause', this.nativePause)
     await this.enqueue(() => this.command('stop'))
   }
-  reset(): void { this.send('reset') }
+  reset(): void {
+    this.pausedPreview = undefined
+    this.send('reset')
+  }
   resumeAudio(): void {}
   setVolume(value: number): void { this.volume = Math.max(0, Math.min(1, value)); this.setAudioEnabled(this.enabled) }
   setAudioEnabled(value: boolean): void { this.enabled = value; this.send('volume', { value: value ? this.volume : 0 }) }
@@ -203,10 +229,14 @@ export class NativeSession {
     else this.input(button, true)
   }
   release(button: Button): void { this.input(button, false) }
-  async saveState(): Promise<SaveState | null> {
+  async saveState(onPreview?: (preview: Blob) => void): Promise<SaveState | null> {
     return this.enqueue(async () => {
       if (!this.ready) return null
       const data = new Uint8Array(await (await this.request('state')).arrayBuffer())
+      if (onPreview) {
+        const frame = this.pausedPreview ?? await this.captureFrame()
+        if (frame) onPreview(frame)
+      }
       const HEADER = new TextEncoder().encode(`GameEmulator:${this.saveNamespace}\n`)
       const metadata = new TextEncoder().encode(JSON.stringify({ rom: this.hash, sha256: await sha256(data) }) + '\n')
       const result = new Uint8Array(HEADER.length + metadata.length + data.length)
@@ -225,6 +255,7 @@ export class NativeSession {
       const data = state.subarray(end + 1)
       if (metadata.rom !== this.hash || metadata.sha256 !== await sha256(data)) throw new Error('存档与游戏不匹配或校验失败')
       await this.request('restore', 'POST', new Blob([data as BlobPart]))
+      this.pausedPreview = undefined
       this.masks = [0, 0]; return true
     })
   }

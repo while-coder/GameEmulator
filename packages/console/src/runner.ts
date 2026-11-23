@@ -6,6 +6,8 @@ import snesJs from './assets/snes9x_libretro.js?url'
 import snesWasm from './assets/snes9x_libretro.wasm?url'
 import { systems, type Action, type ConsoleSystem } from './systems'
 import { getBattery, putBattery, type SavedGame } from './store'
+import { RetroArchStateLoader, retroArchStateLogging } from '../../shared/retroArchState'
+import { wasmSaveBuilds } from '../../shared/saveBuilds'
 
 export interface ConsoleRunner {
   readonly build: string
@@ -19,8 +21,8 @@ export interface ConsoleRunner {
   analog?(x: number, y: number): void
   setSmoothing?(smoothing: boolean): void
   setMuted(muted: boolean): void
-  save(): Promise<Uint8Array>
-  restore(data: Uint8Array): Promise<void>
+  save(onPreview?: (preview: Blob) => void): Promise<Uint8Array>
+  restore(data: Uint8Array, signal?: AbortSignal): Promise<void>
   flush(): Promise<void>
   dispose(): Promise<void>
 }
@@ -41,6 +43,7 @@ const inputConfig = Object.fromEntries([0, 1].flatMap(player => actions.map((act
 class WasmConsoleRunner implements ConsoleRunner {
   readonly build: string
   private instance: Awaited<ReturnType<typeof Nostalgist.prepare>> | null = null
+  private readonly stateLoader = new RetroArchStateLoader()
   private batteryKey = ''
   private running = false
   private muted = false
@@ -48,7 +51,7 @@ class WasmConsoleRunner implements ConsoleRunner {
   private readonly removeProperty: (name: string) => string
   private flushing: Promise<void> = Promise.resolve()
   constructor(private canvas: HTMLCanvasElement, private system: ConsoleSystem) {
-    this.build = `${systems[system].core}-ra1.22.2-wasm-v1`
+    this.build = wasmSaveBuilds[system]
     this.css = canvas.style.cssText; this.removeProperty = canvas.style.removeProperty.bind(canvas.style)
   }
   async load(game: SavedGame, signal: AbortSignal) {
@@ -65,7 +68,8 @@ class WasmConsoleRunner implements ConsoleRunner {
         resolveCoreJs: () => gba ? mgbaJs : snesJs,
         resolveCoreWasm: () => gba ? mgbaWasm : snesWasm,
         respondToGlobalEvents: false,
-        retroarchConfig: { ...inputConfig, video_smooth: false },
+        retroarchConfig: { ...inputConfig, ...retroArchStateLogging, video_smooth: false },
+        emscriptenModule: { printErr: this.stateLoader.readLog },
       })
       signal.throwIfAborted()
       this.instance.getOptions().signal = undefined
@@ -80,12 +84,24 @@ class WasmConsoleRunner implements ConsoleRunner {
   reset() { this.instance?.restart() }
   input(player: number, action: Action, down: boolean) { if (this.instance) { if (down) this.instance.pressDown({ button: action, player: player + 1 }); else this.instance.pressUp({ button: action, player: player + 1 }) } }
   setMuted(muted: boolean) { if (this.instance && muted !== this.muted) { this.instance.sendCommand('MUTE'); this.muted = muted } }
-  async save() { if (!this.instance) throw new Error('请先启动游戏'); const { state } = await this.instance.saveState(); return new Uint8Array(await state.arrayBuffer()) }
-  async restore(data: Uint8Array) {
+  async save(onPreview?: (preview: Blob) => void) {
+    if (!this.instance) throw new Error('请先启动游戏')
+    const { state, thumbnail } = await this.instance.saveState()
+    if (thumbnail?.size) onPreview?.(thumbnail)
+    return new Uint8Array(await state.arrayBuffer())
+  }
+  async restore(data: Uint8Array, signal?: AbortSignal) {
     if (!this.instance || !data.length) throw new Error('存档不可用')
+    const instance = this.instance
     const running = this.running
-    try { await this.instance.loadState(new Blob([data as BlobPart])) }
-    finally { this.running = !running; if (running) this.resume(); else this.pause() }
+    try { await this.stateLoader.load(instance, new Blob([data as BlobPart]), signal) }
+    finally {
+      if (this.instance === instance) {
+        const module = instance.getEmscripten().Module
+        if (running) module._cmd_unpause()
+        else module._cmd_pause()
+      }
+    }
   }
   flush() {
     const instance = this.instance, key = this.batteryKey
@@ -112,6 +128,7 @@ class WasmConsoleRunner implements ConsoleRunner {
     return result
   }
   async dispose() {
+    this.stateLoader.cancel()
     const instance = this.instance
     if (instance) {
       try { await this.flush() }

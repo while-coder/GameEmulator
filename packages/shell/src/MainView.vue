@@ -17,8 +17,9 @@ async function enter(id: EmulatorId) {
   catch (err) { error.value = err instanceof Error ? err.message : String(err) }
   finally { launching.value = null }
 }
-function focusCard() {
-  const card = cards.value[focusedIndex]
+function focusCard(id?: EmulatorId) {
+  const index = id ? emulators.findIndex(emulator => emulator.id === id) : focusedIndex
+  const card = cards.value[index]
   if (card && !card.disabled) focusNavigationElement(card)
 }
 function moveFocus(dir: NavigationDirection) {

@@ -1,5 +1,6 @@
 /// <reference path="../env.d.ts" />
 import { Nostalgist } from 'nostalgist'
+import { RetroArchStateLoader } from '../../../shared/retroArchState'
 import coreJs from '../assets/cores/fbalpha2012_libretro.js?url'
 import coreWasm from '../assets/cores/fbalpha2012_libretro.wasm?url'
 import { ACTIONS, type Action } from './settings'
@@ -10,16 +11,17 @@ export interface ArcadeRunnerApi {
   readonly aspectRatio: number
   readonly nativeInput?: boolean
   readonly coreBuild?: string
-  onError?: (error: Error) => void
+  onError?: (error: Error, reason?: 'native-pause') => void
   load(game: Archive, dependencies: Archive[]): Promise<void>
+  waitForFirstFrame(signal: AbortSignal): Promise<void>
   press(player: number, action: Action): void
   release(player: number, action: Action): void
   pause(): void
   resume(): void
   reset(): void
   setMuted(value: boolean): void
-  save(): Promise<Blob>
-  restore(state: Blob): Promise<void>
+  save(onPreview?: (preview: Blob) => void): Promise<Blob>
+  restore(state: Blob, signal?: AbortSignal): Promise<void>
   dispose(): void | Promise<void>
   syncDisplay?(smoothing: boolean): void
 }
@@ -30,6 +32,7 @@ export function createArcadeRunner(canvas: HTMLCanvasElement): ArcadeRunnerApi {
 const virtualKeys=['i','k','j','l','q','w','e','a','s','d','z','x','t','g','f','h','u','o','p','v','b','n','m','c']
 const inputConfig=Object.fromEntries([0,1].flatMap(player=>ACTIONS.map((action,i)=>[`input_player${player+1}_${action.id}`,virtualKeys[player*ACTIONS.length+i]])))
 export class ArcadeRunner {
+  private readonly stateLoader = new RetroArchStateLoader()
   private instance: Instance | null = null
   private readonly css: string
   private readonly removeProperty: (name:string)=>string
@@ -55,6 +58,7 @@ export class ArcadeRunner {
     let phase='加载模拟器资源'
     const emscriptenModule = {
       printErr:(message:string)=>{
+        this.stateLoader.readLog(message)
         // The pinned RetroArch build reports core rotation/geometry here.
         const rotation=message.match(/SET_ROTATION:\s*"([0-3])"/)
         if(rotation)this.rotation=Number(rotation[1])
@@ -99,6 +103,27 @@ export class ArcadeRunner {
       throw new Error(`无法启动 ${game.name}。${hint}${detail?` (${detail.slice(0,180)})`:''}`)
     }
   }
+  async waitForFirstFrame(signal: AbortSignal): Promise<void> {
+    if (!this.instance) throw new Error('街机核心未启动')
+    const module = this.instance.getEmscriptenModule() as { postMainLoop?: () => void }
+    const previous = module.postMainLoop
+    const deadline = AbortSignal.any([signal, AbortSignal.timeout(6000)])
+    deadline.throwIfAborted()
+    let onAbort = () => {}
+    try {
+      await new Promise<void>((resolve, reject) => {
+        onAbort = () => reject(deadline.reason)
+        deadline.addEventListener('abort', onAbort, { once: true })
+        module.postMainLoop = () => { previous?.(); resolve() }
+      })
+    } catch (error) {
+      signal.throwIfAborted()
+      throw new Error('街机核心尚未开始运行，无法读取存档', { cause: error })
+    } finally {
+      deadline.removeEventListener('abort', onAbort)
+      module.postMainLoop = previous
+    }
+  }
   press(player:number,action:Action){this.instance?.pressDown({button:action,player:player+1})}
   release(player:number,action:Action){this.instance?.pressUp({button:action,player:player+1})}
   pause(){if(this.instance){this.instance.pause();this.instance.getEmscripten().Module._cmd_pause();this.paused=true}}
@@ -108,17 +133,18 @@ export class ArcadeRunner {
     this.desiredMute=value
     if(this.instance&&this.muted!==value){this.instance.sendCommand('MUTE');this.muted=value}
   }
-  async save(): Promise<Blob> {
+  async save(onPreview?: (preview: Blob) => void): Promise<Blob> {
     if(!this.instance)throw new Error('请先启动游戏')
-    const {state}=await this.instance.saveState()
+    const {state,thumbnail}=await this.instance.saveState()
+    if(thumbnail?.size)onPreview?.(thumbnail)
     return state
   }
-  async restore(state:Blob){
+  async restore(state:Blob, signal?:AbortSignal){
     if(!this.instance)throw new Error('请先启动游戏')
     if(!state.size)throw new Error('存档为空，无法读取')
     const instance=this.instance
     try{
-      await instance.loadState(state)
+      await this.stateLoader.load(instance, state, signal)
     }finally{
       // Loading can change RetroArch's pause state without updating Nostalgist.
       if(this.instance===instance){
@@ -129,6 +155,7 @@ export class ArcadeRunner {
     }
   }
   dispose(){
+    this.stateLoader.cancel()
     this.generation++
     const instance=this.instance,abort=this.abort
     this.instance=null;this.abort=null

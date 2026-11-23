@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.InputDevice
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -180,7 +181,19 @@ class MainActivity : ComponentActivity() {
         nativeInputDisconnected()
     }
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (::nativeNes.isInitialized && nativeNes.key(event)) return true
+        // The Xbox Home button is exposed to apps as BUTTON_MODE.
+        if (event.keyCode == KeyEvent.KEYCODE_BUTTON_MODE &&
+            (event.isFromSource(InputDevice.SOURCE_GAMEPAD) || event.isFromSource(InputDevice.SOURCE_JOYSTICK) ||
+                event.device?.supportsSource(InputDevice.SOURCE_GAMEPAD) == true)
+        ) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) sendBack()
+            return true
+        }
+        if (::nativeNes.isInitialized && nativeNes.key(event)) {
+            // A button pressed in the library can be released after gameplay takes over.
+            if (event.action == KeyEvent.ACTION_UP) view.onKeyUp(event.keyCode, event)
+            return true
+        }
         return super.dispatchKeyEvent(event)
     }
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {

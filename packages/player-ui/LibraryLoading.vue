@@ -19,7 +19,11 @@ function cancel() { if (!props.cancelling) emit('cancel') }
 onMounted(() => dialog.value?.showModal())
 onBeforeUnmount(() => {
   dialog.value?.close()
-  void nextTick(() => { if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true }) })
+  void nextTick(() => {
+    if (document.activeElement === document.body && previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+      previousFocus.focus({ preventScroll: true })
+    }
+  })
 })
 useRemoteNav({ container: dialog, active: computed(() => true), autoFocus: true, priority: 40, onBack: cancel })
 </script>
@@ -38,7 +42,7 @@ useRemoteNav({ container: dialog, active: computed(() => true), autoFocus: true,
             {{ ratio === null ? `${(progress.received / 1024 / 1024).toFixed(1)} MB` : `${Math.floor(ratio * 100)}%` }}
           </p>
         </div>
-        <button type="button" autofocus :disabled="cancelling" @click="cancel">{{ cancelling ? '正在取消…' : '取消' }}</button>
+        <button type="button" autofocus :aria-disabled="cancelling" @click="cancel">{{ cancelling ? '正在取消…' : '取消' }}</button>
       </div>
     </dialog>
   </Teleport>
@@ -56,9 +60,9 @@ h2 { margin: 16px 0 8px; font-size: 18px; font-weight: 600; }
 progress { display: block; width: 100%; height: 6px; accent-color: #9fc4f4; }
 .loading-detail { min-height: 1.5em; margin: 10px 0 0; font-size: 13px; color: #a9b3c1; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 button { min-width: 104px; min-height: 44px; padding: 10px 24px; border: 1px solid rgb(164 185 214 / .28); border-radius: 8px; background: rgb(147 174 211 / .08); color: #d4deec; font: inherit; font-size: 14px; cursor: pointer; }
-button:hover:not(:disabled) { background: rgb(147 174 211 / .16); border-color: #7895ba; }
+button:hover:not([aria-disabled="true"]) { background: rgb(147 174 211 / .16); border-color: #7895ba; }
 button:focus-visible { outline: 3px solid #9fc4f4; outline-offset: 4px; }
-button:disabled { opacity: .6; cursor: wait; }
+button[aria-disabled="true"] { opacity: .6; cursor: wait; }
 @keyframes loading-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .loading-spinner { animation: none; } }
 @media (orientation: landscape) and (max-height: 420px) { .loading-content { padding: 18px 24px; } h2 { margin-top: 10px; } .loading-progress { margin-block: 14px; } .loading-spinner { width: 24px; height: 24px; } }

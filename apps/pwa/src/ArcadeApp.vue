@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { playerEntry, returnToLobby } from '@game-emulator/shell'
 import { ArcadeView } from '@game-emulator/arcade'
-function leave() { location.replace(new URL('index.html', location.href).href) }
+const entry = playerEntry()
+function leave() { returnToLobby() }
 </script>
-<template><ArcadeView :on-leave="leave" back-on-escape /></template>
+<template><ArcadeView :on-leave="leave" :entry="entry" /></template>

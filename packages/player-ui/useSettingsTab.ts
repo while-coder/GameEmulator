@@ -1,12 +1,12 @@
 import type { GameSystem } from '../shared/playHistory'
 import { ref, watch } from 'vue'
 
-const SETTINGS_TABS = ['saves', 'keys', 'display', 'audio', 'misc'] as const
+const SETTINGS_TABS = ['keys', 'display', 'audio', 'misc'] as const
 type SettingsTab = typeof SETTINGS_TABS[number]
 
 export function useSettingsTab(system: GameSystem) {
   const storageKey = `${system}:settingsTab`
-  let initial: SettingsTab = 'saves'
+  let initial: SettingsTab = 'keys'
   try {
     const saved = localStorage.getItem(storageKey)
     if (SETTINGS_TABS.includes(saved as SettingsTab)) initial = saved as SettingsTab

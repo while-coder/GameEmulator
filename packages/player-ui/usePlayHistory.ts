@@ -15,12 +15,13 @@ export function usePlayHistory(system: GameSystem) {
   function update(key: string, at: number, elapsed: number) {
     state.value = { ...state.value, [key]: recordPlay(storage(), system, key, at, elapsed, state.value[key]) }
   }
+  function reload() { state.value = loadPlayHistory(storage(), system) }
   function refresh(event: StorageEvent) {
-    if (!event.key || event.key.startsWith(`game-emulator:play-history:${system}:`)) state.value = loadPlayHistory(storage(), system)
+    if (!event.key || event.key.startsWith(`game-emulator:play-history:${system}:`)) reload()
   }
   onMounted(() => window.addEventListener('storage', refresh))
   onBeforeUnmount(() => window.removeEventListener('storage', refresh))
-  return { history: state, update }
+  return { history: state, update, reload }
 }
 
 export function usePlaySession(system: GameSystem, gameKey: Ref<string | null>, playing: Ref<boolean>) {

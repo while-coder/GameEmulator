@@ -1,106 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { createHoldAction } from './holdAction'
-import { useRemoteNav } from './useRemoteNav'
+import { useCardActionMenu } from './useCardActionMenu'
 
 const props = defineProps<{ name: string; detail: string; disabled: boolean; busy: boolean; canRemove: boolean; canDownload: boolean; favorite: boolean }>()
-const emit = defineEmits<{ play: []; remove: []; download: []; favorite: [] }>()
-const trigger = ref<HTMLButtonElement | null>(null)
-const dialog = ref<HTMLDialogElement | null>(null)
-const shown = ref(false)
-const position = ref<Record<string, string>>({})
-let origin: { x: number; y: number } | null = null
-let keyboardPress = false
-let suppressClick = false
-let disposed = false
+const emit = defineEmits<{ play: []; remove: []; download: []; favorite: []; saves: [] }>()
+const { trigger, dialog, shown, position, contextMenu, closeMenu, closed, click, pointerDown, pointerMove, pointerUp,
+  cancelPointer, cancelPress, keyDown, keyUp, padDown, padUp } = useCardActionMenu(() => props.disabled, () => emit('play'))
 
-function cancelPress() { hold.cancel(); keyboardPress = false; origin = null }
-function cancelPointer() { if (origin) suppressClick = true; cancelPress() }
-async function openMenu(point?: { x: number; y: number }) {
-  if (props.disabled || shown.value) return
-  suppressClick = true
-  position.value = {}
-  shown.value = true
-  await nextTick()
-  if (disposed || !shown.value) return
-  dialog.value?.showModal()
-  if (point && dialog.value) {
-    const rect = dialog.value.getBoundingClientRect()
-    position.value = {
-      margin: '0',
-      left: `${Math.max(8, Math.min(point.x, innerWidth - rect.width - 8))}px`,
-      top: `${Math.max(8, Math.min(point.y, innerHeight - rect.height - 8))}px`,
-    }
-  }
-}
-const hold = createHoldAction(() => { void openMenu() })
-function closeMenu() { shown.value = false; dialog.value?.close() }
-async function closed() {
-  shown.value = false
-  cancelPress()
-  await nextTick()
-  if (!disposed && trigger.value?.isConnected && !props.disabled) trigger.value.focus({ preventScroll: true })
-}
-function choose(action: 'play' | 'remove' | 'download' | 'favorite') {
+function choose(action: 'play' | 'remove' | 'download' | 'favorite' | 'saves') {
   closeMenu()
   if (!props.disabled) {
+    trigger.value?.focus({ preventScroll: true })
     if (action === 'play') emit('play')
     else if (action === 'remove' && props.canRemove) emit('remove')
     else if (action === 'download' && props.canDownload) emit('download')
     else if (action === 'favorite') emit('favorite')
+    else if (action === 'saves') emit('saves')
   }
 }
-function pointerDown(event: PointerEvent) {
-  if (props.disabled || event.button !== 0 || !event.isPrimary) return
-  suppressClick = false
-  origin = { x: event.clientX, y: event.clientY }
-  hold.start()
-}
-function pointerMove(event: PointerEvent) {
-  if (origin && Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 10) {
-    suppressClick = true
-    cancelPress()
-  }
-}
-function click(event: MouseEvent) {
-  if (suppressClick || hold.held || shown.value) { event.preventDefault(); return }
-  if (!props.disabled) emit('play')
-}
-function isConfirm(event: KeyboardEvent) {
-  return ['Enter', 'NumpadEnter', 'Select', 'Accept', ' '].includes(event.key) || event.keyCode === 23
-}
-function keyDown(event: KeyboardEvent) {
-  if (event.key === 'F10' && event.shiftKey) {
-    event.preventDefault(); cancelPress(); return
-  }
-  if (event.key === 'ContextMenu' || event.key === 'Menu' || event.keyCode === 82) {
-    event.preventDefault(); event.stopPropagation(); cancelPress(); void openMenu()
-  } else if (isConfirm(event)) {
-    event.preventDefault(); event.stopPropagation()
-    if (!event.repeat && !keyboardPress && !props.disabled) {
-      keyboardPress = true; suppressClick = false; hold.start()
-    }
-  } else cancelPress()
-}
-function keyUp(event: KeyboardEvent) {
-  if (!isConfirm(event)) return
-  event.preventDefault(); event.stopPropagation()
-  const short = hold.release()
-  keyboardPress = false
-  if (short && !props.disabled && !shown.value) emit('play')
-}
-function padDown() {
-  if (props.disabled) return
-  keyboardPress = true; suppressClick = false; hold.start()
-}
-function padUp() {
-  const short = hold.release()
-  keyboardPress = false
-  if (short && !props.disabled && !shown.value) emit('play')
-}
-watch(() => props.disabled, disabled => { if (disabled) { cancelPress(); closeMenu() } })
-onBeforeUnmount(() => { disposed = true; cancelPress(); dialog.value?.close() })
-useRemoteNav({ container: dialog, active: computed(() => shown.value), autoFocus: true, priority: 25, onBack: closeMenu })
 </script>
 
 <template>
@@ -108,8 +24,8 @@ useRemoteNav({ container: dialog, active: computed(() => shown.value), autoFocus
     :disabled="disabled" :aria-label="`开始 ${name}；长按或右键打开操作菜单`"
     :title="`${name} · ${detail}\n右键 / 长按 / 菜单键：游戏操作`" :aria-busy="busy"
     aria-haspopup="dialog" :aria-expanded="shown"
-    @click="click" @contextmenu.prevent.stop="openMenu($event.pointerType === 'mouse' || $event.button === 2 ? { x: $event.clientX, y: $event.clientY } : undefined)"
-    @pointerdown="pointerDown" @pointermove="pointerMove" @pointerup="hold.release(); origin = null"
+    @click="click" @contextmenu.prevent.stop="contextMenu"
+    @pointerdown="pointerDown" @pointermove="pointerMove" @pointerup="pointerUp"
     @pointercancel="cancelPointer" @pointerleave="cancelPointer" @blur="cancelPress"
     @keydown="keyDown" @keyup="keyUp" @nav-confirm-start="padDown" @nav-confirm-end="padUp" @nav-confirm-cancel="cancelPress" />
   <Teleport to="body">
@@ -118,6 +34,7 @@ useRemoteNav({ container: dialog, active: computed(() => shown.value), autoFocus
       <h2>{{ name }}</h2>
       <button type="button" @click="choose('play')">开始游戏</button>
       <button v-if="canDownload" type="button" @click="choose('download')">下载游戏</button>
+      <button type="button" @click="choose('saves')">查看存档</button>
       <button type="button" :aria-pressed="favorite" @click="choose('favorite')">{{ favorite ? '取消收藏' : '收藏游戏' }}</button>
       <button v-if="canRemove" type="button" class="remove-cache" @click="choose('remove')">移除下载缓存</button>
       <button type="button" class="cancel-menu" @click="closeMenu">取消</button>

@@ -4,7 +4,7 @@ import { romExtension, type ConsoleSystem } from './systems'
 
 export type Game = { hash: string; name: string; fileName: string; file_size: number; download_url?: string; screenshot_url?: string; genre?: string; publisher?: string; tags?: string[] }
 export type SavedGame = Game & { file: Blob }
-export type Snapshot = { key: string; system: ConsoleSystem; hash: string; build: string; slot: string; kind: SaveKind; label: string; gameName?: string; savedAt: number; data: Uint8Array }
+export type Snapshot = { key: string; system: ConsoleSystem; hash: string; build: string; slot: string; kind: SaveKind; label: string; gameName?: string; savedAt: number; data: Uint8Array; preview?: Blob }
 type Battery = { key: string; data: Blob }
 let database: Promise<IDBDatabase> | undefined
 function db() {
@@ -17,10 +17,10 @@ function db() {
     request.onerror = () => { database = undefined; reject(request.error) }
   })
 }
-async function read<T>(store: string, key?: string): Promise<T> {
+async function read<T>(store: string, key?: string | IDBKeyRange): Promise<T> {
   const database = await db()
   return new Promise((resolve, reject) => {
-    const tx = database.transaction(store), request = key === undefined ? tx.objectStore(store).getAll() : tx.objectStore(store).get(key)
+    const tx = database.transaction(store), request = typeof key === 'string' ? tx.objectStore(store).get(key) : tx.objectStore(store).getAll(key)
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
   })
@@ -42,13 +42,32 @@ export async function sha256(bytes: ArrayBuffer): Promise<string> {
 export const listGames = async (system: ConsoleSystem) => (await read<(SavedGame & { key: string })[]>('games')).filter(game => game.key.startsWith(system + ':'))
 export const getGame = (system: ConsoleSystem, hash: string) => read<SavedGame | undefined>('games', `${system}:${hash}`)
 export const removeGame = (system: ConsoleSystem, hash: string) => write('games', `${system}:${hash}`, true)
-export const listStates = async (system: ConsoleSystem, hash?: string, build?: string) => (await read<Snapshot[]>('states')).filter(state => state.system === system && (!hash || state.hash === hash) && (!build || state.build === build)).sort((a, b) => b.savedAt - a.savedAt)
+export async function listStates(system: ConsoleSystem, hash?: string, build?: string) {
+  const prefix = hash ? `${system}:${hash}:` : `${system}:`
+  const states = await read<Snapshot[]>('states', IDBKeyRange.bound(prefix, `${prefix}\uffff`))
+  return states.filter(state => state.system === system && (!hash || state.hash === hash) && (!build || state.build === build))
+    .sort((a, b) => b.savedAt - a.savedAt)
+}
+export const getState = (key: string) => read<Snapshot | undefined>('states', key)
 export const removeState = (state: Snapshot) => write('states', state.key, true)
-export const renameState = (state: Snapshot, label: string) => write('states', { ...state, label })
-export async function putState(system: ConsoleSystem, hash: string, build: string, kind: SaveKind, label: string, data: Uint8Array, gameName?: string) {
+export async function renameState(key: string, label: string): Promise<void> {
+  const database = await db()
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('states', 'readwrite')
+    const store = tx.objectStore('states')
+    const request = store.get(key)
+    request.onsuccess = () => {
+      const current = request.result as Snapshot | undefined
+      if (current) store.put({ ...current, label })
+    }
+    tx.oncomplete = () => resolve()
+    tx.onabort = () => reject(tx.error ?? new Error('无法重命名存档'))
+  })
+}
+export async function putState(system: ConsoleSystem, hash: string, build: string, kind: SaveKind, label: string, data: Uint8Array, gameName?: string, preview?: Blob) {
   if (!data.length) throw new Error('内核返回了空存档')
   const slot = kind === 'quick' ? 'quick' : newSaveSlot()
-  await write('states', { key: `${system}:${hash}:${build}:${slot}`, system, hash, build, slot, kind, label, gameName, data, savedAt: Date.now() } satisfies Snapshot)
+  await write('states', { key: `${system}:${hash}:${build}:${slot}`, system, hash, build, slot, kind, label, gameName, data, preview, savedAt: Date.now() } satisfies Snapshot)
 }
 export const getBattery = async (key: string) => (await read<Battery | undefined>('battery', key))?.data
 export const putBattery = (key: string, data: Blob) => write('battery', { key, data })

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { NesView } from '@game-emulator/nes'
-function leave() { location.replace(new URL('index.html', location.href).href) }
+import { playerEntry, returnToLobby } from '@game-emulator/shell'
+const entry = playerEntry()
 </script>
-<template><NesView :on-leave="leave" back-on-escape platform-label="NES / FC · TV" /></template>
+<template><NesView :on-leave="returnToLobby" :entry="entry" /></template>

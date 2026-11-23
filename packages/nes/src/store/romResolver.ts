@@ -3,8 +3,8 @@
  * 先查本地缓存,缓存未命中再到在线目录匹配并下载。找不到则返回 null,
  * 由调用方弹窗报错。
  */
-import { loadRomCatalog } from './romCatalog'
-import { downloadRom, type DownloadOptions } from './romDownloader'
+import { loadRomCatalog, type RomEntry } from './romCatalog'
+import { downloadRom, validateRomBytes, type DownloadOptions } from './romDownloader'
 import { getCachedRom, saveCachedRom } from './romLibrary'
 
 export type ResolvedRom = {
@@ -19,19 +19,29 @@ export type ResolvedRom = {
 export async function acquireRomByKey(
   sha256: string,
   options: DownloadOptions = {},
+  known?: RomEntry,
 ): Promise<ResolvedRom | null> {
   const key = sha256.toLowerCase()
 
-  const cached = await getCachedRom(key)
+  options.signal?.throwIfAborted()
+  const cached = await getCachedRom(sha256) ?? (sha256 === key ? null : await getCachedRom(key))
+  options.signal?.throwIfAborted()
   if (cached) {
-    return { name: cached.name, bytes: cached.bytes }
+    try {
+      await validateRomBytes({ name: cached.name, file_size: cached.size, sha256: key, download_url: '' }, cached.bytes)
+      return { name: cached.name, bytes: cached.bytes }
+    } catch {
+      // A damaged cached file can be replaced by the verified download below.
+      options.signal?.throwIfAborted()
+    }
   }
 
-  const catalog = await loadRomCatalog()
-  const entry = catalog.games.find((game) => game.sha256?.toLowerCase() === key)
+  const entry = known?.sha256?.toLowerCase() === key && known.download_url ? known
+    : (await loadRomCatalog(undefined, { signal: options.signal })).games.find(game => game.sha256?.toLowerCase() === key)
   if (!entry) return null
 
   const bytes = await downloadRom(entry, options)
+  options.signal?.throwIfAborted()
   await saveCachedRom(entry, bytes)
   return { name: entry.name, bytes }
 }

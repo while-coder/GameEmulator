@@ -1,8 +1,9 @@
 import type { ArcadeCatalog } from './catalog'
 import { newSaveSlot, saveKindOf, type SaveKind } from '../../../shared/saveSlots'
+import { wasmSaveBuilds } from '../../../shared/saveBuilds'
 export { saveKindOf } from '../../../shared/saveSlots'
 
-export const CORE_BUILD = 'fbalpha2012-retroarch-1.22.2-a19485f4'
+export const CORE_BUILD = wasmSaveBuilds.arcade
 interface CachedCatalog { url: string; catalog: ArcadeCatalog }
 export type ArchiveKind = 'game' | 'support'
 export interface Archive {
@@ -29,6 +30,7 @@ export interface Snapshot {
   dependencies: {name:string;hash:string}[]
   coreBuild: string
   state: Blob
+  preview?: Blob
   savedAt: number
 }
 let connection: Promise<IDBDatabase> | null = null
@@ -70,21 +72,43 @@ async function write(store: string, value: StoredArchive | Snapshot | CachedCata
   await completion
 }
 export async function listArchives(): Promise<Archive[]> {
-  const [archives,catalogs]=await Promise.all([
+  const [archives,names]=await Promise.all([
     read<StoredArchive[]>('archives'),
-    read<CachedCatalog[]>('catalogs'),
+    archiveNames(),
   ])
-  // Older downloads only stored the ZIP name. Recover their display names
-  // from local catalogs without waiting for a network refresh.
-  const names=new Map(catalogs.flatMap(({catalog})=>catalog.games.flatMap(game=>{
-    const name=game.name?.trim()||game.name_en?.trim()
-    return name?[[game.sha256.toLowerCase(),name] as const]:[]
-  })))
   return archives.map(archive=>({
     ...archive,
     displayName:names.get(archive.hash.toLowerCase())||archive.displayName,
     file: archive.file instanceof Blob ? archive.file : new Blob([archive.file], {type:'application/zip'}),
   }))
+}
+
+async function archiveNames() {
+  const catalogs=await read<CachedCatalog[]>('catalogs')
+  // Older downloads only stored the ZIP name. Recover their display names
+  // from local catalogs without waiting for a network refresh.
+  return new Map(catalogs.flatMap(({catalog})=>catalog.games.flatMap(game=>{
+    const name=game.name?.trim()||game.name_en?.trim()
+    return name?[[game.sha256.toLowerCase(),name] as const]:[]
+  })))
+}
+
+export async function listArchiveSummaries(): Promise<Omit<Archive, 'file'>[]> {
+  const [database, names] = await Promise.all([db(), archiveNames()])
+  const tx = database.transaction('archives', 'readonly')
+  const completion = done(tx)
+  const summaries: Omit<Archive, 'file'>[] = []
+  const request = tx.objectStore('archives').openCursor()
+  // Read one archive at a time so the lobby never holds a library of ZIP data in memory.
+  request.onsuccess = () => {
+    const cursor = request.result
+    if (!cursor) return
+    const { file: _, ...summary } = cursor.value as StoredArchive
+    summaries.push({ ...summary, displayName: names.get(summary.hash.toLowerCase()) || summary.displayName })
+    cursor.continue()
+  }
+  await completion
+  return summaries
 }
 export async function listSnapshots(): Promise<Snapshot[]> {
   const snapshots = await read<Snapshot[]>('saves')
@@ -172,7 +196,7 @@ export async function importArchive(file: File, kind: ArchiveKind): Promise<Arch
   await putArchive(archive)
   return archive
 }
-export function bundleKey(game: Archive, dependencies: Archive[], coreBuild = CORE_BUILD): string {
+export function bundleKey(game: Pick<Archive, 'hash'>, dependencies: Pick<Archive, 'name' | 'hash'>[], coreBuild: string = CORE_BUILD): string {
   return `${coreBuild}:${game.hash}:${dependencies.map(d=>`${d.name}=${d.hash}`).sort().join(',')}`
 }
 export async function pickArchives(): Promise<File[]> {

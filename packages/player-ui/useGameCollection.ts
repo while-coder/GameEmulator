@@ -35,8 +35,9 @@ export function useGameCollection<T>(system: GameSystem) {
     state.value = { ...state.value, [key]: entry }
     try { storage()?.setItem(prefix + key, serialized) } catch { /* Keep the current session usable. */ }
   }
+  function reload() { state.value = read() }
   function refresh(event: StorageEvent) {
-    if (!event.key || event.key.startsWith(prefix)) state.value = read()
+    if (!event.key || event.key.startsWith(prefix)) reload()
   }
   onMounted(() => window.addEventListener('storage', refresh))
   onBeforeUnmount(() => window.removeEventListener('storage', refresh))
@@ -45,5 +46,6 @@ export function useGameCollection<T>(system: GameSystem) {
     isFavorite: (key: string) => state.value[key]?.favorite ?? false,
     remember: (key: string, game: T) => save(key, game),
     toggleFavorite: (key: string, game: T) => save(key, game, !state.value[key]?.favorite),
+    reload,
   }
 }

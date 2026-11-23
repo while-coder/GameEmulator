@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { finishTextEditing } from '../../../player-ui/remoteNavigation'
 import { useSettingsTab } from '../../../player-ui/useSettingsTab'
+import PlayerSaveList from '../../../player-ui/PlayerSaveList.vue'
+import type { SaveListItem } from '../../../player-ui/saveList'
 import PauseMenu from '../../../player-ui/PauseMenu.vue'
-import BackConfirmDialog from '../../../player-ui/BackConfirmDialog.vue'
+import LibraryLoading from '../../../player-ui/LibraryLoading.vue'
+import PlayerEntryError from '../../../player-ui/PlayerEntryError.vue'
+import { useLibraryOperation } from '../../../player-ui/useLibraryOperation'
+import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlaySession } from '../../../player-ui/usePlayHistory'
 import SModal from '@qingfeng346/ui-kit/components/SModal.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
-import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
+import type { PlayerEntry } from '../../../player-ui/playerEntry'
 import {
   setLastRomName,
 } from '../emulator/platform'
@@ -16,48 +22,25 @@ import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 import { useFullscreen } from '../composables/useFullscreen'
 import NesScreen from './NesScreen.vue'
 import SettingsModal from './SettingsModal.vue'
-import RomStorePanel from './RomStorePanel.vue'
+import { acquireRomByKey } from '../store/romResolver'
+import { deleteSaveStateByKey, getSaveState, listSaveStates, renameSaveState, saveKindOf } from '../store/saveState'
+import type { RomEntry } from '../store/romCatalog'
+import type { DownloadProgress } from '../store/romDownloader'
 import type { SaveState } from '../emulator/runner'
 import '../../../player-ui/player.css'
 import '../../../player-ui/library.css'
 
-type ToolbarMode = 'app' | 'web'
-type BackResult = 'handled'
-
-const props = withDefaults(
-  defineProps<{
-    title?: string
-    hint?: string
-    platformLabel?: string
-    libraryLabel?: string
-    toolbarMode?: ToolbarMode
-    storageKey?: string
-    openLoadingLabel?: string
-    footerHideOnTouch?: boolean
-    enableBackExit?: boolean
-    backOnEscape?: boolean
-    onExit?: () => void | Promise<void>
-  }>(),
-  {
-    title: 'NES/FC 模拟器',
-    hint: '在游戏库中选择游戏开始游玩',
-    platformLabel: 'Web 模式',
-    libraryLabel: '游戏库',
-    toolbarMode: 'app',
-    storageKey: 'nes:lastRom',
-    openLoadingLabel: '载入中...',
-    footerHideOnTouch: true,
-    enableBackExit: false,
-    backOnEscape: false,
-    onExit: undefined,
-  },
-)
+const props = withDefaults(defineProps<{
+  storageKey?: string
+  onExit: () => void | Promise<void>
+  entry?: PlayerEntry
+}>(), { storageKey: 'nes:lastRom' })
 
 const screen = ref<InstanceType<typeof NesScreen> | null>(null)
 const appRef = ref<HTMLElement | null>(null)
 // 全屏覆盖整个文档，使 ui-kit 和遥控下拉挂到 body 的弹层仍可显示。
 const fullscreenRoot = computed(() => appRef.value?.ownerDocument.documentElement ?? null)
-const { isFullscreen, usePseudo, toggle: toggleFullscreen, exit: exitFullscreen } = useFullscreen(fullscreenRoot)
+const { isFullscreen, usePseudo, toggle: toggleFullscreen } = useFullscreen(fullscreenRoot)
 const romName = ref<string | null>(null)
 const romKey = ref<string | null>(null)
 const playingRomKey = ref<string | null>(null)
@@ -66,27 +49,28 @@ const loading = ref(false)
 const paused = ref(false)
 const settingsOpen = ref(false)
 const pauseOpen = ref(false)
+const savesOpen = ref(false)
+const savePanel = ref<InstanceType<typeof PlayerSaveList> | null>(null)
 const pauseMenu = ref<InstanceType<typeof PauseMenu> | null>(null)
-useRemoteNav({ container: computed(() => pauseMenu.value?.panel ?? null), active: computed(() => navEnabled.value && pauseOpen.value && !creatingSave.value && !loading.value), autoFocus: true, priority: 10, onBack: resumeGame })
+useRemoteNav({ container: computed(() => pauseMenu.value?.panel ?? null), active: computed(() => navEnabled.value && pauseOpen.value && !savesOpen.value && !creatingSave.value && !loading.value), autoFocus: true, priority: 10, onBack: resumeGame })
 function resumeGame() {
   if (creatingSave.value || loading.value || leaving.value) return
   paused.value = false
   pauseOpen.value = false
 }
-function showSettings(tab?: typeof settingsTab.value) {
-  if (tab) settingsTab.value = tab
+function showSettings() {
   settingsOpen.value = true
   pauseOpen.value = false
 }
 const layoutEditing = ref(false)
 const touchLayoutDraft = ref<TouchLayout>()
 const leaving = ref(false)
-const leaveConfirm = ref(false)
 const leaveError = ref('')
-const libraryPanel = ref<InstanceType<typeof RomStorePanel> | null>(null)
-const libraryVisible = computed(() => !romName.value && !layoutEditing.value)
-const libraryOpen = computed({ get: () => libraryVisible.value, set: () => {} })
-const libraryBusy = computed(() => libraryPanel.value?.busyKey != null)
+const { operation, cancelling, cancelOperation, runOperation } = useLibraryOperation()
+const { games: rememberedGames } = useGameCollection<RomEntry>('nes')
+const progress = ref<DownloadProgress | null>(null)
+const loadingMessage = ref('')
+
 function openMenu() {
   if (romName.value) {
     saveMessage.value = ''
@@ -96,27 +80,46 @@ function openMenu() {
 watch(isFullscreen, (value, previous) => {
   if (previous && !value && romName.value && !settingsOpen.value) openMenu()
 })
-async function launchGame(payload: { name: string; bytes: Uint8Array; key: string }, signal?: AbortSignal) {
-  await loadRomBytes(payload.name, payload.bytes, payload.key, signal)
-  settingsOpen.value = false
+async function launchGame(entry: Extract<PlayerEntry, { kind: 'play' }>) {
+  try {
+    loadingMessage.value = '正在准备游戏…'
+    const completed = await runOperation(entry.name, 'play', async signal => {
+      const snapshot = entry.saveKey ? await getSaveState(entry.key, entry.saveKey) : null
+      if (entry.saveKey && (!snapshot || snapshot.romKey !== entry.key)) throw new Error('找不到此游戏的指定存档')
+      if (snapshot && snapshot.coreBuild !== screen.value?.getSaveNamespace()) {
+        throw new Error('此存档属于其他内核版本，已保留原存档')
+      }
+      const remembered = rememberedGames.value.find(game => game.sha256?.toLowerCase() === entry.key.toLowerCase())
+      const rom = await acquireRomByKey(entry.key, {
+        signal,
+        onProgress: value => { progress.value = value; loadingMessage.value = '正在下载游戏…' },
+      }, remembered)
+      signal.throwIfAborted()
+      if (!rom) throw new Error('找不到游戏文件，请回大厅刷新后重试')
+      progress.value = null
+      loadingMessage.value = '正在启动游戏…'
+      await loadRomBytes(rom.name, rom.bytes, entry.key, signal, snapshot?.state)
+    })
+    if (!completed) await leaveEmulator()
+  } catch (err) {
+    leaveError.value = err instanceof Error ? err.message : String(err)
+  } finally {
+    progress.value = null
+  }
 }
-useRemoteNav({ container: appRef, active: computed(() => navEnabled.value && libraryVisible.value && !settingsOpen.value && !libraryBusy.value), autoFocus: true, priority: 1, onBack: () => props.backOnEscape ? consumeBack() : openMenu() })
+
 async function leaveEmulator() {
-  if (leaving.value || loading.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return
+  if (leaving.value || loading.value || creatingSave.value || operation.value) return
   leaving.value = true
   leaveError.value = ''
   try {
     await screen.value?.shutdown()
-    await props.onExit?.()
+    await props.onExit()
   } catch (err) {
     leaveError.value = err instanceof Error ? err.message : String(err)
   } finally {
     leaving.value = false
   }
-}
-function requestLeave() {
-  if (leaving.value || loading.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return
-  leaveConfirm.value = true
 }
 function editTouchLayout() {
   touchLayoutDraft.value = JSON.parse(JSON.stringify(settings.touchLayout))
@@ -137,20 +140,6 @@ function resetTouchLayout() {
   if (touchLayoutDraft.value) touchLayoutDraft.value[orientation] = {}
 }
 function onShellKey(event: KeyboardEvent) {
-  if (event.code === 'Escape' && libraryBusy.value) {
-    event.preventDefault(); event.stopImmediatePropagation()
-    if (!event.repeat) libraryPanel.value?.cancelOperation()
-    return
-  }
-  if (event.code === 'Escape') {
-    const gameMenu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
-    if (gameMenu) { event.preventDefault(); event.stopImmediatePropagation(); gameMenu.close(); return }
-  }
-  if (event.code === 'Escape' && settingsModal.value?.cancelRename?.()) {
-    event.preventDefault()
-    event.stopImmediatePropagation()
-    return
-  }
   if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -161,37 +150,20 @@ function onShellKey(event: KeyboardEvent) {
   event.preventDefault()
   // Handle shell shortcuts before remote navigation and game input.
   event.stopImmediatePropagation()
-  if (event.repeat || leaving.value || loading.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return
+  if (event.repeat) return
   if (event.code === 'F11') {
-    void toggleFullscreen()
-    return
-  }
-  if (leaveConfirm.value) leaveConfirm.value = false
-  else if (layoutEditing.value) finishTouchLayout()
-  else if (settingsOpen.value) settingsOpen.value = false
-  else if (pauseOpen.value) resumeGame()
-  else if (romName.value) openMenu()
-  else if (props.enableBackExit && props.backOnEscape) requestLeave()
-  else openMenu()
+    if (!operation.value && !leaving.value) void toggleFullscreen()
+  } else handleBack()
 }
 // Register before useRemoteNav installs its capture listener.
 if (typeof window !== 'undefined') window.addEventListener('keydown', onShellKey, true)
 const settingsTab = useSettingsTab('nes')
 
 const inputLocked = computed(
-  () => settingsOpen.value || pauseOpen.value || layoutEditing.value || leaving.value || leaveConfirm.value,
+  () => settingsOpen.value || pauseOpen.value || savesOpen.value || layoutEditing.value || leaving.value,
 )
 
 usePlaySession('nes', playingRomKey, computed(() => !!playingRomKey.value && !inputLocked.value && !paused.value && !loading.value))
-
-const toolbarRef = ref<HTMLElement | null>(null)
-useRemoteNav({
-  container: toolbarRef,
-  active: computed(() => navEnabled.value && !inputLocked.value && (!romName.value || paused.value)),
-  autoFocus: true,
-  priority: 0,
-  onBack: props.enableBackExit ? () => props.backOnEscape ? consumeBack() : openMenu() : undefined,
-})
 
 // 弹窗暂停与手动暂停独立，关窗后保留原来的手动暂停状态。
 function syncPlayback() {
@@ -213,12 +185,22 @@ const shellClasses = computed(() => ({
   'is-pseudo-fullscreen': isFullscreen.value && usePseudo.value,
 }))
 
-async function loadRomBytes(name: string, bytes: Uint8Array, key: string, signal?: AbortSignal) {
+async function loadRomBytes(name: string, bytes: Uint8Array, key: string, signal?: AbortSignal, state?: SaveState) {
   signal?.throwIfAborted()
   loading.value = true
   playingRomKey.value = null
   try {
     await screen.value?.loadRom(bytes, signal)
+    signal?.throwIfAborted()
+    if (state) {
+      try {
+        screen.value?.pause()
+        if (!await screen.value?.applyState(state, signal)) throw new Error('读取存档失败，存档可能已损坏或与当前核心不兼容')
+      } catch (error) {
+        screen.value?.stop()
+        throw error
+      }
+    }
     signal?.throwIfAborted()
     playingRomKey.value = key
     romName.value = name
@@ -230,7 +212,6 @@ async function loadRomBytes(name: string, bytes: Uint8Array, key: string, signal
   }
 }
 
-const settingsModal = ref<InstanceType<typeof SettingsModal> | null>(null)
 const creatingSave = ref(false)
 const saveMessage = ref('')
 watch(settingsOpen, (open) => { if (open) saveMessage.value = '' })
@@ -241,7 +222,6 @@ async function newSave() {
   try {
     const saved = await screen.value?.quickNewSave()
     if (saved) {
-      await settingsModal.value?.refreshSaves()
       saveMessage.value = '已新建存档'
     } else {
       saveMessage.value = '新建失败，请重试'
@@ -252,39 +232,38 @@ async function newSave() {
   }
 }
 
-async function onLoadSave(payload: {
-  romKey: string
-  name: string
-  state: SaveState
-  coreBuild?: string
-  bytes?: Uint8Array
-}) {
-  try {
-    leaveError.value = ''
-    if (payload.coreBuild !== screen.value?.getSaveNamespace()) throw new Error('此存档不属于当前 NES 核心版本，原存档已保留')
-    if (payload.bytes) {
-      await loadRomBytes(payload.name, payload.bytes, payload.romKey)
-    }
-    if (!await screen.value?.applyState(payload.state)) throw new Error('读取存档失败，存档可能已损坏或与当前核心不兼容')
-  } catch (err) {
-    leaveError.value = err instanceof Error ? err.message : String(err)
-    settingsTab.value = 'saves'
-    settingsOpen.value = true
-  } finally {
-    syncPlayback()
-  }
+async function loadSaves(): Promise<SaveListItem[]> {
+  const key = romKey.value
+  if (!key) return []
+  return (await listSaveStates(key)).map(record => ({
+    ...record,
+    label: record.label?.trim() || (saveKindOf(record) === 'quick' ? '快速存档' : record.name),
+    kind: saveKindOf(record),
+    compatible: record.coreBuild === screen.value?.getSaveNamespace(),
+    rename: label => renameSaveState(record.key, label),
+    remove: () => deleteSaveStateByKey(record.key),
+    restore: async () => {
+      if (record.coreBuild !== screen.value?.getSaveNamespace()) throw new Error('此存档属于其他内核版本')
+      if (!await screen.value?.applyState(record.state)) throw new Error('读取存档失败，存档可能已损坏')
+      savesOpen.value = false
+      resumeGame()
+    },
+  }))
+}
+async function createFromList() {
+  await newSave()
+  if (saveMessage.value !== '已新建存档') throw new Error(saveMessage.value || '新建存档失败')
 }
 
-function stopRom() {
-  playingRomKey.value = null
-  screen.value?.stop()
-  romName.value = null
-  romKey.value = null
-  paused.value = false
-  settingsOpen.value = false
-  pauseOpen.value = false
-  void exitFullscreen()
-}
+watch(settingsOpen, open => {
+  if (!open && !romName.value && !layoutEditing.value && !loading.value) void leaveEmulator()
+})
+onMounted(() => {
+  const entry = props.entry
+  if (entry?.kind === 'play') void launchGame(entry)
+  else if (entry) showSettings()
+  else void leaveEmulator()
+})
 
 function toggleAudio() {
   audioOn.value = !audioOn.value
@@ -298,42 +277,21 @@ function onSystemAction(action: string) {
   }
 }
 
-function handleBack(): BackResult {
-  if (libraryBusy.value) { libraryPanel.value?.cancelOperation(); return 'handled' }
-  if (leaveConfirm.value) { leaveConfirm.value = false; return 'handled' }
-  if (loading.value || leaving.value || creatingSave.value || libraryBusy.value || settingsModal.value?.busy) return 'handled'
-  if (layoutEditing.value) {
-    finishTouchLayout()
-    return 'handled'
-  }
-  if (settingsOpen.value) {
-    if (settingsModal.value?.cancelRename?.()) return 'handled'
-    settingsOpen.value = false
-    return 'handled'
-  }
-  if (pauseOpen.value) {
-    resumeGame()
-    return 'handled'
-  }
-  if (romName.value) {
-    openMenu()
-    return 'handled'
-  }
-  if (!props.enableBackExit) return 'handled'
-
-  requestLeave()
+function handleBack(): 'handled' {
+  if (operation.value) { cancelOperation(); return 'handled' }
+  if (savesOpen.value) { savePanel.value?.back(); return 'handled' }
+  if (loading.value || leaving.value || creatingSave.value) return 'handled'
+  const filter = document.querySelector<HTMLElement>('.rs-backdrop')
+  if (filter) { filter.click(); return 'handled' }
+  if (layoutEditing.value) finishTouchLayout()
+  else if (settingsOpen.value) settingsOpen.value = false
+  else if (pauseOpen.value) resumeGame()
+  else if (romName.value) openMenu()
+  else void leaveEmulator()
   return 'handled'
 }
 
-function consumeBack() {
-  handleBack()
-}
-
-defineExpose({
-  handleBack,
-  consumeBack,
-  leaveEmulator,
-})
+defineExpose({ handleBack })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onShellKey, true)
@@ -344,41 +302,24 @@ onBeforeUnmount(() => {
   <div
     ref="appRef"
     class="app"
-    :class="[shellClasses, { 'library-home': libraryVisible, 'game-playing': !!romName || layoutEditing }]"
+    :class="[shellClasses, { 'game-playing': !!romName || layoutEditing }]"
   >
-    <header v-show="libraryVisible" ref="toolbarRef" class="player-toolbar" data-nav-row aria-label="游戏功能区">
-      <SButton v-if="enableBackExit" class="library-back" aria-label="返回模拟器列表" :disabled="loading || leaving || creatingSave || libraryBusy || settingsModal?.busy" @click="requestLeave">‹ 返回</SButton>
-      <span class="player-title">{{ title }}</span>
-      <span class="library-header-line" aria-hidden="true"></span>
-      <SButton title="打开设置 (Esc)" :disabled="libraryBusy" @click="openMenu">⚙ 设置</SButton>
-    </header>
-    <section v-show="libraryVisible" class="library-browser" aria-label="游戏库">
-      <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
-      <RomStorePanel ref="libraryPanel" v-model:open="libraryOpen" :launch="launchGame" />
-    </section>
+    <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action" :message="loadingMessage"
+      :progress="progress" :cancelling="cancelling" @cancel="cancelOperation" />
+    <PlayerEntryError v-if="leaveError && !settingsOpen && !savesOpen && !romName && !operation && !layoutEditing" :message="leaveError" @back="leaveEmulator" />
     <SettingsModal
-      ref="settingsModal"
       v-model:open="settingsOpen"
       v-model:tab="settingsTab"
-      :current-rom-key="romKey"
       :audio-on="audioOn"
       @toggle-audio="toggleAudio"
-      @load-save="onLoadSave"
       @edit-touch-layout="editTouchLayout"
     >
-      <template #list-actions="{ tab }">
-        <SHint v-if="leaveError" role="alert">{{ leaveError }}</SHint>
-        <template v-if="tab === 'saves'">
-          <SButton :loading="creatingSave" :disabled="!romName || loading" @click="newSave">{{ creatingSave ? '保存中…' : '新建存档' }}</SButton>
-          <SHint v-if="saveMessage" role="status">{{ saveMessage }}</SHint>
-        </template>
-      </template>
       <template v-if="leaveError" #actions>
         <SHint role="alert">{{ leaveError }}</SHint>
       </template>
     </SettingsModal>
 
-    <main class="stage player-stage" :class="{ 'player-preparing': libraryVisible }">
+    <main class="stage player-stage" :class="{ 'player-preparing': !romName && !layoutEditing }">
       <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
         <div class="layout-edit-header">
           <span>拖动调整位置 · 保存后生效</span>
@@ -400,9 +341,9 @@ onBeforeUnmount(() => {
       />
     </main>
 
-    <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leaveEmulator" />
-    <SModal v-model:show="pauseOpen" class="player-pause-modal" :title="romName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
-      <PauseMenu ref="pauseMenu" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="stopRom" />
+    <PlayerSaveList v-if="savesOpen" ref="savePanel" :game-name="romName" :load="loadSaves" :create="romName ? createFromList : undefined" @close="savesOpen = false" />
+    <SModal v-if="!savesOpen" v-model:show="pauseOpen" class="player-pause-modal" :title="romName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!loading && !creatingSave && !leaving" :close-on-esc="false">
+      <PauseMenu ref="pauseMenu" :busy="loading || creatingSave || leaving" :message="saveMessage" @resume="resumeGame" @save="newSave" @load="savesOpen = true" @settings="showSettings()" @exit="leaveEmulator" />
     </SModal>
     <button v-if="romName && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>
   </div>

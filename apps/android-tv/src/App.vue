@@ -1,30 +1,37 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue'
-import { MainView, emulators, type EmulatorId } from '@game-emulator/shell'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { GameLobby, openPlayerPage } from '@game-emulator/shell'
 import { exitAndroidApp, httpNativeTransport } from '@game-emulator/android-native/transport'
 import BackConfirmDialog from '../../../packages/player-ui/BackConfirmDialog.vue'
-const host = window as Window & { __handleAndroidBack?: () => string }
+
+const lobby = ref<InstanceType<typeof GameLobby> | null>(null)
 const exitConfirm = ref(false)
-const exitError = ref('')
+const exiting = ref(false)
+const error = ref('')
+const active = computed(() => !exitConfirm.value && !exiting.value)
+const host = window as Window & { __handleAndroidBack?: () => string }
+
 function handleBack(): 'handled' {
-  exitError.value = ''
-  exitConfirm.value = !exitConfirm.value
+  if (exitConfirm.value) exitConfirm.value = false
+  else if (!exiting.value && !lobby.value?.handleBack()) { error.value = ''; exitConfirm.value = true }
   return 'handled'
 }
+
 async function confirmExit() {
+  if (exiting.value) return
+  exiting.value = true
   try { await exitAndroidApp(httpNativeTransport) }
-  catch (error) { exitError.value = `退出失败：${error instanceof Error ? error.message : String(error)}` }
+  catch (reason) { error.value = `退出失败：${reason instanceof Error ? reason.message : reason}` }
+  finally { exiting.value = false }
 }
-async function launch(id: EmulatorId) {
-  const emulator = emulators.find(entry => entry.id === id)!
-  location.assign(new URL(emulator.page, location.href).href)
-}
+
 onMounted(() => { host.__handleAndroidBack = handleBack })
 onBeforeUnmount(() => { delete host.__handleAndroidBack })
 </script>
+
 <template>
-  <MainView :launch="launch" :active="!exitConfirm">
-    <template #footer><p v-if="exitError" role="alert">{{ exitError }}</p></template>
-  </MainView>
+  <GameLobby ref="lobby" native-saves :active="active" :launch="openPlayerPage" @unhandled-back="handleBack">
+    <template #footer><p v-if="error" role="alert">{{ error }}</p></template>
+  </GameLobby>
   <BackConfirmDialog v-model:show="exitConfirm" action="exit" @confirm="confirmExit" />
 </template>

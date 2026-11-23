@@ -90,12 +90,13 @@ async function doQuickSave() {
   const romKey = props.romKey
   const romName = props.romName ?? romKey
   try {
-    const state = await runner.saveState()
+    let preview: Blob | undefined
+    const state = await runner.saveState(image => { preview = image })
     if (!state) {
       showToast('存档失败')
       return
     }
-    await putSaveState(romKey, quickSlot(), romName, state, undefined, 'quick', runner.saveNamespace)
+    await putSaveState(romKey, quickSlot(), romName, state, undefined, 'quick', runner.saveNamespace, preview)
     showToast('已存档')
   } catch (err) {
     console.error('[NES] 快速存档失败', err)
@@ -110,14 +111,15 @@ async function doQuickNewSave(): Promise<boolean> {
     return false
   }
   try {
-    const state = await runner.saveState()
+    let preview: Blob | undefined
+    const state = await runner.saveState(image => { preview = image })
     if (!state) {
       showToast('存档失败')
       return false
     }
     const list = await listSaveStates(props.romKey)
     const label = nextSaveLabel(list.filter(record => record.coreBuild === runner?.saveNamespace))
-    await createSaveState(props.romKey, props.romName ?? props.romKey, label, state, runner.saveNamespace)
+    await createSaveState(props.romKey, props.romName ?? props.romKey, label, state, runner.saveNamespace, preview)
     showToast('已新建存档')
     return true
   } catch (err) {
@@ -538,9 +540,9 @@ async function shutdown() {
 async function captureState(): Promise<SaveState | null> {
   return runner?.loaded ? ((await runner.saveState()) ?? null) : null
 }
-async function applyState(state: SaveState): Promise<boolean> {
+async function applyState(state: SaveState, signal?: AbortSignal): Promise<boolean> {
   if (!runner?.loaded) return false
-  const ok = await runner.loadState(state)
+  const ok = await runner.loadState(state, signal)
   showToast(ok ? '已读档' : '读档失败')
   return ok
 }

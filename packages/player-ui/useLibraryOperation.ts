@@ -17,8 +17,10 @@ export function useLibraryOperation() {
     try {
       await run(controller.signal)
       controller.signal.throwIfAborted()
+      return true
     } catch (error) {
       if (!controller.signal.aborted) throw error
+      return false
     } finally {
       operation.value = null
       cancelling.value = false

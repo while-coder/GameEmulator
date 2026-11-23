@@ -182,7 +182,14 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
         require(body.size <= if (route == "load" && requestedSystem in listOf("gba", "sfc")) 64 * 1024 * 1024 else if (route in listOf("load", "restore")) 8 * 1024 * 1024 else if (route.startsWith("upload/")) 256 * 1024 else 16384)
         if (route == "frame" && method == "GET") {
             var bitmap: android.graphics.Bitmap? = null
-            ui { bitmap = texture.getBitmap(256, 240) }
+            ui {
+                val width = texture.width
+                val height = texture.height
+                if (texture.isAvailable && width > 0 && height > 0) {
+                    val scale = minOf(1.0, 480.0 / maxOf(width, height))
+                    bitmap = texture.getBitmap((width * scale).toInt().coerceAtLeast(1), (height * scale).toInt().coerceAtLeast(1))
+                }
+            }
             val out = java.io.ByteArrayOutputStream()
             bitmap?.let { try { it.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out) } finally { it.recycle() } }
             return NativeResponse(out.toByteArray(), "image/png")
@@ -298,7 +305,16 @@ class NativeEmulator(private val activity: Activity, private val root: FrameLayo
                             }
                             turboHz = value.getDouble("turboHz").coerceIn(1.0, 30.0); releaseInputs()
                         }
-                        "resume" -> { if (!playing) { acquireAudioFocus(); control(handle, "resume", 0.0); playing = true } }
+                        "resume" -> if (!playing) {
+                            acquireAudioFocus()
+                            try {
+                                control(handle, "resume", 0.0)
+                                playing = true
+                            } catch (error: Exception) {
+                                releaseAudioFocus()
+                                throw error
+                            }
+                        }
                         "pause", "stop" -> { playing = false; releaseInputs(); releaseAudioFocus(); control(handle, action, 0.0) }
                         "debug" -> { debug = value.optDouble("value") != 0.0 }
                         "volume", "speed", "smoothing", "scanlines", "reset" -> {

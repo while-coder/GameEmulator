@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { finishTextEditing } from '../../player-ui/remoteNavigation'
 import { useSettingsTab } from '../../player-ui/useSettingsTab'
+import PlayerSaveList from '../../player-ui/PlayerSaveList.vue'
+import type { SaveListItem } from '../../player-ui/saveList'
 import PauseMenu from '../../player-ui/PauseMenu.vue'
-import BackConfirmDialog from '../../player-ui/BackConfirmDialog.vue'
+import LibraryLoading from '../../player-ui/LibraryLoading.vue'
+import PlayerEntryError from '../../player-ui/PlayerEntryError.vue'
+import { useLibraryOperation } from '../../player-ui/useLibraryOperation'
 import { usePlaySession } from '../../player-ui/usePlayHistory'
+import type { PlayerEntry } from '../../player-ui/playerEntry'
 import { nextSaveLabel, type SaveKind } from '../../shared/saveSlots'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import fbaLicense from './assets/cores/FBA-LICENSE.txt?raw'
@@ -13,71 +18,60 @@ import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SSwitch from '@qingfeng346/ui-kit/components/SSwitch.vue'
 import TouchControls from './components/TouchControls.vue'
-import RomStorePanel from './components/RomStorePanel.vue'
 import RemoteSelect from '../../player-ui/RemoteSelect.vue'
-import { findCatalogGame, loadCatalogs, type ArcadeCatalog, type CatalogGame } from './store/catalog'
+import { findCachedCatalogGame, findCatalogGame } from './store/catalog'
 import { createArcadeRunner, type ArcadeRunnerApi } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action, type TouchLayout } from './emulator/settings'
-import { CORE_BUILD, bundleKey, listArchives, listSnapshots, putSnapshot, createSnapshot, renameSnapshot, saveKindOf, snapshotBundleKey, removeArchive, removeSnapshot, type Archive, type Snapshot } from './store/library'
-import { prepareCatalogGame, prepareGame, type DependencyProgress } from './store/dependencies'
+import { CORE_BUILD, bundleKey, getSnapshot, listArchives, listSnapshots, putSnapshot, createSnapshot, renameSnapshot, saveKindOf, snapshotBundleKey, removeSnapshot, type Archive, type Snapshot } from './store/library'
+import { prepareCatalogGame, type DependencyProgress } from './store/dependencies'
 import { useArcadeInput } from './composables/useArcadeInput'
 import { useFullscreen } from './composables/useFullscreen'
 import { navEnabled, useRemoteNav } from './composables/useRemoteNav'
 import '../../player-ui/player.css'
 import '../../player-ui/settings.css'
 import '../../player-ui/library.css'
-import SInput from '@qingfeng346/ui-kit/components/input/SInput.vue'
-import STag from '@qingfeng346/ui-kit/components/STag.vue'
-import SIconButton from '@qingfeng346/ui-kit/components/button/SIconButton.vue'
-import SEmpty from '@qingfeng346/ui-kit/components/SEmpty.vue'
 
-const props=defineProps<{onLeave:()=>void|Promise<void>;backOnEscape?:boolean}>()
+const props=defineProps<{onLeave:()=>void|Promise<void>;entry?:PlayerEntry}>()
 const canvas=ref<HTMLCanvasElement|null>(null)
 const display=ref<HTMLElement|null>(null)
 const root=ref<HTMLElement|null>(null)
-const libraryPanel=ref<InstanceType<typeof RomStorePanel>|null>(null)
 const fullscreenRoot=computed(()=>root.value?.ownerDocument.documentElement??null)
 const fullscreen=useFullscreen(fullscreenRoot)
 const runner=shallowRef<ArcadeRunnerApi|null>(null)
 const coreBuild=()=>runner.value?.coreBuild??CORE_BUILD
 const currentBundle=(game:Archive, dependencies:Archive[])=>bundleKey(game,dependencies,coreBuild())
 const menuOpen=ref(false),busy=ref(false),leaving=ref(false)
-const leaveConfirm=ref(false)
+const playbackFailed=ref(false)
+const {operation,cancelling,cancelOperation,runOperation}=useLibraryOperation()
 const layoutEditing=ref(false)
 const touchLayoutDraft=ref<TouchLayout>()
 const tab=useSettingsTab('arcade')
-const tabs=[{id:'saves',label:'存档'},{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
+const tabs=[{id:'keys',label:'按键'},{id:'display',label:'显示'},{id:'audio',label:'音频'},{id:'misc',label:'其他'}] as const
 const pauseOpen=ref(false)
+const savesOpen=ref(false)
+const savePanel=ref<InstanceType<typeof PlayerSaveList>|null>(null)
 const pauseMenu=ref<InstanceType<typeof PauseMenu>|null>(null)
 function resumeGame(){if(!busy.value&&!leaving.value)pauseOpen.value=false}
-function showSettings(nextTab?:typeof tab.value){if(nextTab)tab.value=nextTab;menuOpen.value=true;pauseOpen.value=false}
+function showSettings(){menuOpen.value=true;pauseOpen.value=false}
 function openMenu(){if(loaded.value)pauseOpen.value=true;else menuOpen.value=true}
 watch(fullscreen.isFullscreen,(value,previous)=>{if(previous&&!value&&loaded.value&&!menuOpen.value)openMenu()})
 function editTouchLayout(){touchLayoutDraft.value=JSON.parse(JSON.stringify(settings.touchLayout));layoutEditing.value=true;menuOpen.value=false}
 function finishTouchLayout(){tab.value='keys';menuOpen.value=true;layoutEditing.value=false;touchLayoutDraft.value=undefined}
 function saveTouchLayout(){if(touchLayoutDraft.value)settings.touchLayout=touchLayoutDraft.value;finishTouchLayout()}
 function resetTouchLayout(){if(touchLayoutDraft.value)touchLayoutDraft.value[window.matchMedia('(orientation: portrait)').matches?'portrait':'landscape']={}}
-function closeMenu(){if(editingKey.value){cancelEdit();return}if(!busy.value&&!leaving.value)menuOpen.value=false}
+function closeMenu(){
+  if(busy.value||leaving.value)return
+  if(playbackFailed.value)void leave()
+  else menuOpen.value=false
+}
 const archives=ref<Archive[]>([]),snapshots=ref<Snapshot[]>([])
-const catalogNames=ref(new Map<string,string>())
-const currentGameName=computed(()=>current.value?(catalogNames.value.get(current.value.hash.toLowerCase())||current.value.displayName||current.value.name.replace(/\.zip$/i,'')):'')
-const snapshotGameName=(snapshot:Snapshot)=>catalogNames.value.get(snapshot.gameHash.toLowerCase())||archives.value.find(game=>game.hash.toLowerCase()===snapshot.gameHash.toLowerCase())?.displayName||snapshot.gameName.replace(/\.zip$/i,'')
+const currentGameName=computed(()=>current.value?(current.value.displayName||current.value.name.replace(/\.zip$/i,'')):'')
+const snapshotGameName=(snapshot:Snapshot)=>archives.value.find(game=>game.hash.toLowerCase()===snapshot.gameHash.toLowerCase())?.displayName||snapshot.gameName.replace(/\.zip$/i,'')
 const snapshotName=(snapshot:Snapshot)=>snapshot.label?.trim()||snapshotGameName(snapshot)
-const games=computed(()=>archives.value.filter(a=>a.kind==='game').sort((a,b)=>b.importedAt-a.importedAt))
 const current=shallowRef<Archive|null>(null)
 const currentDependencies=shallowRef<Archive[]>([])
 const loaded=computed(()=>!!current.value&&!!runner.value?.loaded)
-const saveQuery=ref('')
-const saveFilter=ref('all')
-const saveFilterOptions=computed(()=>[
-  {value:'all',label:'全部游戏'},
-  ...(loaded.value?[{value:'current',label:'本游戏'}]:[]),
-  ...[...new Map(snapshots.value.map(snapshot=>[snapshot.gameHash,{value:snapshot.gameHash,label:snapshotGameName(snapshot)}])).values()].sort((a,b)=>a.label.localeCompare(b.label,'zh-Hans-CN')),
-])
-const filteredSnapshots=computed(()=>snapshots.value.filter(snapshot=>(saveFilter.value==='all'||snapshot.gameHash===(saveFilter.value==='current'?current.value?.hash:saveFilter.value))&&[snapshotName(snapshot),snapshotGameName(snapshot)].join(' ').toLocaleLowerCase().includes(saveQuery.value.trim().toLocaleLowerCase())).sort((a,b)=>b.savedAt-a.savedAt))
-watch(saveFilterOptions,options=>{if(!options.some(option=>option.value===saveFilter.value))saveFilter.value='all'})
-watch([tab,loaded,menuOpen],()=>{saveFilter.value=loaded.value?'current':'all';saveQuery.value=''})
-const enabled=computed(()=>loaded.value&&!menuOpen.value&&!pauseOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
+const enabled=computed(()=>loaded.value&&!playbackFailed.value&&!menuOpen.value&&!pauseOpen.value&&!savesOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value)
 usePlaySession('arcade',computed(()=>loaded.value?current.value!.hash:null),enabled)
 const input=useArcadeInput(runner,enabled)
 const player=ref(0)
@@ -91,22 +85,32 @@ let messageTimer: ReturnType<typeof setTimeout>|undefined
 function notify(text:string){message.value=text;clearTimeout(messageTimer);messageTimer=setTimeout(()=>{message.value=''},2200)}
 async function task(action:()=>Promise<void>){
   if(busy.value||leaving.value)return
-  busy.value=true;error.value='';retryAction.value=null
-  try{await action()}catch(err){if(!downloads.signal.aborted){error.value=err instanceof Error?err.message:String(err);retryAction.value=action;menuOpen.value=true;pauseOpen.value=false}}
+  busy.value=true;error.value=''
+  if(retryAction.value!==action)retryAction.value=null
+  try{await action();retryAction.value=null}catch(err){if(!downloads.signal.aborted){error.value=err instanceof Error?err.message:String(err);retryAction.value=action;menuOpen.value=true;pauseOpen.value=false}}
   finally{busy.value=false;progress.value=null}
 }
 async function refresh(){[archives.value,snapshots.value]=await Promise.all([listArchives(),listSnapshots()])}
-async function startGame(source:Archive,snapshot?:Snapshot,signal=downloads.signal){
-  const {game,dependencies}=await prepareGame(source,{signal,onProgress:value=>{progress.value=value}})
-  await loadPreparedGame(game,dependencies,snapshot,signal)
+function checkSnapshot(snapshot: Snapshot, game: Archive, dependencies: Archive[]) {
+  if (snapshot.coreBuild !== coreBuild()) throw new Error('此存档不属于当前街机核心版本，原存档已保留')
+  if (snapshotBundleKey(snapshot) !== currentBundle(game, dependencies)) {
+    throw new Error('存档所需的依赖版本与当前游戏不一致')
+  }
+}
+async function applySnapshot(snapshot: Snapshot, game: Archive, dependencies: Archive[], signal?: AbortSignal) {
+  signal?.throwIfAborted()
+  checkSnapshot(snapshot, game, dependencies)
+  const active = runner.value!
+  active.pause()
+  await active.restore(snapshot.state, signal)
 }
 async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Snapshot,signal=downloads.signal){
   signal.throwIfAborted()
-  if(snapshot&&currentBundle(game,dependencies)!==snapshotBundleKey(snapshot))throw new Error('存档所需的依赖版本与当前目录不一致，无法读取此存档')
+  if(snapshot)checkSnapshot(snapshot,game,dependencies)
   progress.value=null
   await refresh()
   signal.throwIfAborted()
-  current.value=null;input.releaseAll()
+  current.value=null;playbackFailed.value=false;input.releaseAll()
   let stopping:Promise<void>|undefined
   const cancel=()=>{
     stopping=Promise.resolve(runner.value?.dispose())
@@ -116,8 +120,17 @@ async function loadPreparedGame(game:Archive,dependencies:Archive[],snapshot?:Sn
   try{
     await runner.value!.load(game,dependencies)
     signal.throwIfAborted()
+    if(snapshot){
+      // A loaded ROM does not guarantee that the driver has run its startup frame.
+      await runner.value!.waitForFirstFrame(signal)
+      await applySnapshot(snapshot, game, dependencies, signal)
+    }
+    signal.throwIfAborted()
     await nextTick();measure()
     signal.throwIfAborted()
+  }catch(error){
+    if(!signal.aborted)await Promise.resolve(runner.value?.dispose()).catch(()=>{})
+    throw error
   }finally{
     signal.removeEventListener('abort',cancel)
     await stopping
@@ -134,50 +147,45 @@ async function libraryTask(signal:AbortSignal,action:()=>Promise<void>){
   catch(error){await refresh();throw error}
   finally{busy.value=false;progress.value=null}
 }
-async function play(game:Archive,signal:AbortSignal){
-  await libraryTask(signal,async()=>{await startGame(game,undefined,signal);menuOpen.value=false})
-}
-async function remoteGame(entry:CatalogGame,catalog:ArcadeCatalog,signal:AbortSignal){
-  await libraryTask(signal,async()=>{
-    const {game,dependencies}=await prepareCatalogGame(entry,catalog,{signal,onProgress:value=>{progress.value=value}})
-    await loadPreparedGame(game,dependencies,undefined,signal);menuOpen.value=false
-  })
-}
-async function deleteGame(game:Archive){await task(async()=>{await removeArchive(game.id);await refresh()})}
-async function downloadGame(entry:CatalogGame,catalog:ArcadeCatalog,signal:AbortSignal){
-  await libraryTask(signal,async()=>{
-    try{await prepareCatalogGame(entry,catalog,{signal,onProgress:value=>{progress.value=value}})}
-    finally{await refresh()}
-  })
+async function launchGame(entry: Extract<PlayerEntry, { kind: 'play' }>) {
+  try {
+    const completed = await runOperation(entry.name, 'play', signal => libraryTask(signal, async () => {
+      const key = entry.key.toLowerCase()
+      const snapshot = entry.saveKey ? await getSnapshot(entry.saveKey) : undefined
+      if (entry.saveKey && (!snapshot || snapshot.gameHash !== key)) throw new Error('找不到此游戏的指定存档')
+      if (snapshot && snapshot.coreBuild !== coreBuild()) throw new Error('此存档属于其他内核版本，已保留原存档')
+      const match = await findCachedCatalogGame(key) ?? await findCatalogGame(key, signal)
+      signal.throwIfAborted()
+      if (!match) throw new Error('找不到游戏目录和依赖，请回大厅刷新后重试')
+      const { game, dependencies } = await prepareCatalogGame(match.game, match.catalog, {
+        signal,
+        onProgress: value => { progress.value = value },
+      })
+      await loadPreparedGame(game, dependencies, snapshot, signal)
+    }))
+    if (!completed) await leave()
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : String(reason)
+  }
 }
 async function newSave(){await save('normal')}
 async function save(kind:SaveKind='quick'){
   const game=current.value
   if(!game||!runner.value?.loaded)throw new Error('请先启动游戏')
   const dependencies=currentDependencies.value
-  const state=await runner.value.save()
-  const snapshot:Snapshot={key:currentBundle(game,dependencies),kind:'quick',gameName:currentGameName.value,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:coreBuild(),state,savedAt:Date.now()}
+  let preview: Blob | undefined
+  const state=await runner.value.save(image => { preview = image })
+  const snapshot:Snapshot={key:currentBundle(game,dependencies),kind:'quick',gameName:currentGameName.value,gameHash:game.hash,dependencies:dependencies.map(d=>({name:d.name,hash:d.hash})),coreBuild:coreBuild(),state,preview,savedAt:Date.now()}
   if(kind==='normal'){
     const label=nextSaveLabel(snapshots.value.filter(item=>item.gameHash===game.hash&&item.coreBuild===coreBuild()))
     await createSnapshot(snapshot,label)
-    saveFilter.value='current';saveQuery.value=''
   }else await putSnapshot(snapshot)
   snapshots.value=await listSnapshots()
   notify(kind==='normal'?'已新建存档':'已快速存档')
 }
 async function restore(snapshot:Snapshot){
-  if(snapshot.coreBuild!==coreBuild())throw new Error('此存档不属于当前街机核心版本，原存档已保留')
-  const game=games.value.find(g=>g.hash===snapshot.gameHash)
-  if(!current.value||currentBundle(current.value,currentDependencies.value)!==snapshotBundleKey(snapshot)){
-    if(game)await startGame(game,snapshot)
-    else{
-      const match=await findCatalogGame(snapshot.gameHash,downloads.signal)
-      if(!match)throw new Error(`未找到存档对应的游戏，请确认在线游戏库仍收录 ${snapshot.gameName}`)
-      const prepared=await prepareCatalogGame(match.game,match.catalog,{signal:downloads.signal,onProgress:value=>{progress.value=value}})
-      await loadPreparedGame(prepared.game,prepared.dependencies,snapshot)
-    }
-  }
-  await runner.value!.restore(snapshot.state)
+  if(!current.value)throw new Error('请先启动游戏')
+  await applySnapshot(snapshot,current.value,currentDependencies.value)
   menuOpen.value=false;notify('已读取存档')
 }
 async function quickRestore(){
@@ -186,44 +194,44 @@ async function quickRestore(){
   if(!snapshot)throw new Error('当前游戏还没有快速存档')
   await restore(snapshot)
 }
-const editingKey=ref<string|null>(null),editingText=ref('')
-function startEdit(snapshot:Snapshot){
-  if(busy.value||leaving.value)return
-  editingKey.value=snapshot.key;editingText.value=snapshotName(snapshot)
-  void nextTick(()=>{const el=document.querySelector<HTMLInputElement>('.rename-input input, input.rename-input');el?.focus();el?.select()})
+async function loadSaves(): Promise<SaveListItem[]> {
+  const key = current.value?.hash
+  if (!key) return []
+  snapshots.value = await listSnapshots()
+  return snapshots.value.filter(snapshot => snapshot.gameHash === key).map(snapshot => ({
+    ...snapshot,
+    label: snapshot.label?.trim() || (saveKindOf(snapshot) === 'quick' ? '快速存档' : snapshotName(snapshot)),
+    kind: saveKindOf(snapshot),
+    compatible: snapshot.coreBuild === coreBuild(),
+    rename: label => renameSnapshot(snapshot.key, label),
+    remove: () => removeSnapshot(snapshot.key),
+    restore: async () => {
+      await restore(snapshot)
+      savesOpen.value = false
+      resumeGame()
+    },
+  }))
 }
-async function commitEdit(snapshot:Snapshot){
-  if(editingKey.value!==snapshot.key)return
-  const label=editingText.value.trim();editingKey.value=null
-  if(!label||label===snapshotName(snapshot))return
-  await task(async()=>{await renameSnapshot(snapshot.key,label);snapshots.value=await listSnapshots()})
-}
-function cancelEdit(){editingKey.value=null}
-async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];menuOpen.value=false;pauseOpen.value=false;await runner.value?.dispose();await fullscreen.exit()}
-function requestLeave(){if(!busy.value&&!leaving.value)leaveConfirm.value=true}
+async function stop(){layoutEditing.value=false;touchLayoutDraft.value=undefined;input.releaseAll();current.value=null;currentDependencies.value=[];playbackFailed.value=false;menuOpen.value=false;pauseOpen.value=false;await runner.value?.dispose();await fullscreen.exit()}
 async function leave(){
   if(busy.value||leaving.value)return
   leaving.value=true
   try{await stop();await props.onLeave()}catch(err){error.value=String(err)}finally{leaving.value=false}
 }
 function nativeBack(): 'handled'{
-  if(document.querySelector('dialog.library-loading[open]')){libraryPanel.value?.cancelOperation();return 'handled'}
-  const gameMenu=document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
-  if(gameMenu){gameMenu.close();return 'handled'}
-  if(leaveConfirm.value){leaveConfirm.value=false;return 'handled'}
+  if(operation.value){cancelOperation();return 'handled'}
+  if(savesOpen.value){savePanel.value?.back();return 'handled'}
   if(busy.value||leaving.value)return 'handled'
-  if(editingKey.value)cancelEdit()
-  else if(layoutEditing.value)finishTouchLayout()
-  else if(menuOpen.value)menuOpen.value=false
+  const filter=document.querySelector<HTMLElement>('.rs-backdrop')
+  if(filter){filter.click();return 'handled'}
+  if(layoutEditing.value)finishTouchLayout()
+  else if(menuOpen.value)closeMenu()
   else if(pauseOpen.value)resumeGame()
   else if(loaded.value)openMenu()
-  else requestLeave()
+  else void leave()
   return 'handled'
 }
 function shellKey(event:KeyboardEvent){
-  if(event.code==='Escape'&&document.querySelector('dialog.library-loading[open]')){event.preventDefault();event.stopImmediatePropagation();if(!event.repeat)libraryPanel.value?.cancelOperation();return}
-  if(event.code==='Escape'&&document.querySelector('dialog.game-card-menu[open]')){event.preventDefault();event.stopImmediatePropagation();nativeBack();return}
-  if(event.code==='Escape'&&editingKey.value){event.preventDefault();event.stopImmediatePropagation();cancelEdit();return}
   if (event.code === 'Escape' && navEnabled.value && finishTextEditing()) {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -234,10 +242,11 @@ function shellKey(event:KeyboardEvent){
   const loadKey=!event.ctrlKey&&!event.shiftKey&&!event.altKey&&!event.metaKey&&event.code==='F9'
   if(event.code==='Escape'||event.code==='F11'||saveKey||loadKey){
     event.preventDefault();event.stopImmediatePropagation()
-    if(event.repeat||busy.value||leaving.value)return
+    if(event.repeat)return
+    if(event.code==='Escape'){capturing.value=null;nativeBack();return}
+    if(busy.value||leaving.value)return
     if(event.code==='F11'){void fullscreen.toggle();return}
-    if(event.code==='Escape'){capturing.value=null;if(leaveConfirm.value)leaveConfirm.value=false;else if(layoutEditing.value)finishTouchLayout();else if(menuOpen.value)menuOpen.value=false;else if(pauseOpen.value)resumeGame();else if(loaded.value)openMenu();else if(props.backOnEscape)requestLeave();else openMenu();return}
-    if(!menuOpen.value&&!pauseOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
+    if(!menuOpen.value&&!pauseOpen.value&&!savesOpen.value&&!layoutEditing.value)void task(loadKey?quickRestore:save)
     return
   }
   if(capturing.value&&menuOpen.value){
@@ -247,18 +256,18 @@ function shellKey(event:KeyboardEvent){
 }
 // The shell owns these keys before menu navigation or the game sees them.
 if(typeof window!=='undefined')window.addEventListener('keydown',shellKey,true)
-useRemoteNav({container:root,active:computed(()=>navEnabled.value&&!loaded.value&&!menuOpen.value&&!layoutEditing.value&&!busy.value&&!leaving.value),onBack:()=>props.backOnEscape?nativeBack():openMenu(),autoFocus:true,priority:1})
-const toolbar=ref<HTMLElement|null>(null)
-useRemoteNav({container:toolbar,active:computed(()=>navEnabled.value&&!menuOpen.value&&!layoutEditing.value&&!loaded.value&&!busy.value&&!leaving.value),onBack:()=>props.backOnEscape?nativeBack():openMenu(),autoFocus:true,priority:0})
 const panel=ref<HTMLElement|null>(null)
 useRemoteNav({container:panel,active:computed(()=>navEnabled.value&&menuOpen.value&&!capturing.value),onBack:closeMenu,autoFocus:true,priority:10})
-useRemoteNav({container:computed(()=>pauseMenu.value?.panel??null),active:computed(()=>navEnabled.value&&pauseOpen.value&&!busy.value&&!leaving.value),onBack:resumeGame,autoFocus:true,priority:10})
-watch([menuOpen,pauseOpen,layoutEditing,busy,current],()=>{
-  if(menuOpen.value||pauseOpen.value||layoutEditing.value||busy.value)runner.value?.pause()
+useRemoteNav({container:computed(()=>pauseMenu.value?.panel??null),active:computed(()=>navEnabled.value&&pauseOpen.value&&!savesOpen.value&&!busy.value&&!leaving.value),onBack:resumeGame,autoFocus:true,priority:10})
+watch([menuOpen,pauseOpen,savesOpen,layoutEditing,busy,current,playbackFailed],()=>{
+  if(!current.value||menuOpen.value||pauseOpen.value||savesOpen.value||layoutEditing.value||busy.value||playbackFailed.value)runner.value?.pause()
   else runner.value?.resume()
 },{flush:'sync'})
 watch(()=>settings.muted,value=>runner.value?.setMuted(value))
 watch([menuOpen,tab,player],()=>{capturing.value=null})
+watch(menuOpen, open => {
+  if (!open && !loaded.value && !layoutEditing.value && !leaving.value) void leave()
+})
 
 const frameSize=ref({width:'100%',height:'100%'})
 function measure(){
@@ -281,16 +290,22 @@ const blurCanvas=()=>canvas.value?.blur()
 function pageHide(){downloads.abort();input.releaseAll();void Promise.resolve(runner.value?.dispose()).catch(err=>console.warn('[Arcade] 退出核心失败',err))}
 onMounted(()=>{
   runner.value=createArcadeRunner(canvas.value!)
-  runner.value.onError=(err)=>{error.value=err.message;menuOpen.value=true}
+  runner.value.onError=(err,reason)=>{
+    if(playbackFailed.value)return
+    playbackFailed.value=loaded.value&&reason!=='native-pause'
+    error.value=err.message
+    if(loaded.value)menuOpen.value=true
+  }
   runner.value.setMuted(settings.muted)
   canvas.value!.addEventListener('focus',blurCanvas)
   resize=new ResizeObserver(measure);resize.observe(display.value!)
   window.addEventListener('pagehide',pageHide)
   ;(window as Window&{__handleAndroidBack?:()=>string}).__handleAndroidBack=nativeBack
-  measure();void task(refresh)
-  void loadCatalogs(downloads.signal).then(({catalogs})=>{
-    catalogNames.value=new Map(catalogs.flatMap(catalog=>catalog.games.flatMap(game=>game.name?[[game.sha256.toLowerCase(),game.name] as const]:[])))
-  }).catch(()=>{})
+  measure()
+  const entry=props.entry
+  if(entry?.kind==='play')void launchGame(entry)
+  else if(entry)showSettings()
+  else void leave()
 })
 onBeforeUnmount(()=>{
   downloads.abort()
@@ -301,24 +316,14 @@ onBeforeUnmount(()=>{
   void Promise.resolve(runner.value?.dispose()).catch(err=>console.warn('[Arcade] 退出核心失败',err))
 })
 const PAD_LABELS:Record<number,string>={0:'A / ×',1:'B / ○',2:'X / □',3:'Y / △',4:'LB / L1',5:'RB / R1',8:'Select / Back',9:'Start',12:'↑',13:'↓',14:'←',15:'→'}
-const time=(value:number)=>new Date(value).toLocaleString()
 </script>
 
 <template>
-  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'library-home':!loaded&&!layoutEditing,'game-playing':loaded||layoutEditing}">
-    <header v-show="!loaded && !layoutEditing" ref="toolbar" class="player-toolbar" data-nav-row aria-label="游戏功能区">
-      <SButton class="library-back" aria-label="返回模拟器列表" :disabled="busy||leaving" @click="requestLeave">‹ 返回</SButton>
-      <span class="player-title">街机模拟器</span>
-      <span class="library-header-line" aria-hidden="true"></span>
-      <SButton :disabled="busy || leaving" @click="openMenu">⚙ 设置</SButton>
-    </header>
-    <section v-show="!loaded && !layoutEditing" class="library-browser" aria-label="游戏库">
-      <RomStorePanel ref="libraryPanel" :active="!loaded && !layoutEditing" :archives="archives" :busy="busy||leaving" :progress="progress"
-        :play="remoteGame"
-        :download="downloadGame"
-        :refresh="refresh"
-        :play-cached="play" :remove="deleteGame" />
-    </section>
+  <div ref="root" class="arcade-app" :class="{'is-pseudo-fullscreen':fullscreen.isFullscreen.value&&fullscreen.usePseudo.value,'game-playing':loaded||layoutEditing}">
+    <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action"
+      :message="progress ? '正在下载并校验游戏…' : undefined" :progress="progress ? { ...progress, label: progress.name } : null"
+      :cancelling="cancelling" @cancel="cancelOperation" />
+    <PlayerEntryError v-if="error && !menuOpen && !savesOpen && !loaded && !operation && !layoutEditing" :message="error" @back="leave" />
     <main class="arcade-stage player-stage" :class="{'player-preparing':!loaded&&!layoutEditing,'has-touch':touchVisible,'always-controls':settings.touch==='always'||layoutEditing}">
       <div v-if="layoutEditing" class="layout-edit-tools" data-layout-toolbar>
         <div class="layout-edit-header">
@@ -333,47 +338,26 @@ const time=(value:number)=>new Date(value).toLocaleString()
       </div>
       <TouchControls v-if="touchVisible" class="arcade-touch" :class="{'touch-always':settings.touch==='always'||layoutEditing}" :disabled="!enabled" :editing="layoutEditing" :layout="touchLayoutDraft" @menu="openMenu" @save="task(save)" @press="(action,source)=>input.press(0,action,source)" @release="(action,source)=>input.release(0,action,source)" />
     </main>
-    <BackConfirmDialog v-model:show="leaveConfirm" @confirm="leave" />
-    <SModal v-model:show="pauseOpen" class="player-pause-modal" :title="currentGameName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
-      <PauseMenu ref="pauseMenu" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="showSettings('saves')" @help="showSettings('keys')" @settings="showSettings()" @exit="task(stop)" />
+    <PlayerSaveList v-if="savesOpen" ref="savePanel" :game-name="currentGameName" :load="loadSaves" :create="loaded ? newSave : undefined" @close="savesOpen = false" />
+    <SModal v-if="!savesOpen" v-model:show="pauseOpen" class="player-pause-modal" :title="currentGameName || '游戏已暂停'" subtitle="游戏已暂停" width="400px" :closable="false" :mask-closable="!busy && !leaving" :close-on-esc="false">
+      <PauseMenu ref="pauseMenu" :busy="busy || leaving" :message="message" @resume="resumeGame" @save="task(newSave)" @load="savesOpen = true" @settings="showSettings()" @exit="leave" />
     </SModal>
     <button v-if="loaded && !layoutEditing" class="play-menu-button" @click="openMenu">暂停 · Esc / 返回</button>
     <div v-if="message" class="arcade-toast" role="status">{{message}}</div>
 
-    <SModal v-model:show="menuOpen" title="设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
+    <SModal :show="menuOpen" @update:show="show => { if (!show) closeMenu() }" title="设置" width="1040px" fill-height class="player-modal arcade-modal" :closable="!busy && !leaving" :mask-closable="!busy && !leaving" :close-on-esc="false" :body-scrollable="false">
       <div ref="panel" class="arcade-menu player-settings">
         <nav class="arcade-tabs player-settings-tabs" role="tablist" aria-label="街机设置分类"><SButton v-for="item in tabs" :key="item.id" :id="`arcade-tab-${item.id}`" class="arcade-tab" :class="{active:tab===item.id}" role="tab" :aria-selected="tab===item.id" :aria-controls="`arcade-panel-${item.id}`" :disabled="busy||leaving" @click="tab=item.id">{{item.label}}</SButton></nav>
         <div v-if="error||busy" class="player-settings-notices">
-          <div v-if="error" class="arcade-error" role="alert">{{error}} <SButton v-if="retryAction" :disabled="busy" @click="task(retryAction!)">重试</SButton></div>
+          <div v-if="error || retryAction" class="arcade-error">
+            <span v-if="error" role="alert">{{error}}</span>
+            <SButton v-if="retryAction" :aria-disabled="busy || leaving" @click="task(retryAction!)">{{ busy ? '正在重试…' : '重试' }}</SButton>
+            <SButton v-if="playbackFailed" :disabled="busy || leaving" @click="task(stop)">返回游戏库</SButton>
+          </div>
           <p v-if="busy" class="arcade-progress" role="status">{{progressText}}</p>
         </div>
-        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content player-settings-body" :class="{'library-content':tab==='saves','player-settings-list':tab==='saves'}" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
-          <section v-if="tab==='saves'" class="store-panel player-saves">
-            <div class="store-tools"><div class="search-tools"><SButton :disabled="!loaded" @click="task(newSave)">新建存档</SButton><SInput v-model:value="saveQuery" type="search" placeholder="搜索存档名、游戏名" aria-label="搜索存档" /></div><RemoteSelect v-model="saveFilter" :options="saveFilterOptions" searchable aria-label="存档游戏范围" /></div>
-            <div class="store-summary">显示 {{filteredSnapshots.length}} 条</div>
-            <SHint class="load-hint">「新建存档」保留多份普通存档；Ctrl+S / F8 覆盖本游戏快速存档，F9 仅读取快速存档。跨游戏读档会自动查找或下载对应游戏并切换，当前未保存进度不会保留。</SHint>
-            <div class="save-list">
-              <article v-for="snapshot in filteredSnapshots" :key="snapshot.key" class="save-card">
-                <div class="save-main">
-                  <div class="save-title-row">
-                    <STag size="small" :type="saveKindOf(snapshot)==='quick'?'warning':'info'">{{saveKindOf(snapshot)==='quick'?'快速':'普通'}}</STag>
-                    <SInput v-if="editingKey===snapshot.key" v-model:value="editingText" class="rename-input" type="text" aria-label="存档名称" @keydown.enter.prevent="commitEdit(snapshot)" @keydown.esc.prevent="cancelEdit" @blur="commitEdit(snapshot)" />
-                    <h3 v-else :title="snapshotName(snapshot)" @click="startEdit(snapshot)">{{snapshotName(snapshot)}}</h3>
-                    <SIconButton v-if="editingKey!==snapshot.key" :size="44" aria-label="重命名" title="重命名" :disabled="busy||leaving" @click="startEdit(snapshot)">✎</SIconButton>
-                  </div>
-                  <p class="meta">{{snapshotGameName(snapshot)}} · {{snapshot.coreBuild.includes('-native-')?'原生内核':'WASM 内核'}}</p>
-                  <p class="meta time">{{time(snapshot.savedAt)}}</p>
-                </div>
-                <div class="save-actions">
-                  <SButton class="btn primary" @click="task(()=>restore(snapshot))">{{loaded && current?.hash!==snapshot.gameHash?'切换并读档':'读档'}}</SButton>
-                  <SButton class="btn" @click="task(async()=>{await removeSnapshot(snapshot.key);await refresh()})">删除</SButton>
-                </div>
-              </article>
-              <SEmpty v-if="!filteredSnapshots.length" :description="snapshots.length?'没有匹配的存档':'还没有任何存档'" />
-            </div>
-          </section>
-
-          <section v-else-if="tab==='keys'" class="keys-page">
+        <fieldset :id="`arcade-panel-${tab}`" class="arcade-content player-settings-body" :disabled="busy||leaving" role="tabpanel" :aria-labelledby="`arcade-tab-${tab}`">
+          <section v-if="tab==='keys'" class="keys-page">
             <section class="keyboard-help"><h3>快捷键</h3><dl><dt><kbd>Esc</kbd></dt><dd>游戏中打开暂停菜单，再按一次继续游戏。</dd><dt><kbd>Ctrl+S / F8</kbd></dt><dd>快速存档。</dd><dt><kbd>F9</kbd></dt><dd>读取本游戏快速存档。</dd><dt><kbd>F11</kbd></dt><dd>全屏 / 窗口切换。</dd></dl></section>
             <div class="touch-layout-setting"><span>触屏按键布局</span><SButton @click="editTouchLayout">编辑布局</SButton></div>
             <SHint class="layout-hint">摇杆可调整大小，每个动作按钮可独立移动、缩放或隐藏；横屏与竖屏分别保存。</SHint>
@@ -413,7 +397,6 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .arcade-menu{display:flex;flex-direction:column;min-height:0;height:100%}.arcade-tabs{display:flex;gap:6px;padding:12px;overflow-x:auto;flex-shrink:0}.arcade-tabs :deep(button){flex-shrink:0}.selected{background:#383e4c!important;border-color:#82a4dc!important}
 .arcade-error{margin:0 12px 10px;padding:12px;background:#482c30;border:1px solid #8d545a;border-radius:6px;color:#ffccd0;line-height:1.6;font-size:13px;overflow-wrap:anywhere}.arcade-progress{padding:0 16px;color:#bbb;font-size:13px}
 .arcade-content{min-width:0;min-height:0;flex:1;border:0;padding:4px 16px 20px;margin:0;overflow:auto}.arcade-content section{max-width:760px;margin:0 auto}.arcade-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
-.arcade-content.library-content{display:flex;flex-direction:column;padding:0;overflow:hidden}.library-content :deep(.store-panel){max-width:none;width:100%;margin:0}.library-empty{padding:36px 12px;text-align:center;color:#aaa;line-height:1.6}
 .game-row{border:1px solid #414141;border-radius:8px;padding:14px;margin-top:12px;background:#282828}.game-summary{display:flex;justify-content:space-between;align-items:center;gap:12px}.game-summary>div:first-child{min-width:0}.game-row strong{font-size:15px;overflow-wrap:anywhere}.game-row small{display:block;margin-top:7px;color:#aaa;font-size:12px}.row-actions{display:flex;gap:8px;flex-shrink:0}
 .keys-page h3{font-size:14px;margin:8px 0 14px}.keyboard-help{border-bottom:1px solid #414141;padding-bottom:16px;margin-bottom:20px!important}.keyboard-help dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;margin:0;line-height:1.6;font-size:13px}.keyboard-help dd{margin:0;color:#bbb}.keyboard-help kbd{background:#333;border:1px solid #555;border-radius:4px;padding:3px 6px}.arcade-key-row{display:grid;grid-template-columns:60px minmax(110px,1fr) minmax(90px,1fr);gap:12px;align-items:center;margin:10px 0;font-size:13px}.key-heading{color:#aaa;margin-top:18px}
 .core-licenses{margin-top:24px;color:#aaa;font-size:12px}.core-licenses summary{cursor:pointer;min-height:32px}.core-licenses pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;border:1px solid #444;line-height:1.5}
@@ -438,8 +421,6 @@ const time=(value:number)=>new Date(value).toLocaleString()
 .arcade-tabs .arcade-tab:focus-visible { outline: 2px solid #4ea1ff; outline-offset: -2px; }
 .arcade-content { padding: 16px; }
 .arcade-content section { max-width: 640px; }
-.arcade-content .saves-page { max-width: none; }
-.arcade-content.library-content { padding: 0; }
 .touch-layout-setting { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .layout-hint { display: block; margin-bottom: 12px; font-size: 12px; line-height: 1.4; }
 .player-switch { gap: 8px; margin-bottom: 12px; }
@@ -456,7 +437,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
 @media (pointer: coarse) {
   .arcade-tabs { gap: 4px; padding: 4px 8px; }
   .arcade-tabs .arcade-tab { min-height: var(--player-control-height); padding: 4px 8px; }
-  .arcade-content:not(.library-content) { padding: 8px 12px; }
+  .arcade-content { padding: 8px 12px; }
   .display-page > label { min-height: calc(var(--player-control-height) + 8px); padding-block: 4px; gap: 8px; }
   .display-page .remote-select { min-width: 0; width: 60%; max-width: 240px; }
   .arcade-key-row { padding-block: 3px; }
@@ -468,8 +449,7 @@ const time=(value:number)=>new Date(value).toLocaleString()
   .arcade-error { grid-column: 2; grid-row: 1; margin-right: 56px; }
   .arcade-progress { grid-column: 2; grid-row: 2; margin-right: 56px; }
   .arcade-content { grid-column: 2; grid-row: 3; }
-  .arcade-content:not(.library-content) { padding: 8px 56px 8px 12px; }
-  .library-content :deep(.store-tools) { padding-right: 56px; }
+  .arcade-content { padding: 8px 56px 8px 12px; }
 }
 </style>
 

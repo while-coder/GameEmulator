@@ -21,6 +21,7 @@ export type SaveStateRecord = {
   /** 用户可编辑的存档名;旧记录无此字段时展示层回退到 name。 */
   label?: string
   state: SaveState
+  preview?: Blob
   /** Missing on existing WASM saves. Native builds keep their own state identity. */
   coreBuild?: string
   savedAt: number
@@ -47,6 +48,7 @@ export async function putSaveState(
   label?: string,
   kind: SaveKind = 'quick',
   coreBuild?: string,
+  preview?: Blob,
 ): Promise<void> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
@@ -60,6 +62,7 @@ export async function putSaveState(
     name,
     label,
     state,
+    preview,
     savedAt: Date.now(),
   }
   await requestToPromise(tx.objectStore(STORE_NAME).put(record))
@@ -73,6 +76,7 @@ export async function createSaveState(
   label: string,
   state: SaveState,
   coreBuild?: string,
+  preview?: Blob,
 ): Promise<SaveStateRecord> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
@@ -87,6 +91,7 @@ export async function createSaveState(
     name,
     label,
     state,
+    preview,
     savedAt: Date.now(),
   }
   await requestToPromise(tx.objectStore(STORE_NAME).put(record))
@@ -143,7 +148,8 @@ export async function listSaveStates(romKey: string): Promise<SaveStateRecord[]>
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readonly')
   const done = txDone(tx)
-  const all = await requestToPromise<SaveStateRecord[]>(tx.objectStore(STORE_NAME).getAll())
+  const range = IDBKeyRange.bound(`${romKey}:`, `${romKey}:\uffff`)
+  const all = await requestToPromise<SaveStateRecord[]>(tx.objectStore(STORE_NAME).getAll(range))
   await done
   return all.filter((r) => r.romKey === romKey).sort((a, b) => b.savedAt - a.savedAt)
 }

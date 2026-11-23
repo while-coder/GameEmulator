@@ -4,6 +4,7 @@ import assetsUrl from './assets/psp/PPSSPPSDL.data?url'
 import type { ConsoleRunner } from './runner'
 import { PADMAP, romExtension, type Action } from './systems'
 import { getPspSavedata, putPspSavedata, type SavedGame, type PspSaveFile } from './store'
+import { wasmSaveBuilds } from '../../shared/saveBuilds'
 
 type FileSystem = {
   mkdirTree(path: string): void
@@ -53,7 +54,7 @@ function frameLoaded(frame: HTMLIFrameElement, signal: AbortSignal) {
 }
 
 export class PspRunner implements ConsoleRunner {
-  readonly build = 'ppsspp-1.20.4-web-21294328-v1'
+  readonly build = wasmSaveBuilds.psp
   onError?: (error: Error) => void
   private frame?: HTMLIFrameElement
   private win?: RuntimeWindow
@@ -61,6 +62,7 @@ export class PspRunner implements ConsoleRunner {
   private started = false
   private stateActive = false
   private renderedFrames = 0
+  private copySaveFrame?: () => void
   private readonly buttons = Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 }))
   private readonly axes = [0, 0, 0, 0]
   private readonly audioContexts = new Set<AudioContext>()
@@ -167,7 +169,7 @@ export class PspRunner implements ConsoleRunner {
     // Keep SDL's scheduler alive. Stopping it during a save can shut down
     // Emscripten's runtime before the next resume.
     win.MainLoop.preMainLoop.push(() => this.running || this.stateActive)
-    win.MainLoop.postMainLoop.push(() => { this.renderedFrames++ })
+    win.MainLoop.postMainLoop.push(() => { this.renderedFrames++; this.copySaveFrame?.() })
     window.addEventListener('pointerdown', this.applyAudio, true)
     window.addEventListener('keydown', this.applyAudio, true)
     await this.waitFor(() => this.renderedFrames > 0, startup)
@@ -259,18 +261,49 @@ export class PspRunner implements ConsoleRunner {
     }
   }
 
-  async save() {
+  async save(onPreview?: (preview: Blob) => void) {
     return this.stateOperation(async (fs, signal) => {
       fs.mkdirTree(statesDirectory)
-      for (const name of fs.readdir(statesDirectory).filter(name => slotFile.test(name))) fs.unlink(`${statesDirectory}/${name}`)
-      this.shortcut(2)
-      let name: string | undefined
-      await this.waitFor(() => !!(name = fs.readdir(statesDirectory).find(entry => slotFile.test(entry))), signal)
-      const file = fs.readFile(`${statesDirectory}/${name!}`)
-      const header = new TextEncoder().encode(name! + '\0')
-      const state = new Uint8Array(header.length + file.length)
-      state.set(header); state.set(file, header.length)
-      return state
+      for (const entry of fs.readdir(statesDirectory)) {
+        if (slotFile.test(entry) || /_0\.jpg$/i.test(entry)) fs.unlink(`${statesDirectory}/${entry}`)
+      }
+      let canvas: HTMLCanvasElement | undefined
+      this.copySaveFrame = onPreview ? () => {
+        this.copySaveFrame = undefined
+        const screen = this.screen
+        if (!screen?.width || !screen.height) return
+        try {
+          const copy = document.createElement('canvas')
+          copy.width = screen.width
+          copy.height = screen.height
+          const context = copy.getContext('2d')
+          if (!context) return
+          context.drawImage(screen, 0, 0)
+          if (context.getImageData(copy.width >> 1, copy.height >> 1, 1, 1).data[3]) canvas = copy
+        } catch { /* The core's own thumbnail can still be used. */ }
+      } : undefined
+      try {
+        this.shortcut(2)
+        let name: string | undefined
+        await this.waitFor(() => !!(name = fs.readdir(statesDirectory).find(entry => slotFile.test(entry))), signal)
+        const file = fs.readFile(`${statesDirectory}/${name!}`)
+        const header = new TextEncoder().encode(name! + '\0')
+        const state = new Uint8Array(header.length + file.length)
+        state.set(header); state.set(file, header.length)
+        if (onPreview) {
+          try {
+            const path = `${statesDirectory}/${name!.replace(/\.ppst$/, '.jpg')}`
+            const preview = fs.analyzePath(path).exists && fs.readFile(path)
+            if (preview && preview.length) {
+              onPreview(new Blob([new Uint8Array(preview)], { type: 'image/jpeg' }))
+            } else if (canvas) {
+              const image = await new Promise<Blob | null>(resolve => canvas!.toBlob(resolve))
+              if (image?.size) onPreview(image)
+            }
+          } catch (error) { console.warn('[PPSSPP] 读取存档截图失败', error) }
+        }
+        return state
+      } finally { this.copySaveFrame = undefined }
     })
   }
 

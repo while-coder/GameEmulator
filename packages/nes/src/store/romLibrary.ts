@@ -39,6 +39,23 @@ export async function listCachedRoms(): Promise<CachedRom[]> {
   return roms.sort((a, b) => (b.lastPlayedAt ?? b.savedAt) - (a.lastPlayedAt ?? a.savedAt))
 }
 
+export async function listCachedRomSummaries(): Promise<Omit<CachedRom, 'bytes'>[]> {
+  const db = await openDb()
+  const tx = db.transaction(STORE_NAME, 'readonly')
+  const done = txDone(tx)
+  const summaries: Omit<CachedRom, 'bytes'>[] = []
+  const request = tx.objectStore(STORE_NAME).openCursor()
+  request.onsuccess = () => {
+    const cursor = request.result
+    if (!cursor) return
+    const { bytes: _, ...summary } = cursor.value as CachedRom
+    summaries.push(summary)
+    cursor.continue()
+  }
+  await done
+  return summaries
+}
+
 export async function getCachedRom(key: string): Promise<CachedRom | null> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readonly')

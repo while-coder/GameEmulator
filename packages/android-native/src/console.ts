@@ -25,7 +25,7 @@ export class NativeConsoleRunner implements ConsoleRunner {
   input(player: number, action: Action, down: boolean) { this.session.pressRetro(player, RETRO[action], down) }
   setSmoothing(smoothing: boolean) { this.session.syncDisplay(smoothing, false) }
   setMuted(muted: boolean) { this.session.setAudioEnabled(!muted) }
-  async save() { const state = await this.session.saveState(); if (!state?.length) throw new Error('内核返回了空存档'); return state }
+  async save(onPreview?: (preview: Blob) => void) { const state = await this.session.saveState(onPreview); if (!state?.length) throw new Error('内核返回了空存档'); return state }
   async restore(data: Uint8Array) { if (!await this.session.loadState(data)) throw new Error('读取存档失败') }
   async flush() { /* Native host persists SRAM periodically and on pause/unload. */ }
   dispose() { return this.session.dispose() }

@@ -26,6 +26,7 @@
 namespace {
 using Clock = std::chrono::steady_clock;
 constexpr size_t AudioCapacity = 32768; // stereo frames, power of two
+constexpr int64_t AudioTransitionTimeout = 250 * oboe::kNanosPerMillisecond;
 class Engine;
 Engine* active = nullptr; // libretro has process-global callbacks; one session per APK
 struct CoreApi {
@@ -188,8 +189,6 @@ public:
             audioPriming = true;
             frames = presented = late = underruns = 0; runMs = 0;
             buttons[0] = buttons[1] = 0; started = Clock::now();
-            result = stream->requestStart();
-            if (result != oboe::Result::OK) throw std::runtime_error("声音输出启动失败");
         } catch (...) {
             closeAudio();
             if (loaded) { core.unload_game(); loaded = false; }
@@ -441,13 +440,22 @@ extern "C" JNIEXPORT void JNICALL JNI(control)(JNIEnv* env,jobject,jlong handle,
     try {
         auto op=string(env,action);
         if(op=="pause") {
+            const bool wasPlaying = !e->paused;
             e->paused=true; e->audible=false; e->audioPriming=true; e->buttons[0]=e->buttons[1]=0;
-            if(e->stream && e->stream->requestPause()!=oboe::Result::OK)e->stream->requestStop();
+            if (wasPlaying && e->stream && e->stream->pause(AudioTransitionTimeout) != oboe::Result::OK)
+                e->stream->stop(AudioTransitionTimeout);
             if(e->loaded)e->battery(true);
         }
         else if(op=="resume" && e->loaded) {
             if(!e->error.empty())throw std::runtime_error(e->error);
-            if(e->stream && e->stream->requestStart()!=oboe::Result::OK)throw std::runtime_error("声音输出恢复失败");
+            if (!e->paused) return;
+            if (e->stream) {
+                const auto result = e->stream->start(AudioTransitionTimeout);
+                if (result != oboe::Result::OK) {
+                    e->stream->stop(AudioTransitionTimeout);
+                    throw std::runtime_error(std::string("声音输出恢复失败：") + oboe::convertToText(result));
+                }
+            }
             e->paused=false; e->audible=e->speed==1;
         }
         else if(op=="volume") e->volume=std::clamp(static_cast<float>(value),0.0f,1.0f);

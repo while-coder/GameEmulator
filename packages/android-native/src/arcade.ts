@@ -9,7 +9,7 @@ export class NativeArcadeRunner implements ArcadeRunnerApi {
   private closed = false
   private closing: Promise<void> = Promise.resolve()
   private muted = false
-  private errorHandler?: (error: Error) => void
+  private errorHandler: ArcadeRunnerApi['onError']
   readonly nativeInput = true
   constructor(private readonly canvas: HTMLCanvasElement, private readonly transport?: NativeTransport) {
     this.session = this.createSession()
@@ -25,12 +25,13 @@ export class NativeArcadeRunner implements ArcadeRunnerApi {
   get coreBuild() { return this.session.saveNamespace }
   get loaded() { return !this.closed && this.session.loaded }
   get aspectRatio() { return this.session.aspectRatio }
-  set onError(value: ((error: Error) => void) | undefined) { this.errorHandler = value; this.session.onError = value }
+  set onError(value: ArcadeRunnerApi['onError']) { this.errorHandler = value; this.session.onError = value }
   async load(game: Archive, dependencies: Archive[]) {
     await this.closing
     if (this.closed) { this.session = this.createSession(); this.closed = false }
     await this.session.loadArcade(game, dependencies)
   }
+  waitForFirstFrame(signal: AbortSignal) { return this.session.waitForFirstFrame(signal) }
   press(player: number, action: Action) { this.session.pressRetro(player, bits[action], true) }
   release(player: number, action: Action) { this.session.pressRetro(player, bits[action], false) }
   pause() { this.session.pause() }
@@ -38,8 +39,8 @@ export class NativeArcadeRunner implements ArcadeRunnerApi {
   reset() { this.session.reset() }
   setMuted(value: boolean) { this.muted = value; if (!this.closed) this.session.setAudioEnabled(!value) }
   syncDisplay(smoothing: boolean) { this.session.syncDisplay(smoothing, false) }
-  async save() {
-    const state = await this.session.saveState()
+  async save(onPreview?: (preview: Blob) => void) {
+    const state = await this.session.saveState(onPreview)
     if (!state) throw new Error('请先启动游戏')
     return new Blob([state as BlobPart])
   }
