@@ -61,7 +61,11 @@ function inject(fixtures, version) {
     if (url.endsWith('/catalog.json')) {
       const system = Object.keys(fixtures).find(id => url.includes('/' + id + '-roms/'))
       if (!system) return Response.json({ games: [], dependency_files: [] })
+      if (sessionStorage.getItem('console-test-hold-catalog') === system) {
+        await new Promise(resolve => { window.__releaseCatalogRequest = resolve })
+      }
       if (sessionStorage.getItem('console-test-catalog-failure') === system) throw new TypeError('Offline catalog fixture')
+      if (sessionStorage.getItem('console-test-invalid-catalog') === system) return Response.json({ games: [null] })
       window.__consoleCatalogRequests.push(url)
       return Response.json({ games: fixtures[system].map(({ data, ...game }) => game) })
     }
@@ -213,14 +217,19 @@ async function main(){
   await send('Emulation.clearDeviceMetricsOverride')
   if (system === 'gba') {
     await selectLobbyTab(system)
-    await evaluate("sessionStorage.setItem('console-test-catalog-failure', 'gba')")
+    await evaluate("sessionStorage.setItem('console-test-catalog-failure', 'gba'); sessionStorage.setItem('console-test-hold-catalog', 'gba')")
     const oldDocument = await evaluate('window.__consoleTestDocument')
     await send('Page.reload')
     await until(`window.__consoleTestDocument && window.__consoleTestDocument !== ${oldDocument} && document.querySelector('.game-lobby h1')`, 'reloaded lobby')
     await selectLobbyTab(system)
-    await until("document.querySelector('.lobby-status')", 'refresh failure status')
+    await until("window.__releaseCatalogRequest && document.querySelectorAll('.game-card').length === 36", 'disk cache is visible before network settles')
+    await evaluate("sessionStorage.removeItem('console-test-hold-catalog'); window.__releaseCatalogRequest()")
+    await until("document.querySelector('.lobby-status')?.textContent.includes('正在显示上次的目录')", 'refresh failure status')
     assert.equal(await evaluate("document.querySelectorAll('.game-card').length"), pageSize, 'keep cached list on refresh failure')
-    await evaluate("sessionStorage.removeItem('console-test-catalog-failure')")
+    await evaluate("sessionStorage.removeItem('console-test-catalog-failure'); sessionStorage.setItem('console-test-invalid-catalog', 'gba')")
+    await click('重试')
+    await until("document.querySelector('.lobby-status')?.textContent.includes('正在显示上次的目录')", 'invalid response preserves catalog')
+    await evaluate("sessionStorage.removeItem('console-test-invalid-catalog')")
     await click('重试')
     await until("!document.querySelector('.lobby-status')", 'refresh retry')
     await evaluate("sessionStorage.setItem('console-test-slow-download', '1')")

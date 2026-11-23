@@ -76,9 +76,21 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
   return catalog
 }
 
+async function readCachedCatalog(url: string): Promise<ArcadeCatalog | undefined> {
+  try {
+    const cached = await getCachedCatalog(url)
+    if (cached) return parseCatalog(cached.catalog, url)
+  } catch { /* A bad cache entry must not block a network refresh. */ }
+}
+
+export async function readCachedArcadeCatalogs(): Promise<ArcadeCatalog[]> {
+  const catalogs = await Promise.all(catalogUrls.map(source => readCachedCatalog(remoteUrl(source))))
+  return catalogs.filter(catalog => catalog !== undefined)
+}
+
 async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogResult> {
   signal?.throwIfAborted()
-  const cached = await getCachedCatalog(url)
+  const cached = await readCachedCatalog(url)
   const abort = new AbortController()
   const cancel = () => abort.abort()
   signal?.addEventListener('abort', cancel, { once: true })
@@ -92,12 +104,13 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogRe
     signal?.throwIfAborted()
     // Cache only a fully validated manifest. A failed refresh must not replace
     // the last usable catalog or clear previously imported ROMs and snapshots.
-    await putCachedCatalog({ url, catalog })
+    try { await putCachedCatalog({ url, catalog }) } catch { /* Use the fresh catalog in memory. */ }
+    signal?.throwIfAborted()
     return { catalog, stale: false }
   } catch (error) {
     if (signal?.aborted) throw error
     const detail = abort.signal.aborted ? '连接超时' : error instanceof Error ? error.message : String(error)
-    if (cached) return { catalog: parseCatalog(cached.catalog, url), stale: true, error: detail }
+    if (cached) return { catalog: cached, stale: true, error: detail }
     throw new Error(`读取游戏目录失败：${url}（${detail}）。首次使用需联网读取目录，请确认目录已发布。`)
   } finally {
     clearTimeout(timer)
@@ -145,9 +158,9 @@ export async function findCatalogGame(hash: string, signal?: AbortSignal): Promi
 
 export async function findCachedCatalogGame(hash: string) {
   for (const source of catalogUrls) {
-    const cached = await getCachedCatalog(remoteUrl(source))
-    const game = cached?.catalog.games.find(item => item.sha256.toLowerCase() === hash)
-    if (cached && game) return { game, catalog: cached.catalog }
+    const catalog = await readCachedCatalog(remoteUrl(source))
+    const game = catalog?.games.find(item => item.sha256.toLowerCase() === hash.toLowerCase())
+    if (catalog && game) return { game, catalog }
   }
 }
 

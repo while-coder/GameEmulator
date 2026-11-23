@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const manifest: Partial<ManifestOptions> = {
   name: 'GameEmulator',
   short_name: 'GameEmulator',
-  description: '选择模拟器，游玩经典游戏，支持触屏手柄与存档。',
+  description: '在游戏大厅浏览并游玩经典游戏，支持触屏手柄与存档。',
   lang: 'en',
   display: 'standalone',
   // Android 上优先 fullscreen(隐藏系统状态栏);不支持时回退 standalone。

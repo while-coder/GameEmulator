@@ -36,15 +36,13 @@ body {
 
 /* Override component and UI-kit focus rings so clipped controls stay visible. */
 :focus-visible,
-:is(button, a, input, select, textarea, [tabindex], [data-nav]):focus,
-.player-library .store-tools .check:focus-within {
+:is(button, a, input, select, textarea, [tabindex], [data-nav]):focus {
   outline: none !important;
   outline-offset: 0 !important;
   box-shadow: var(--player-focus-shadow) !important;
 }
 
 :is([role='tab'][aria-selected='true'], .rs-option[data-selected='true']),
-.player-library .store-tools .check.is-checked,
 .player-settings .player-switch :is(.active, .selected) {
   box-shadow: var(--player-focus-shadow) !important;
 }

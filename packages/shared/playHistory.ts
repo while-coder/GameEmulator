@@ -32,20 +32,6 @@ export function recordPlay(storage: Storage | undefined, system: GameSystem, key
   try { storage?.setItem(prefix(system) + key, JSON.stringify(record)) } catch { /* Keep gameplay available when storage is full. */ }
   return record
 }
-export function sortRecentlyPlayed<T>(games: T[], key: (game: T) => string, history: PlayHistory, legacyTime?: (game: T) => number): T[] {
-  return games.slice().sort((a, b) =>
-    (history[key(b)]?.lastPlayedAt ?? legacyTime?.(b) ?? 0) - (history[key(a)]?.lastPlayedAt ?? legacyTime?.(a) ?? 0),
-  )
-}
-export function formatPlayTime(milliseconds: number): string {
-  const seconds = Math.floor(milliseconds / 1000)
-  if (seconds < 60) return `${Math.max(1, seconds)} 秒`
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} 分钟`
-  const remainder = minutes % 60
-  return `${Math.floor(minutes / 60)} 小时${remainder ? ` ${remainder} 分` : ''}`
-}
-
 /** Clock reads are monotonic; only successful launches are passed to start(). */
 export function createPlaySession(write: (key: string, at: number, elapsedMs: number) => void, clock = () => performance.now(), wallClock = () => Date.now()) {
   let key: string | null = null

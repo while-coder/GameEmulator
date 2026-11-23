@@ -3,7 +3,7 @@
  * 先查本地缓存,缓存未命中再到在线目录匹配并下载。找不到则返回 null,
  * 由调用方弹窗报错。
  */
-import { loadRomCatalog, type RomEntry } from './romCatalog'
+import { loadRomCatalog, readCachedRomCatalog, type RomEntry } from './romCatalog'
 import { downloadRom, validateRomBytes, type DownloadOptions } from './romDownloader'
 import { getCachedRom, saveCachedRom } from './romLibrary'
 
@@ -36,8 +36,10 @@ export async function acquireRomByKey(
     }
   }
 
-  const entry = known?.sha256?.toLowerCase() === key && known.download_url ? known
-    : (await loadRomCatalog(undefined, { signal: options.signal })).games.find(game => game.sha256?.toLowerCase() === key)
+  const matches = (game: RomEntry) => game.sha256?.toLowerCase() === key
+  const entry = known && matches(known) && known.download_url ? known
+    : (await readCachedRomCatalog())?.games.find(matches)
+      ?? (await loadRomCatalog(undefined, { signal: options.signal })).games.find(matches)
   if (!entry) return null
 
   const bytes = await downloadRom(entry, options)

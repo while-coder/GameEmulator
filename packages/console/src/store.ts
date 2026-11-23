@@ -1,6 +1,7 @@
+import { cacheCatalog, readCatalogCache } from '../../shared/catalogCache'
 import { catalogDownloadBase } from '../../shared/romUrl'
 import { newSaveSlot, type SaveKind } from '../../shared/saveSlots'
-import { romExtension, type ConsoleSystem } from './systems'
+import { romExtension, systems, type ConsoleSystem } from './systems'
 
 export type Game = { hash: string; name: string; fileName: string; file_size: number; download_url?: string; screenshot_url?: string; genre?: string; publisher?: string; tags?: string[] }
 export type SavedGame = Game & { file: Blob }
@@ -93,16 +94,38 @@ export const cacheGame = (system: ConsoleSystem, game: Game, file: Blob) => writ
   key: `${system}:${game.hash}`,
   file,
 })
+const catalogKey = (system: ConsoleSystem, source: string) => `${system}:${new URL(source).href}`
+
+export async function readCachedConsoleCatalog(system: ConsoleSystem, source: string): Promise<Game[] | undefined> {
+  const catalog = await readCatalogCache(catalogKey(system, source), value => parseCatalog(system, value, source))
+  if (catalog !== undefined || source !== systems[system].catalogUrl) return catalog
+  try {
+    // Older versions kept a normalized copy in localStorage.
+    const cached: unknown = JSON.parse(localStorage.getItem(`console:${system}:catalog`) ?? 'null')
+    if (Array.isArray(cached)) return cached.filter(game => typeof game?.hash === 'string' && typeof game.name === 'string')
+  } catch { /* Continue with a network refresh. */ }
+}
+
 export async function loadCatalog(system: ConsoleSystem, source: string, signal?: AbortSignal): Promise<Game[]> {
   const url = new URL(source)
   if (!['https:', 'http:'].includes(url.protocol)) throw new Error('游戏源需使用 HTTP 或 HTTPS 地址')
   const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.any([AbortSignal.timeout(10000), ...(signal ? [signal] : [])]) })
   if (!response.ok) throw new Error(`读取游戏目录失败 (${response.status})`)
-  const catalog = await response.json()
-  if (!Array.isArray(catalog.games)) throw new Error('游戏目录缺少 games 数组')
-  const base = catalogDownloadBase(url.href, catalog.rom_url_base)
-  const games: Game[] = catalog.games.map((entry: Record<string, unknown>) => {
-    if (typeof entry.name !== 'string' || typeof entry.download_url !== 'string' || typeof entry.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(entry.sha256) || typeof entry.file_size !== 'number' || !Number.isSafeInteger(entry.file_size) || entry.file_size <= 0 || entry.file_size > maxGameSize(system)) throw new Error('游戏目录条目需包含 name、download_url、sha256 和有效的 file_size')
+  const value: unknown = await response.json()
+  const games = parseCatalog(system, value, url.href)
+  signal?.throwIfAborted()
+  await cacheCatalog(catalogKey(system, url.href), value, signal)
+  signal?.throwIfAborted()
+  return games
+}
+
+function parseCatalog(system: ConsoleSystem, value: unknown, source: string): Game[] {
+  const catalog = value as { games?: unknown[]; rom_url_base?: string } | null
+  if (!Array.isArray(catalog?.games)) throw new Error('游戏目录缺少 games 数组')
+  const base = catalogDownloadBase(source, catalog.rom_url_base)
+  const games: Game[] = catalog.games.map(value => {
+    const entry = value as Record<string, unknown> | null
+    if (!entry || typeof entry.name !== 'string' || typeof entry.download_url !== 'string' || typeof entry.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(entry.sha256) || typeof entry.file_size !== 'number' || !Number.isSafeInteger(entry.file_size) || entry.file_size <= 0 || entry.file_size > maxGameSize(system)) throw new Error('游戏目录条目需包含 name、download_url、sha256 和有效的 file_size')
     const download = new URL(entry.download_url, base)
     if (!['https:', 'http:'].includes(download.protocol)) throw new Error('无效的 ROM 下载地址')
     const fileName = typeof entry.file_name === 'string' ? entry.file_name : decodeURIComponent(download.pathname.split('/').pop() ?? '')

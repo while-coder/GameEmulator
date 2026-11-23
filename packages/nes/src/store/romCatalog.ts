@@ -1,5 +1,5 @@
+import { cacheCatalog, readCatalogCache } from '../../../shared/catalogCache'
 import { catalogDownloadBase } from '../../../shared/romUrl'
-import { createGameSearch } from '../../../shared/gameText'
 
 export type RomEntry = {
   name: string
@@ -23,13 +23,7 @@ export type RomCatalog = {
 export const DEFAULT_CATALOG_URL =
   'https://raw.githubusercontent.com/while-coder/nes-roms/main/catalog.json'
 
-export function emptyRomCatalog(): RomCatalog {
-  return {
-    games: [],
-  }
-}
-
-async function requestCatalog(url: string, signal?: AbortSignal): Promise<RomCatalog> {
+async function requestCatalog(url: string, signal?: AbortSignal): Promise<unknown> {
   const abort = new AbortController()
   const cancel = () => abort.abort()
   signal?.throwIfAborted()
@@ -38,7 +32,7 @@ async function requestCatalog(url: string, signal?: AbortSignal): Promise<RomCat
   try {
     const response = await fetch(url, { cache: 'no-store', signal: abort.signal })
     if (!response.ok) throw new Error(`读取 ROM 目录失败: HTTP ${response.status}`)
-    return await response.json() as RomCatalog
+    return await response.json()
   } catch (err) {
     if (signal?.aborted) throw err
     if (abort.signal.aborted) throw new Error('读取游戏目录超时，请稍后重试')
@@ -49,23 +43,37 @@ async function requestCatalog(url: string, signal?: AbortSignal): Promise<RomCat
   }
 }
 
+const cacheKey = (url: string) => `nes:${new URL(url).href}`
+
+export function readCachedRomCatalog(url = DEFAULT_CATALOG_URL) {
+  return readCatalogCache(cacheKey(url), value => parseCatalog(value, url))
+}
+
 export async function loadRomCatalog(url = DEFAULT_CATALOG_URL, options: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
-  const catalog = await requestCatalog(url, options.signal)
-  if (!Array.isArray(catalog.games)) {
+  const value = await requestCatalog(url, options.signal)
+  const catalog = parseCatalog(value, url)
+  options.signal?.throwIfAborted()
+  await cacheCatalog(cacheKey(url), value, options.signal)
+  options.signal?.throwIfAborted()
+  return catalog
+}
+
+function parseCatalog(value: unknown, url: string): RomCatalog {
+  const catalog = value as RomCatalog | null
+  if (!Array.isArray(catalog?.games)) {
     throw new Error('ROM 目录格式无效')
   }
   const downloadBase = catalogDownloadBase(url, catalog.rom_url_base)
-  for (const game of catalog.games) {
-    if (!game.name || !game.download_url || !game.sha256 || typeof game.file_size !== 'number') {
+  const games = catalog.games.map(game => {
+    if (!game || typeof game.name !== 'string' || !game.name || typeof game.download_url !== 'string' || !game.download_url || typeof game.sha256 !== 'string' || !game.sha256 || typeof game.file_size !== 'number') {
       throw new Error('ROM 目录缺少必要字段')
     }
-    game.download_url = new URL(game.download_url, downloadBase).href
-  }
+    return { ...game, download_url: new URL(game.download_url, downloadBase).href }
+  })
   // 远程目录可能存在 sha256 相同的重复条目(同一 ROM 内容多次收录)。
   // sha256 同时是 romKey / 缓存键,重复会导致 v-for key 冲突且无法区分,
   // 故按 sha256 去重,保留首次出现的条目。
-  catalog.games = dedupeBySha256(catalog.games)
-  return catalog
+  return { ...catalog, games: dedupeBySha256(games) }
 }
 
 function dedupeBySha256(games: RomEntry[]): RomEntry[] {
@@ -75,27 +83,6 @@ function dedupeBySha256(games: RomEntry[]): RomEntry[] {
     if (seen.has(key)) return false
     seen.add(key)
     return true
-  })
-}
-
-export function listGenres(games: RomEntry[]): string[] {
-  return Array.from(new Set(games.map((game) => game.genre).filter(Boolean) as string[])).sort(
-    (a, b) => a.localeCompare(b, 'zh-Hans-CN'),
-  )
-}
-
-export function searchRoms(
-  games: RomEntry[],
-  query: string,
-  genre: string,
-  downloadedOnly: boolean,
-  cachedKeys: Set<string>,
-): RomEntry[] {
-  const matches = createGameSearch(query)
-  return games.filter((game) => {
-    if (downloadedOnly && !cachedKeys.has(romKey(game))) return false
-    if (genre && game.genre !== genre) return false
-    return matches([game.name, game.genre, game.publisher, game.mapper, ...(game.tags ?? [])])
   })
 }
 

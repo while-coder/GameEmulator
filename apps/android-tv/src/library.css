@@ -1,5 +1,3 @@
-/* TV has a small CSS viewport even on a large panel. Keep the game library
-   compact without changing the shared phone/desktop or in-game layouts. */
 /* A coarse pointer on Android TV does not imply a touch screen. Explicit
    "always" and layout editing still allow virtual controls when requested. */
 :root.android-tv .touch-controls:not(.always):not(.editing),
@@ -20,7 +18,6 @@
 :root.android-tv .player-pause-modal .s-modal-header h2 { font-size: 14px; }
 :root.android-tv .player-pause-modal .s-modal-body { padding: 12px 14px; }
 :root.android-tv .player-pause-modal .pause-menu { gap: 10px; }
-:root.android-tv .player-pause-modal .pause-game-name { font-size: 13px; }
 :root.android-tv .player-pause-modal .pause-menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 :root.android-tv .player-pause-modal .pause-menu-actions .s-button { min-height: 34px; font-size: 13px; }
 :root.android-tv .player-pause-modal .pause-hint { font-size: 11px; }

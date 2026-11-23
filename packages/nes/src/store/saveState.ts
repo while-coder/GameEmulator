@@ -99,16 +99,6 @@ export async function createSaveState(
   return record
 }
 
-/** 列出全部存档(跨游戏,按存档时间倒序),供存档列表「全部」视图用。 */
-export async function listAllSaveStates(): Promise<SaveStateRecord[]> {
-  const db = await openDb()
-  const tx = db.transaction(STORE_NAME, 'readonly')
-  const done = txDone(tx)
-  const all = await requestToPromise<SaveStateRecord[]>(tx.objectStore(STORE_NAME).getAll())
-  await done
-  return all.sort((a, b) => b.savedAt - a.savedAt)
-}
-
 /** 修改某条存档的显示名(label)。 */
 export async function renameSaveState(key: string, label: string): Promise<void> {
   const db = await openDb()
@@ -123,7 +113,7 @@ export async function renameSaveState(key: string, label: string): Promise<void>
   await done
 }
 
-/** 按主键删除一条存档(配合 listAllSaveStates 的跨游戏列表)。 */
+/** 按主键删除一条存档。 */
 export async function deleteSaveStateByKey(key: string): Promise<void> {
   const db = await openDb()
   const tx = db.transaction(STORE_NAME, 'readwrite')
@@ -152,14 +142,6 @@ export async function listSaveStates(romKey: string): Promise<SaveStateRecord[]>
   const all = await requestToPromise<SaveStateRecord[]>(tx.objectStore(STORE_NAME).getAll(range))
   await done
   return all.filter((r) => r.romKey === romKey).sort((a, b) => b.savedAt - a.savedAt)
-}
-
-export async function deleteSaveState(romKey: string, slot: string): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(STORE_NAME, 'readwrite')
-  const done = txDone(tx)
-  await requestToPromise(tx.objectStore(STORE_NAME).delete(recordKey(romKey, slot)))
-  await done
 }
 
 function openDb(): Promise<IDBDatabase> {

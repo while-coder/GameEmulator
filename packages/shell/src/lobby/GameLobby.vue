@@ -327,7 +327,7 @@ onBeforeUnmount(() => document.documentElement.classList.remove('game-lobby-page
           :role="searchOpen ? 'region' : 'tabpanel'" :aria-labelledby="searchOpen ? 'lobby-results-title' : `lobby-tab-${selectedTab}`">
           <h2 v-if="searchOpen" id="lobby-results-title">搜索结果</h2>
           <div v-if="(!searchOpen || hasQuery) && failures.length" class="lobby-status">
-            <span>{{ failures.map(source => source.platform.label).join('、') }}的部分游戏暂不可用</span>
+            <span>{{ failures.map(source => source.platform.label).join('、') }}目录刷新失败{{ failures.every(source => source.hasOnlineCatalog.value) ? '，正在显示上次的目录' : '' }}</span>
             <button type="button" @click="retry">重试</button>
           </div>
           <div ref="scrollArea" class="lobby-scroll player-library">

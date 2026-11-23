@@ -18,7 +18,7 @@ import { useFullscreen } from '../../player-ui/useFullscreen'
 import { nextSaveLabel, type SaveKind } from '../../shared/saveSlots'
 import type { TouchControlLayout } from '../../player-ui/touchLayout'
 import { readTouchControl } from '../../player-ui/touchLayout'
-import { acquireGame, getGame, getState, importGame, listGames, listStates, loadCatalog, putState, removeState, renameState, type Game, type Snapshot } from './store'
+import { acquireGame, getGame, getState, importGame, listGames, listStates, loadCatalog, readCachedConsoleCatalog, putState, removeState, renameState, type Game, type Snapshot } from './store'
 import { createConsoleRunner, type ConsoleRunner } from './runner'
 import { gameAspect, defaultKeymap, isStickKey, keyboardActions, PADMAP, systems, type ConsoleSystem, type Action, type KeyboardAction, type StickKey, type ConsoleSettings as Settings } from './systems'
 import TouchControls from './TouchControls.vue'
@@ -100,7 +100,10 @@ function playByKey(key: string, name: string, saveKey?: string) {
       const { file: _, ...game } = cachedGame
       return game
     }
-    const game = config.catalogUrl && (await loadCatalog(system, config.catalogUrl, signal)).find(game => game.hash === key)
+    const source = config.catalogUrl
+    const matches = (game: Game) => game.hash === key
+    const game = source && ((await readCachedConsoleCatalog(system, source))?.find(matches)
+      ?? (await loadCatalog(system, source, signal)).find(matches))
     if (!game) throw new Error('找不到此游戏，请刷新目录或重新导入 ROM')
     return game
   }, saveKey)

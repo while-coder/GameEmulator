@@ -5,7 +5,6 @@ import type { PlayerEntry } from '../../player-ui/playerEntry'
 
 const props = defineProps<{
   onLeave: () => void | Promise<void>
-  storageKey?: string
   entry?: PlayerEntry
 }>()
 const shell = ref<InstanceType<typeof PlayerShell> | null>(null)
@@ -23,5 +22,5 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <PlayerShell ref="shell" :storage-key="props.storageKey" :on-exit="props.onLeave" :entry="entry" />
+  <PlayerShell ref="shell" :on-exit="props.onLeave" :entry="entry" />
 </template>

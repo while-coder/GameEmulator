@@ -24,10 +24,9 @@
   :root {
     --player-control-height: 40px;
     --player-control-gap: 8px;
-    --player-card-padding: 10px;
     --player-tools-padding: 6px;
   }
-  :root .player-modal :is(.s-button, .s-input, .s-select, .s-switch, .remote-select, select, .rename-input),
+  :root .player-modal :is(.s-button, .s-input, .s-select, .s-switch, .remote-select, select),
   :root .rs-option {
     height: var(--player-control-height);
     min-height: var(--player-control-height);
@@ -38,10 +37,6 @@
   :root .player-modal :is(input[type='range'], input[type='color'], .check) {
     height: var(--player-control-height);
     min-height: var(--player-control-height);
-  }
-  :root .player-modal .icon-btn {
-    min-width: var(--player-control-height);
-    width: var(--player-control-height);
   }
   :root .s-icon-close {
     height: 44px;
@@ -57,7 +52,6 @@
   :root {
     --player-control-height: 36px;
     --player-control-gap: 6px;
-    --player-card-padding: 8px;
     --player-tools-padding: 4px;
   }
 }

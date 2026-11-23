@@ -1,4 +1,4 @@
-import { dependencyPlan, downloadUrl, findCatalogGame, type ArcadeCatalog, type CatalogFile, type CatalogGame } from './catalog'
+import { dependencyPlan, downloadUrl, type ArcadeCatalog, type CatalogFile, type CatalogGame } from './catalog'
 import { hashBlob, importArchive, listArchives, putArchive, validateZip, type Archive } from './library'
 
 export interface DependencyProgress {
@@ -77,12 +77,6 @@ async function downloadArchive(entry: CatalogFile, options: ResolveOptions, kind
     await reader?.cancel().catch(() => {})
     abort.abort()
   }
-}
-
-export async function prepareGame(game: Archive, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {
-  const match = await findCatalogGame(game.hash, options.signal)
-  if (!match) throw new Error(`${game.name} 未被游戏目录收录，无法自动确定依赖。请使用目录对应版本的游戏 ZIP。`)
-  return prepareCatalogGame(match.game, match.catalog, options)
 }
 
 export async function prepareCatalogGame(entry: CatalogGame, catalog: ArcadeCatalog, options: ResolveOptions = {}): Promise<{ game: Archive; dependencies: Archive[] }> {

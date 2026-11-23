@@ -11,4 +11,4 @@ async function leave() {
   else returnToLobby()
 }
 </script>
-<template><NesView :on-leave="leave" :entry="entry" storage-key="nes:app:lastRom" /></template>
+<template><NesView :on-leave="leave" :entry="entry" /></template>

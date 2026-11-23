@@ -14,9 +14,6 @@ import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SButton from '@qingfeng346/ui-kit/components/button/SButton.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
 import type { PlayerEntry } from '../../../player-ui/playerEntry'
-import {
-  setLastRomName,
-} from '../emulator/platform'
 import { settings, type TouchLayout } from '../emulator/settings'
 import { navEnabled, useRemoteNav } from '../composables/useRemoteNav'
 import { useFullscreen } from '../composables/useFullscreen'
@@ -30,11 +27,10 @@ import type { SaveState } from '../emulator/runner'
 import '../../../player-ui/player.css'
 import '../../../player-ui/library.css'
 
-const props = withDefaults(defineProps<{
-  storageKey?: string
+const props = defineProps<{
   onExit: () => void | Promise<void>
   entry?: PlayerEntry
-}>(), { storageKey: 'nes:lastRom' })
+}>()
 
 const screen = ref<InstanceType<typeof NesScreen> | null>(null)
 const appRef = ref<HTMLElement | null>(null)
@@ -206,7 +202,6 @@ async function loadRomBytes(name: string, bytes: Uint8Array, key: string, signal
     romName.value = name
     romKey.value = key
     paused.value = false
-    setLastRomName(name, props.storageKey)
   } finally {
     loading.value = false
   }

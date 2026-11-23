@@ -4,7 +4,7 @@ export { default as ToolbarMenu } from './components/ToolbarMenu.vue'
 export { default as PlayerFooter } from './components/PlayerFooter.vue'
 export { default as PlayerShell } from './components/PlayerShell.vue'
 export { mountPlayerApp } from './mount'
-export { isAndroid, isTauri, pickRomFile, setLastRomName } from './emulator/platform'
+export { isAndroid, isTauri } from './emulator/platform'
 export {
   useRemoteNav,
   navEnabled,
@@ -18,10 +18,8 @@ export { useInputMonitor, type InputMonitorApi } from './composables/useInputMon
 export { Button, NesRunner, SCREEN, createNesRunner, registerNesRunnerFactory, type NesRunnerApi, type SaveState } from './emulator/runner'
 export {
   createSaveState,
-  deleteSaveState,
   deleteSaveStateByKey,
   getSaveState,
-  listAllSaveStates,
   listSaveStates,
   putSaveState,
   renameSaveState,

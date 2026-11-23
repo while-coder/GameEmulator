@@ -199,12 +199,3 @@ export async function importArchive(file: File, kind: ArchiveKind): Promise<Arch
 export function bundleKey(game: Pick<Archive, 'hash'>, dependencies: Pick<Archive, 'name' | 'hash'>[], coreBuild: string = CORE_BUILD): string {
   return `${coreBuild}:${game.hash}:${dependencies.map(d=>`${d.name}=${d.hash}`).sort().join(',')}`
 }
-export async function pickArchives(): Promise<File[]> {
-  return new Promise(resolve=>{
-    const input=document.createElement('input')
-    input.type='file';input.accept='.zip';input.multiple=true
-    input.onchange=()=>resolve(Array.from(input.files??[]))
-    input.oncancel=()=>resolve([])
-    input.click()
-  })
-}
