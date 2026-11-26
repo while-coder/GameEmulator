@@ -4,7 +4,7 @@ import { prepareCatalogGame } from '../../../arcade/src/store/dependencies'
 import { listArchiveSummaries, removeArchive } from '../../../arcade/src/store/library'
 import { acquireGame, loadCatalog, readCachedConsoleCatalog, listGames, removeGame, type Game } from '../../../console/src/store'
 import { systems, type ConsoleSystem } from '../../../console/src/systems'
-import { loadRomCatalog, readCachedRomCatalog, romKey, type RomEntry } from '../../../nes/src/store/romCatalog'
+import { loadRomCatalog, romKey, type RomEntry } from '../../../nes/src/store/romCatalog'
 import { deleteCachedRom, listCachedRomSummaries } from '../../../nes/src/store/romLibrary'
 import { acquireRomByKey } from '../../../nes/src/store/romResolver'
 import { useGameCollection } from '../../../player-ui/useGameCollection'
@@ -192,7 +192,6 @@ export function useLobbyLibrary() {
         playedAt: new Map(roms.map(rom => [rom.key, rom.lastPlayedAt ?? 0])),
       }
     },
-    readOnlineCache: async () => (await readCachedRomCatalog())?.games,
     loadOnline: signal => loadRomCatalog(undefined, { signal }),
     download: async (game, signal, onProgress) => {
       if (!await acquireRomByKey(romKey(game), { signal, onProgress }, game)) throw new Error('找不到游戏文件')

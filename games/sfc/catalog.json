@@ -1,0 +1,1605 @@
+{
+  "updated_at": "2026-11-17",
+  "generated_at": "2026-11-17T15:57:39.610421+00:00",
+  "system": "sfc",
+  "sources": [
+    {
+      "repository": "AlexBlackmore/roms",
+      "revision": "d76e034c11599ea9da7f775bde15a45634798d12",
+      "source_page": "https://github.com/AlexBlackmore/roms",
+      "platforms": {
+        "gba": "^(Advance Wars|Astro Boy|Castlevania|ChuChu|Drill Dozer|Final Fantasy|Fire Emblem|Golden Sun|Gunstar|Kirby|Kuru Kuru|Legend of Zelda|Mario & Luigi|Mario Kart|Mario Tennis|Mario Golf|Mega Man Zero|Metroid|Pokemon|Sonic Advance|Super Mario Advance|Wario Land|WarioWare, Inc|F-Zero|Harvest Moon)",
+        "gb": "^(Alleyway|Balloon Kid|Bionic Commando|Bomberman|Castlevania|Contra|Donkey Kong|Dr. Mario|DuckTales|Gargoyle|Kirby|Legend of Zelda|Mega Man|Metroid|Pokemon|Super Mario Land|Tetris|Wario Land)",
+        "gbc": "^(Bionic Commando|Bomberman|Crystalis|Dragon Warrior|Harvest Moon|Legend of Zelda|Lufia|Mario Golf|Mario Tennis|Metal Gear|Pokemon|Shantae|Super Mario Bros|Tetris|Wario Land)",
+        "snes": "^(ActRaiser|Axelay|Breath of Fire|Castlevania|Chrono Trigger|Contra|Demon|Donkey Kong Country|EarthBound|F-Zero|Final Fantasy|Final Fight|Gradius|Harvest Moon|Illusion of Gaia|Kirby|Legend of Zelda|Mega Man X|Ogre Battle|Pilotwings|Secret of|Seiken Densetsu|Shadowrun|Soul Blazer|Star Fox|Super Bomberman|Super Castlevania|Super Ghouls|Super Mario|Super Metroid|Super Punch|Super R-Type|Super Street Fighter|Tales of Phantasia|Tetris Attack|Yoshi's Cookie)"
+      }
+    },
+    {
+      "system": "sfc",
+      "repository": "retrobrews/snes-games",
+      "revision": "2329cb432b4cad13aa6a9d2ad0699c771780b378",
+      "source_page": "https://github.com/retrobrews/snes-games"
+    }
+  ],
+  "base_url": "https://raw.githubusercontent.com/while-coder/sfc-roms/main/",
+  "games": [
+    {
+      "name": "ActRaiser",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "ActRaiser",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/ActRaiser%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ActRaiser%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "b8055844825653210d252d29a2229f9a3e7e512004e83940620173c57d8723f0"
+        }
+      ]
+    },
+    {
+      "name": "ActRaiser 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "ActRaiser 2",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/ActRaiser%202%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ActRaiser%202%20%28USA%29.sfc",
+          "size": 1572864,
+          "sha256": "71bdd448a30b88725864e55594ebb67a118b1f197a3f9e5dd39dbf23399efa15"
+        }
+      ]
+    },
+    {
+      "name": "Axelay",
+      "desc": "",
+      "genre": "射击",
+      "publisher": "",
+      "name_en": "Axelay",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Axelay%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Axelay%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "2431f8dc067ba27c6c3a846929f3deac6a45aa53a9a9ac20ede8ec5ca6854ea2"
+        }
+      ]
+    },
+    {
+      "name": "Breath of Fire",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Breath of Fire",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Breath%20of%20Fire%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Breath%20of%20Fire%20%28USA%29.sfc",
+          "size": 1572864,
+          "sha256": "cbc496a7879ba78f32c51c3df4ba1a1a42f17d78d48a39ea9c709d1ad18cb8df"
+        }
+      ]
+    },
+    {
+      "name": "Breath of Fire II",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Breath of Fire II",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Breath%20of%20Fire%20II%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Breath%20of%20Fire%20II%20%28USA%29.sfc",
+          "size": 3145728,
+          "sha256": "fede9d4aec8c35ed11e2868c3c517bce53ee3e6af724085c92500e99e43e63de"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania - Dracula X",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania - Dracula X",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Castlevania%20-%20Dracula%20X%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20-%20Dracula%20X%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "367725a149a471411e4f72ad77603b61fb101c9cab4521be5647e13708cc97ba"
+        }
+      ]
+    },
+    {
+      "name": "Contra III - The Alien Wars",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Contra III - The Alien Wars",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996"
+        }
+      ]
+    },
+    {
+      "name": "Demon's Crest",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Demon's Crest",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Demon%27s%20Crest%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Demon%27s%20Crest%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "18d40a807d5f88c5b6a1ad849eec7e0f189225d9a1586037c850f6680b5844de"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong Country",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong Country",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Donkey%20Kong%20Country%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20Country%20%28USA%29.sfc",
+          "size": 4194304,
+          "sha256": "fa8cacf5bbfc39ee6bbaa557adf89133d60d42f6cf9e1db30d5a36a469f74d15"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong Country 2 - Diddy's Kong Quest",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong Country 2 - Diddy's Kong Quest",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Donkey%20Kong%20Country%202%20-%20Diddy%27s%20Kong%20Quest%20%28USA%29%20%28En%2CFr%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20Country%202%20-%20Diddy%27s%20Kong%20Quest%20%28USA%29%20%28En%2CFr%29.sfc",
+          "size": 4194304,
+          "sha256": "35421a9af9dd011b40b91f792192af9f99c93201d8d394026bdfb42cbf2d8633"
+        }
+      ]
+    },
+    {
+      "name": "EarthBound",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "EarthBound",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/EarthBound%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/EarthBound%20%28USA%29.sfc",
+          "size": 3145728,
+          "sha256": "a8fe2226728002786d68c27ddddf0b90a894db52e4dfe268fdf72a68cae5f02e"
+        }
+      ]
+    },
+    {
+      "name": "F-Zero",
+      "desc": "",
+      "genre": "竞速",
+      "publisher": "",
+      "name_en": "F-Zero",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/F-Zero%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/F-Zero%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "bf16c3c867c58e2ab061c70de9295b6930d63f29f81cc986f5ecae03e0ad18d2"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy - Mystic Quest",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy - Mystic Quest",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fantasy%20-%20Mystic%20Quest%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20-%20Mystic%20Quest%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "6151389f33ce2e53db3cd99592440c0020f5f4668f581ce3bd615bc92077f255"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy II",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy II",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fantasy%20II%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20II%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "680535dc1c4196c53b40dc9c2c9bc159a77802ab8d4b474bef5dc0281c15ad06"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy III",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy III",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fantasy%20III%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20III%20%28USA%29.sfc",
+          "size": 3145728,
+          "sha256": "0f51b4fca41b7fd509e4b8f9d543151f68efa5e97b08493e4b2a0c06f5d8d5e2"
+        }
+      ]
+    },
+    {
+      "name": "Final Fight",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Final Fight",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fight%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fight%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "60cca2592d0756b8c4c7a0a254fafa5ac47aa752521fd1f77dcbf4b6ee1bee90"
+        }
+      ]
+    },
+    {
+      "name": "Final Fight 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Final Fight 2",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fight%202%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fight%202%20%28USA%29.sfc",
+          "size": 1310720,
+          "sha256": "744d1a16c3f99970283597ae8f43b7c3621c5f995c4566ef24b8d70b0692007b"
+        }
+      ]
+    },
+    {
+      "name": "Final Fight 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Final Fight 3",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fight%203%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fight%203%20%28USA%29.sfc",
+          "size": 3145728,
+          "sha256": "f9dac709b2c2859f828103a0dd980716817e2bde3b9d7e2fdea36e9bb9bed7f2"
+        }
+      ]
+    },
+    {
+      "name": "Final Fight Guy",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Final Fight Guy",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Final%20Fight%20Guy%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fight%20Guy%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "8c47f9dc79748c0ae6c648f8480614d22eaefade065612ad1fe749fc3db4d1bc"
+        }
+      ]
+    },
+    {
+      "name": "Gradius III",
+      "desc": "",
+      "genre": "射击",
+      "publisher": "",
+      "name_en": "Gradius III",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Gradius%20III%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Gradius%20III%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "93da752a0c76167d0907efa832367e5d14aab8e835b864f345c386071a9af718"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Harvest%20Moon%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "73a3aa87ddd5ce5df5ba51292316f42b6e128280179b0a1b11b4dcddc17d4163"
+        }
+      ]
+    },
+    {
+      "name": "Illusion of Gaia",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Illusion of Gaia",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Illusion%20of%20Gaia%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Illusion%20of%20Gaia%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "32adc048fd89228a4310c03df243e83de7d436cdb2460b4cc83ade20d359b2bd"
+        }
+      ]
+    },
+    {
+      "name": "Kirby Super Star",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby Super Star",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Kirby%20Super%20Star%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%20Super%20Star%20%28USA%29.sfc",
+          "size": 4194304,
+          "sha256": "4e095fbbdec4a16b075d7140385ff68b259870ca9e3357f076dfff7f3d1c4a62"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Avalanche",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Avalanche",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Kirby%27s%20Avalanche%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Avalanche%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "67937dd7a29a93b1aaabb6df89f0748369ff47f3f6c655a402c00d5657973140"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Dream Course",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Dream Course",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Kirby%27s%20Dream%20Course%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Dream%20Course%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "0f984dc5fe8293f75e3b8fad98b0cb564706d9b1e3902b56415aa399c2d4df2b"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Dream Land 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Dream Land 3",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Kirby%27s%20Dream%20Land%203%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Dream%20Land%203%20%28USA%29.sfc",
+          "size": 4194304,
+          "sha256": "b50bf9d95485e8aeb7a6730e9f9f9c9c4ec23a85b336a4fb2e3b63034531e36f"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - A Link to the Past",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - A Link to the Past",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "66871d66be19ad2c34c927d6b14cd8eb6fc3181965b6e517cb361f7316009cfb"
+        }
+      ]
+    },
+    {
+      "name": "Ogre Battle - The March of the Black Queen",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Ogre Battle - The March of the Black Queen",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Ogre%20Battle%20-%20The%20March%20of%20the%20Black%20Queen%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Ogre%20Battle%20-%20The%20March%20of%20the%20Black%20Queen%20%28USA%29.sfc",
+          "size": 1572864,
+          "sha256": "b766c26498d0afd63f44aefdef42642d2483b54f18d2b81a4f1d67a57f641044"
+        }
+      ]
+    },
+    {
+      "name": "Pilotwings",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Pilotwings",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Pilotwings%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pilotwings%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "03d0127f5de3237e22ad00de0c20763274da7b71142dde693240ac96d10983a3"
+        }
+      ]
+    },
+    {
+      "name": "Secret of Evermore",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Secret of Evermore",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Secret%20of%20Evermore%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Secret%20of%20Evermore%20%28USA%29.sfc",
+          "size": 3145728,
+          "sha256": "17c864a76d498feb6479eee8e7d6807b951c66225033228622bb66754baab1db"
+        }
+      ]
+    },
+    {
+      "name": "Secret of Mana",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Secret of Mana",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Secret%20of%20Mana%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Secret%20of%20Mana%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "4c15013131351e694e05f22e38bb1b3e4031dedac77ec75abecebe8520d82d5f"
+        }
+      ]
+    },
+    {
+      "name": "Shadowrun",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Shadowrun",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Shadowrun%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Shadowrun%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "e6bc0a595d5c7c4bc0bbb61ffe35a70288a77eb78544ed74682d489a9e6f07f4"
+        }
+      ]
+    },
+    {
+      "name": "Soul Blazer",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Soul Blazer",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Soul%20Blazer%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Soul%20Blazer%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "8438da09de8ce9aded3bb08644543f7b60fb60cffc68ce2d67d6a0643f2ecfc2"
+        }
+      ]
+    },
+    {
+      "name": "Star Fox",
+      "desc": "",
+      "genre": "射击",
+      "publisher": "",
+      "name_en": "Star Fox",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Star%20Fox%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Star%20Fox%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "3857b5294ea8f7468849437bb2d8271564e8a0ff30774622e9c872bcbd53a84d"
+        }
+      ]
+    },
+    {
+      "name": "Super Bomberman",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Bomberman",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Bomberman%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Bomberman%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "4efab3f49cbe91ec77b6cba747ddfedfdc0b080c755a8b6ba51234f0676c000f"
+        }
+      ]
+    },
+    {
+      "name": "Super Bomberman 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Bomberman 2",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Bomberman%202%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Bomberman%202%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "0a4b4a783a7faf6ada3e1326ecf85de77e8c2a171659b42a78a1fae43f806ca6"
+        }
+      ]
+    },
+    {
+      "name": "Super Castlevania IV",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Super Castlevania IV",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Castlevania%20IV%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Castlevania%20IV%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "0ef6f4cce5a2273fa49fe1ce724e0048a8e39c91da6b00dbb693fe1ba909177d"
+        }
+      ]
+    },
+    {
+      "name": "Super Ghouls'n Ghosts",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Ghouls'n Ghosts",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Ghouls%27n%20Ghosts%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Ghouls%27n%20Ghosts%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "7468c271d7240cf4e0d08c16e9969a1b1b1caf5adc0e5adc568d93c92651a057"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario All-Stars",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario All-Stars",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20All-Stars%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20All-Stars%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "a9e3e57d591e995e8e0dd228b619b6aed42205eaf55316fa8ff33f236b3a32b3"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario All-Stars + Super Mario World",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario All-Stars + Super Mario World",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20All-Stars%20%2B%20Super%20Mario%20World%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20All-Stars%20%2B%20Super%20Mario%20World%20%28USA%29.sfc",
+          "size": 2621440,
+          "sha256": "a8806bfe07cd3c9945d9fd3fcea932ae1cd671cab5cae12bb7a2ae726cbf9175"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Kart",
+      "desc": "",
+      "genre": "竞速",
+      "publisher": "",
+      "name_en": "Super Mario Kart",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20Kart%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Kart%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "2ada8919688087be60a6a48cace8f877add60c45d2e5d09e2442faa55be62a49"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario RPG - Legend of the Seven Stars",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Super Mario RPG - Legend of the Seven Stars",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20RPG%20-%20Legend%20of%20the%20Seven%20Stars%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20RPG%20-%20Legend%20of%20the%20Seven%20Stars%20%28USA%29.sfc",
+          "size": 4194304,
+          "sha256": "740646f3535bfb365ca44e70d46ab433467b142bd84010393070bd0b141af853"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario World",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario World",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20World%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20World%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "0838e531fe22c077528febe14cb3ff7c492f1f5fa8de354192bdff7137c27f5b"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario World 2 - Yoshi's Island",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario World 2 - Yoshi's Island",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Mario%20World%202%20-%20Yoshi%27s%20Island%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20World%202%20-%20Yoshi%27s%20Island%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "9b4957466798bbdb5b43a450bbb60b2591ae81d95b891430f62d53ca62e8bc7b"
+        }
+      ]
+    },
+    {
+      "name": "Super Metroid",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Super Metroid",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Metroid%20%28Japan%2C%20USA%29%20%28En%2CJa%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Metroid%20%28Japan%2C%20USA%29%20%28En%2CJa%29.sfc",
+          "size": 3145728,
+          "sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+        }
+      ]
+    },
+    {
+      "name": "Super Punch-Out!!",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "",
+      "name_en": "Super Punch-Out!!",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Punch-Out%21%21%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Punch-Out%21%21%20%28USA%29.sfc",
+          "size": 2097152,
+          "sha256": "a3d803b8c6b0b6ac55085671040b840f993543915c7f802e14fb651beabe9b63"
+        }
+      ]
+    },
+    {
+      "name": "Super R-Type",
+      "desc": "",
+      "genre": "射击",
+      "publisher": "",
+      "name_en": "Super R-Type",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20R-Type%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20R-Type%20%28USA%29.sfc",
+          "size": 1048576,
+          "sha256": "05c7f6461209020785fba33007e1830820aa44ada4b1a6f991d936bf2335b15b"
+        }
+      ]
+    },
+    {
+      "name": "Super Street Fighter II - The New Challengers",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Street Fighter II - The New Challengers",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Super%20Street%20Fighter%20II%20-%20The%20New%20Challengers%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Street%20Fighter%20II%20-%20The%20New%20Challengers%20%28USA%29.sfc",
+          "size": 4194304,
+          "sha256": "d17cb5c73174060fcbd9cba6c705643f19c3b8be24d0f7ee43aee674ff1ea38e"
+        }
+      ]
+    },
+    {
+      "name": "Tetris Attack",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris Attack",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Tetris%20Attack%20%28USA%29%20%28En%2CJa%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20Attack%20%28USA%29%20%28En%2CJa%29.sfc",
+          "size": 1048576,
+          "sha256": "579bf1a1988d4af06a69cc1d82a2478ebe51940c5ced7f97e83029a24e6aa778"
+        }
+      ]
+    },
+    {
+      "name": "Yoshi's Cookie",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Yoshi's Cookie",
+      "system": "SFC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/snes/Yoshi%27s%20Cookie%20%28USA%29.sfc",
+      "tags": [
+        "SFC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Yoshi%27s%20Cookie%20%28USA%29.sfc",
+          "size": 524288,
+          "sha256": "90ad69a489194aca7ef7b7fd1d30e0105da4934a81ac8b0333ea20f9248df92d"
+        }
+      ]
+    },
+    {
+      "name": "Astrohawk",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Paul Lay",
+      "name_en": "Astrohawk",
+      "system": "SFC",
+      "year": "2003",
+      "developer": "Paul Lay",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/astrohawk.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6d10ae3889a549165dba7ac0.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/astrohawk.smc",
+          "size": 786944,
+          "sha256": "2d4db708c842e23c299f0895f5cf1106429f69d2e10545c6d091e1020ff13dc3"
+        }
+      ]
+    },
+    {
+      "name": "BLT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Charles Doty",
+      "name_en": "BLT",
+      "system": "SFC",
+      "year": "2012",
+      "developer": "Charles Doty",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/blt.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/4198146d87e33d2c6086e9e1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/blt.sfc",
+          "size": 262144,
+          "sha256": "1f4004deb5981fa6115c1d3676add48d5437a3edb52a9203fbe14085fcb0b7ac"
+        }
+      ]
+    },
+    {
+      "name": "Bucket",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Sebastian Mihai",
+      "name_en": "Bucket",
+      "system": "SFC",
+      "year": "2012",
+      "developer": "Sebastian Mihai",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/bucket.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/7e602caf2760d2d00c3a1198.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/bucket.smc",
+          "size": 262144,
+          "sha256": "e65d491ca829210d4fa93938b235d1014359a56932f9e55b4543abf23c5ac343"
+        }
+      ]
+    },
+    {
+      "name": "Furry RPG",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Ramsis",
+      "name_en": "Furry RPG",
+      "system": "SFC",
+      "year": "2018",
+      "developer": "Ramsis",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/furryrpg.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b705f63f5a4fe1025ff01e79.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/furryrpg.sfc",
+          "size": 6291456,
+          "sha256": "20d73987555f7baf7d342b2dd1edd61576faa590c1cc11bddc6a95ab96edb12a"
+        }
+      ]
+    },
+    {
+      "name": "Hilda",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Orochii Zouveleki (O_manko)",
+      "name_en": "Hilda",
+      "system": "SFC",
+      "year": "2016",
+      "developer": "Orochii Zouveleki (O_manko)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/hilda.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6f2fed4067d4d1d5ddbe7164.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/hilda.sfc",
+          "size": 262144,
+          "sha256": "bb783bd76eb7336d284506639e9167a4c190516ef93193bb2c83f95a806d36c8"
+        }
+      ]
+    },
+    {
+      "name": "Horizontal Shooter",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Marcus Rowe (Undisbeliever)",
+      "name_en": "Horizontal Shooter",
+      "system": "SFC",
+      "year": "2016",
+      "developer": "Marcus Rowe (Undisbeliever)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/horizontal-shooter.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/70d581e4b87312a63b8a96c6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/horizontal-shooter.sfc",
+          "size": 109824,
+          "sha256": "3f6f83b5cb0be44dcd1a905cd57a2a8a1a77d320585d1894d0a02c84b33d6067"
+        }
+      ]
+    },
+    {
+      "name": "Jet Pilot Rising",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Dieter Von Laser (D4S)",
+      "name_en": "Jet Pilot Rising",
+      "system": "SFC",
+      "year": "2008",
+      "developer": "Dieter Von Laser (D4S)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/jetpilotrising.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/73549dcba61743c5f3e3a5b2.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jetpilotrising.sfc",
+          "size": 524288,
+          "sha256": "9b572edc8e9140fb5d86bf2e300fb0345a09eb5443c3547500d40b21f78034db"
+        }
+      ]
+    },
+    {
+      "name": "MEGA FAMILY BROS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Debray Matthieu (Dieudunet)",
+      "name_en": "MEGA FAMILY BROS",
+      "system": "SFC",
+      "year": "2012",
+      "developer": "Debray Matthieu (Dieudunet)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/megafamilybros.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/1de6bc03ede69da4f8effe71.jpg"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/megafamilybros.smc",
+          "size": 1048576,
+          "sha256": "693b5c373e935339b29a071ba820fedbc0257996466fbb76aea0d095f628ecfd"
+        }
+      ]
+    },
+    {
+      "name": "N-Warp Daisakusen",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Dieter Von Laser (D4S)",
+      "name_en": "N-Warp Daisakusen",
+      "system": "SFC",
+      "year": "2009",
+      "developer": "Dieter Von Laser (D4S)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/nwarpdaisakusen.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/36d68f6c35d8170e955d51b2.gif"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/nwarpdaisakusen.smc",
+          "size": 2097152,
+          "sha256": "ee928ab95b7075d7c50b4fb01af35a62da3920bdd19b7ffd08686dca9cd54c82"
+        }
+      ]
+    },
+    {
+      "name": "Uwol, Quest For Money",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul, Mojon Twins, KungfuFurby",
+      "name_en": "Uwol, Quest For Money",
+      "system": "SFC",
+      "year": "2012",
+      "developer": "Alekmaul, Mojon Twins, KungfuFurby",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/questformoney.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/acf9cfac475c97768fea7e73.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/questformoney.sfc",
+          "size": 262144,
+          "sha256": "dde3159ee982715d7932a96344994b75798676f7df5411f3517eb0c3b6061e90"
+        }
+      ]
+    },
+    {
+      "name": "Rockfall",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Paul Lay, Harvey A. Kong Tin",
+      "name_en": "Rockfall",
+      "system": "SFC",
+      "year": "1998",
+      "developer": "Paul Lay, Harvey A. Kong Tin",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/rockfall.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/fed69fd453f1d59431cd4c65.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/rockfall.smc",
+          "size": 393728,
+          "sha256": "00bb25ff9d54b2e6944ea90080d6fc6ca5a4651e496d79823fe808890a27b912"
+        }
+      ]
+    },
+    {
+      "name": "Skipp And Friends: Unexpected Journey",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Mukunda Johnson, Ken Snyder, Steven Velema, Hubert Lamontagne",
+      "name_en": "Skipp And Friends: Unexpected Journey",
+      "system": "SFC",
+      "year": "2009",
+      "developer": "Mukunda Johnson, Ken Snyder, Steven Velema, Hubert Lamontagne",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/saf.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/9bfd597e7f4d125d625cf367.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/saf.smc",
+          "size": 1048576,
+          "sha256": "f38d59703ab2a4ac32534a1579443ec75c18a4be23ac1331e8c3f30504b3153f"
+        }
+      ]
+    },
+    {
+      "name": "Super Boss Gaiden",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Chrono Moogle and Dieter Von Laser (D4S)",
+      "name_en": "Super Boss Gaiden",
+      "system": "SFC",
+      "year": "2009",
+      "developer": "Chrono Moogle and Dieter Von Laser (D4S)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/superbossgaiden.sfc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b6ead04935701f53725eb5bf.jpg"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/superbossgaiden.sfc",
+          "size": 524288,
+          "sha256": "4cdb38a4309690fb60369fc865aade000e7e791b8f979612ae7fedc0c9127486"
+        }
+      ]
+    },
+    {
+      "name": "Tchou 2",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Debray Matthieu (Dieudunet)",
+      "name_en": "Tchou 2",
+      "system": "SFC",
+      "year": "2012",
+      "developer": "Debray Matthieu (Dieudunet)",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/snes-games/blob/2329cb432b4cad13aa6a9d2ad0699c771780b378/tchouv2.smc",
+      "tags": [
+        "SFC",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/5b0a8f89f54692f5ead961da.jpg"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/tchouv2.smc",
+          "size": 917504,
+          "sha256": "0a3992324d15f40aee38bf9e0adfbca32beac77a3bb3a84e580d25632717e272"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2417 @@
+{
+  "updated_at": "2026-11-13",
+  "generated_at": "2026-10-29T11:08:46+08:00",
+  "name_translation": {
+    "source": "https://github.com/yingw/rom-name-cn",
+    "source_ref": "f1f3a28a7d92f6354913cc0398f22c220971f757",
+    "notice": "ROM-NAME-CN-NOTICE.md",
+    "usage": "非商业用途；请注明来源并保留上游版权声明。",
+    "matching": "Exact system + ROM shortname; original English version suffix retained.",
+    "matched": 83,
+    "unmatched": [
+      "cps1frog",
+      "sfzch"
+    ]
+  },
+  "base_url": "https://raw.githubusercontent.com/while-coder/arcade-roms/main/",
+  "games": [
+    {
+      "name": "1941 - 反击战 (900227 World)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom",
+      "name_en": "1941 - Counter Attack (900227 World)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/1941.zip",
+      "tags": [
+        "CPS1",
+        "World"
+      ],
+      "screenshots": [
+        "screenshots/53b0c78c8565549f75a52d2e.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/1941.zip",
+          "size": 1430899,
+          "sha256": "b5bbf04f267385f0b19c46dfd658226a3289a448dc9a21e035af338232fb53a1",
+          "rom_name": "1941",
+          "file_name": "1941.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "1944 - 征服世界 (000620 USA)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom / 8ing / Raizing",
+      "name_en": "1944 - the loop master (000620 USA)",
+      "system": "CPS2",
+      "year": "2000",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/1944.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/0c0e1a63b41ba151f3c90063.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/1944.zip",
+          "size": 15571763,
+          "sha256": "85a539f4bf7ff8167a493522601f054ab21b1cf7df15f0c6dbb4ea117c2554f4",
+          "rom_name": "1944",
+          "file_name": "1944.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "19XX - 命运否决战 (951207 USA)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom",
+      "name_en": "19XX - the war against destiny (951207 USA)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/19xx.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/3ed60d7f8c2133a51fd6089d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/19xx.zip",
+          "size": 7908732,
+          "sha256": "d4d6a232ba574115842ab5716e00ec7960f31671fb413b8d3960b5c859d20cba",
+          "rom_name": "19xx",
+          "file_name": "19xx.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "三个奇迹 (wonder 3 910520 etc)",
+      "desc": "",
+      "genre": "街机",
+      "publisher": "Capcom",
+      "name_en": "Three Wonders (wonder 3 910520 etc)",
+      "system": "CPS1",
+      "year": "1991",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/3wonders.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/b429870b446d9114c3aa67e5.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/3wonders.zip",
+          "size": 2503214,
+          "sha256": "f34be967aa40d95b3be9b6582f8dfed73b4492bd609339d7b93c6d3979c4880c",
+          "rom_name": "3wonders",
+          "file_name": "3wonders.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "机甲勇士 (941024 Europe)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Armored Warriors (941024 Europe)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/armwar.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/86b5548f84aa03dfffe6e40c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/armwar.zip",
+          "size": 15715749,
+          "sha256": "e90cd1da2dccf3382a0aedc7e79d7f1778fcbb65537c1d3350c156588319e6f9",
+          "rom_name": "armwar",
+          "file_name": "armwar.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "异形对铁血战士 (940520 Euro)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Alien vs Predator (940520 Euro)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/avsp.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/0de6e2f7e1dd983d81ae19ce.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/avsp.zip",
+          "size": 10557410,
+          "sha256": "1f0f940706e2312efd776f386ec2cbe0991be5e458c4e6902279007902a5d38e",
+          "rom_name": "avsp",
+          "file_name": "avsp.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "战斗回路 (970319 Euro)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Battle Circuit (970319 Euro)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/batcir.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/611397184e8805221cb8bcee.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/batcir.zip",
+          "size": 11429829,
+          "sha256": "248d2c3be9f6103897a0f9a911b0308e32a1858c6b4f8846b7165693ee05af3b",
+          "rom_name": "batcir",
+          "file_name": "batcir.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "名将 (911202 other country)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Captain Commando (911202 other country)",
+      "system": "CPS1",
+      "year": "1991",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/captcomm.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/e1712aeb476ea34ed375b017.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/captcomm.zip",
+          "size": 2567167,
+          "sha256": "7ee332aa286c8a08e4eae2d0e613f38daa1a9fe448d4bdd481f86b3db78cbd31",
+          "rom_name": "captcomm",
+          "file_name": "captcomm.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "雌虎战机 (U.S. navy 901012 etc)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Capcom",
+      "name_en": "Carrier Air Wing (U.S. navy 901012 etc)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/cawing.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/3be0a4b97c770414a97eab36.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cawing.zip",
+          "size": 1453266,
+          "sha256": "6f0587bee5da6bdcacd0810b7e221c9cc6647e320764c2b83edbd026563596fd",
+          "rom_name": "cawing",
+          "file_name": "cawing.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "长江 (010820 Japan)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Mitchell",
+      "name_en": "Choko (010820 Japan)",
+      "system": "CPS2",
+      "year": "2001",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/choko.zip",
+      "tags": [
+        "CPS2",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/ea5fadd7bc24e37f1297f2b2.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/choko.zip",
+          "size": 4988311,
+          "sha256": "97009e6e1dbf30811ac791baf0a81c55d5f2890fdb821fa37c6849674dd4113f",
+          "rom_name": "choko",
+          "file_name": "choko.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "Frog Feast (CPS-1)",
+      "desc": "",
+      "genre": "其他",
+      "publisher": "Rastersoft (Homebrew)",
+      "name_en": "Frog Feast (CPS-1)",
+      "system": "CPS1",
+      "year": "2006",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/cps1frog.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/d600dc824a82986c915d222e.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cps1frog.zip",
+          "size": 52992,
+          "sha256": "dba81a541509622edcade07ba7dd48c6003e3059d6cc3f52553f1ef8dbb4d6fd",
+          "rom_name": "cps1frog",
+          "file_name": "cps1frog.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "卡普空运动俱乐部 (971017 Euro)",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "Capcom",
+      "name_en": "Capcom Sports Club (971017 Euro)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/csclub.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/4e9e59c5fb090249bda56f11.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/csclub.zip",
+          "size": 6401315,
+          "sha256": "605ee5fe85a2fda40f29a08c13bb04db940d871aaee17b9be44890df0572b449",
+          "rom_name": "csclub",
+          "file_name": "csclub.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "冒险问答 卡普空世界 2 (920611 Japan)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Capcom",
+      "name_en": "Capcom World 2 (920611 Japan)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/cworld2j.zip",
+      "tags": [
+        "CPS1",
+        "World",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/e19f6c8b5528e45bd924fdeb.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cworld2j.zip",
+          "size": 1770007,
+          "sha256": "d172b7252c3ac7381443a02a1ef847d8a65278576a681b96fff2ae807debc063",
+          "rom_name": "cworld2j",
+          "file_name": "cworld2j.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "机甲勇士 - 全金属狂潮 (950424 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Cyberbots - fullmetal madness (950424 Euro)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/cybots.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/7a58a837196bffe96f4a70c8.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cybots.zip",
+          "size": 20455937,
+          "sha256": "d8657e2ccf601238567e8110ef0d19c71321bfbb60ef12a7c6d5481aab909646",
+          "rom_name": "cybots",
+          "file_name": "cybots.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "龙与地下城 - 暗黑秘影 (960619 Euro)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Dungeons & Dragons - shadow over mystara (960619 Euro)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ddsom.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/20d15ec88eb5f483fd906df3.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ddsom.zip",
+          "size": 17167546,
+          "sha256": "975f2b3e605d90a6e6e6f7b1b53d944b75c80469ef4c89dc84cb51c4e7a14580",
+          "rom_name": "ddsom",
+          "file_name": "ddsom.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "龙与地下城 - 毁灭之塔 (940412 Euro)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Dungeons & Dragons - tower of doom (940412 Euro)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ddtod.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/8055519820387106b00cc999.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ddtod.zip",
+          "size": 10858823,
+          "sha256": "f693f03692856267400aa8ec6004f799e8c1b6225293fcc66e697e0caca78039",
+          "rom_name": "ddtod",
+          "file_name": "ddtod.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "迪玛乎 (000121 Euro)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "8ing / Raizing / Capcom",
+      "name_en": "Dimahoo (000121 Euro)",
+      "system": "CPS2",
+      "year": "2000",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/dimahoo.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/8e79c6f8422e94ad1b70c8e2.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/dimahoo.zip",
+          "size": 14734242,
+          "sha256": "47d436b5992490d38c18602fe9fc0f4f05d6de0eb559f378e7013c23563bf531",
+          "rom_name": "dimahoo",
+          "file_name": "dimahoo.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恐龙新世纪 (930201 etc)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Cadillacs & Dinosaurs (930201 etc)",
+      "system": "CPS1",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/dino.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/d43fadac68550e77a04f3b42.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/dino.zip",
+          "size": 4142254,
+          "sha256": "ca6db77989b68836621025edc44f931ef71a749c09900560a339b2c30e34f215",
+          "rom_name": "dino",
+          "file_name": "dino.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恶魔战士 - 午夜斗士 (940705 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Darkstalkers - the night warriors (940705 Euro)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/dstlk.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/6d5ebaa4d2b2e3313fd9667a.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/dstlk.zip",
+          "size": 15070960,
+          "sha256": "7c54eafc56e02287e297429f45fe34d806303f2452e0826468febd5fb3b17ff1",
+          "rom_name": "dstlk",
+          "file_name": "dstlk.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "王朝战争 (US set 1)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Dynasty Wars (US set 1)",
+      "system": "CPS1",
+      "year": "1989",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/dynwar.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/8a4deb8e4ec790643114ece1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/dynwar.zip",
+          "size": 2215995,
+          "sha256": "8a4bda0a25a62ea01f1c2ca1bd769d348523501526d045d34457a9c816535261",
+          "rom_name": "dynwar",
+          "file_name": "dynwar.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "环保战机 (931203 etc)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Capcom",
+      "name_en": "Eco Fighters (931203 etc)",
+      "system": "CPS2",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ecofghtr.zip",
+      "tags": [
+        "CPS2"
+      ],
+      "screenshots": [
+        "screenshots/a1e84e4ba6f9118b1077332c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ecofghtr.zip",
+          "size": 8096850,
+          "sha256": "ccdad774f23024db5b074002e740aa450ed8fb3bcd5666d390e6db62c09baf53",
+          "rom_name": "ecofghtr",
+          "file_name": "ecofghtr.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "快打旋风 (World, set 1)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Final Fight (World, set 1)",
+      "system": "CPS1",
+      "year": "1989",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/ffight.zip",
+      "tags": [
+        "CPS1",
+        "World"
+      ],
+      "screenshots": [
+        "screenshots/282321cf0124bba92ebb424c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ffight.zip",
+          "size": 1440470,
+          "sha256": "b5491f1dcecd1650ebea4940bd539b8d6210989abcdbc73572c192e9af2a1bdc",
+          "rom_name": "ffight",
+          "file_name": "ffight.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "失落的世界 (World)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Capcom",
+      "name_en": "Forgotten Worlds (World)",
+      "system": "CPS1",
+      "year": "1988",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/forgottn.zip",
+      "tags": [
+        "CPS1",
+        "World"
+      ],
+      "screenshots": [
+        "screenshots/096c769d5288cc1d766765cc.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/forgottn.zip",
+          "size": 1959693,
+          "sha256": "a34bc6391f7dca5d59ced5ccaa471288fd71bbd0cd647ecc75a8b28ddec09226",
+          "rom_name": "forgottn",
+          "file_name": "forgottn.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "大魔界村 (World)",
+      "desc": "",
+      "genre": "平台动作",
+      "publisher": "Capcom",
+      "name_en": "Ghouls'n Ghosts (World)",
+      "system": "CPS1",
+      "year": "1988",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/ghouls.zip",
+      "tags": [
+        "CPS1",
+        "World"
+      ],
+      "screenshots": [
+        "screenshots/5c26005d3933b9fef8893bff.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ghouls.zip",
+          "size": 1625132,
+          "sha256": "83fe010defb48fb082e275897706b4786409a16e1480f63b3bbe3a17189a873e",
+          "rom_name": "ghouls",
+          "file_name": "ghouls.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "雷鸟之翼 (990222 USA)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom",
+      "name_en": "Giga Wing (990222 USA)",
+      "system": "CPS2",
+      "year": "1999",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/gigawing.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/d389c2271e7d91bbc42b91b6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/gigawing.zip",
+          "size": 12742140,
+          "sha256": "f6796f99ee60746b3537963ccbf7d5a80850fdff99a64890d4ccf9bdc296d8ef",
+          "rom_name": "gigawing",
+          "file_name": "gigawing.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "终极街头霸王 II - 周年纪念版 (040202 USA)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Hyper Street Fighter 2: The Anniversary Edition (040202 USA)",
+      "system": "CPS2",
+      "year": "2004",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/hsf2.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/36685d12d4eb4832bd3e7c40.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/hsf2.zip",
+          "size": 21200796,
+          "sha256": "6b8d436f240a02291b8b1b230c8253a926536110b1094c0103ab37105c8d96a7",
+          "rom_name": "hsf2",
+          "file_name": "hsf2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "乔乔的奇妙冒险 (USA 990128)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "JoJo's Venture / JoJo no Kimyou na Bouken (USA 990128)",
+      "system": "CPS3",
+      "year": "1998",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/jojo.zip",
+      "tags": [
+        "CPS3",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/9baa2ddd9f64aacb04036c8f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jojo.zip",
+          "size": 46013228,
+          "sha256": "d3c40edaff4bc8c975ed4177fdf772f6ee04cca0bd26903fbd635e06e900ba1c",
+          "rom_name": "jojo",
+          "file_name": "jojo.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "乔乔的奇妙冒险 - 未来遗产 (Japan 990927)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyou na Bouken: Mirai e no Isan (Japan 990927)",
+      "system": "CPS3",
+      "year": "1999",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/jojoba.zip",
+      "tags": [
+        "CPS3",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/022c37e0ea925a9aac5216b0.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jojoba.zip",
+          "size": 54305224,
+          "sha256": "cc791c35b468e679630a023a674fe8dfaceafa71645f63707e8017118177b335",
+          "rom_name": "jojoba",
+          "file_name": "jojoba.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "圆桌骑士 (911127 etc)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Knights of the Round (911127 etc)",
+      "system": "CPS1",
+      "year": "1991",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/knights.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/3508418a897eefc4745fd3d1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/knights.zip",
+          "size": 2379585,
+          "sha256": "499b735776138075a67e62961c0490d0cbbc0b96eaca21688aedf55f52edac01",
+          "rom_name": "knights",
+          "file_name": "knights.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "龙王战士 (910805 etc)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "The King of Dragons (910805 etc)",
+      "system": "CPS1",
+      "year": "1991",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/kod.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/cd4e91b206cc5f8cd59b2145.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/kod.zip",
+          "size": 2384678,
+          "sha256": "bf2e06e6f09fa122c412ce5b24bbe3d27ed5a4a2ed40625dc725d1339825e83e",
+          "rom_name": "kod",
+          "file_name": "kod.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "肌肉爆弹二重奏 - 最终之战 (931206 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Muscle Bomber Duo - ultimate team battle (931206 etc)",
+      "system": "CPS1",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/mbombrd.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/524b84b0cf94c1d516a277f5.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mbombrd.zip",
+          "size": 6553958,
+          "sha256": "95704a4fda80e961b16b3845ccdd727e47a1095f8400c98ab421f359281a13bc",
+          "rom_name": "mbombrd",
+          "file_name": "mbombrd.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "洛克人 - 力量之战 (951006 USA)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Mega Man - the power battle (951006 USA)",
+      "system": "CPS1",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/megaman.zip",
+      "tags": [
+        "CPS1",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/091ad985189a788cf657ea1a.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/megaman.zip",
+          "size": 3351900,
+          "sha256": "9d569e42c21b8d3ec9b02de66028113d3cb8fa8ab43bf8b073dae3abe45dd564",
+          "rom_name": "megaman",
+          "file_name": "megaman.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "洛克人 2 - 力量对决 (960708 USA)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Mega Man 2 - the power fighters (960708 USA)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/megaman2.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/d0e3f370118c40279cc8c409.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/megaman2.zip",
+          "size": 7470747,
+          "sha256": "ed9f695e85987855a7e348aa811d1348d2d5350a70194d35f7e27a67057e368e",
+          "rom_name": "megaman2",
+          "file_name": "megaman2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "佣兵 (900302 etc)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom",
+      "name_en": "Mercs (900302 etc)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/mercs.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/f9a4a32ea2ae3b5d0ae9a617.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mercs.zip",
+          "size": 1770738,
+          "sha256": "33463e9c8c11aef2e155453ee2c23b75444da7f0c534f2e8dcf88d6e3cf87879",
+          "rom_name": "mercs",
+          "file_name": "mercs.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "火星矩阵 (000412 USA)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom / Takumi",
+      "name_en": "Mars Matrix (000412 USA)",
+      "system": "CPS2",
+      "year": "2000",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/mmatrix.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/dbc7d482f3c451b336a27183.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mmatrix.zip",
+          "size": 19338236,
+          "sha256": "a8726602ff6f9f1fedd8ab498914dc605a924ce2c4d70fb4b4ea33159e189b45",
+          "rom_name": "mmatrix",
+          "file_name": "mmatrix.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超强气泡 (001010 Euro)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Mitchell",
+      "name_en": "Mighty! Pang (001010 Euro)",
+      "system": "CPS2",
+      "year": "2000",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/mpang.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/57182eba1cac314a1dd3989f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mpang.zip",
+          "size": 5641444,
+          "sha256": "2b8ae91e3c6f22f046b3668c91252b76a6f7e09ca055c680c029696c5175467b",
+          "rom_name": "mpang",
+          "file_name": "mpang.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "漫威超级英雄 (951024 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Marvel Super Heroes (951024 Euro)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/msh.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/fdb931336487e1ac99cdfc2c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/msh.zip",
+          "size": 20389446,
+          "sha256": "6495a18dd31dabc783f0a854402fd90a433b0b7d2efa10f24c718bd534c3d0d3",
+          "rom_name": "msh",
+          "file_name": "msh.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "漫威超级英雄对街头霸王 (970625 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Marvel Super Heroes vs Street Fighter (970625 Euro)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/mshvsf.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/8aa8810219978ca2a9c29473.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mshvsf.zip",
+          "size": 23407454,
+          "sha256": "eab70f65ad824a0b58ea5c938096bbd9a42526e1d34294417faabb397f393d3e",
+          "rom_name": "mshvsf",
+          "file_name": "mshvsf.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "魔法剑 - 英雄的幻想 (25.07.1990 other country)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Magic Sword - heroic fantasy (25.07.1990 other country)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/msword.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/678366230c07e51b5e863691.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/msword.zip",
+          "size": 1452362,
+          "sha256": "934c24783f93f21e3f59b97c21d4e245f0e859a8bd98c98c37beaf36e48c157c",
+          "rom_name": "msword",
+          "file_name": "msword.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "双麒儿 (chiki chiki boys 900619 etc)",
+      "desc": "",
+      "genre": "平台动作",
+      "publisher": "Capcom",
+      "name_en": "Mega Twins (chiki chiki boys 900619 etc)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/mtwins.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/85b83e98bfc02a076be96cb6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mtwins.zip",
+          "size": 1446214,
+          "sha256": "363c63655fc6e37ea815ab2638e349ef50b37619c5ed66ec4013ef72a860d083",
+          "rom_name": "mtwins",
+          "file_name": "mtwins.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "漫威对卡普空 - 超级英雄的冲突 (980123 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Marvel vs Capcom - clash of super heroes (980123 Euro)",
+      "system": "CPS2",
+      "year": "1998",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/mvsc.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/90dd99fc96a20d464c08dfa4.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/mvsc.zip",
+          "size": 22989876,
+          "sha256": "b29bd665c0ba2bc3214fcdde9340785c4a3a49717bd8fb4be68f26c9566a1b57",
+          "rom_name": "mvsc",
+          "file_name": "mvsc.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "梦幻冒险 (90 11 30 etc)",
+      "desc": "",
+      "genre": "平台动作",
+      "publisher": "Capcom",
+      "name_en": "Nemo (90 11 30 etc)",
+      "system": "CPS1",
+      "year": "1990",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/nemo.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/c6d3fcd4980aca97e3cc1d6f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/nemo.zip",
+          "size": 1351842,
+          "sha256": "568558176312b22b6b2405bd09ca3ff97009c4630975e7f54d0e1ff264e6fec7",
+          "rom_name": "nemo",
+          "file_name": "nemo.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恶魔战士 - 恶魔的复仇 (950316 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Night Warriors - darkstalkers' revenge (950316 Euro)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/nwarr.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/dabdab4fd2d83276436ebde2.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/nwarr.zip",
+          "size": 20381210,
+          "sha256": "7b213c60f7c6f35b2719508120440d53eded1596b09108138ef40e3a3242f9f9",
+          "rom_name": "nwarr",
+          "file_name": "nwarr.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "魔鬼气泡 3 (950601 Euro)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Mitchell",
+      "name_en": "Pang! 3 (950601 Euro)",
+      "system": "CPS1",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/pang3.zip",
+      "tags": [
+        "CPS1",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/9f19105a579dacad0d0e9576.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pang3.zip",
+          "size": 1557637,
+          "sha256": "479b039cfea758e8baec7e32458c88da88eaa5352c3f39c2ae71c92820a5d77b",
+          "rom_name": "pang3",
+          "file_name": "pang3.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超级口袋战士 (970904 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Pocket Fighter (970904 Japan)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/pfghtj.zip",
+      "tags": [
+        "CPS2",
+        "Japan",
+        "clone"
+      ],
+      "screenshots": [
+        "screenshots/0815a0f2d3cba359121ac844.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pfghtj.zip",
+          "size": 413573,
+          "sha256": "2833148743be9c499f90c3d9e610a5c0ed0689b2db981d253fe16435aec51ab5",
+          "rom_name": "pfghtj",
+          "file_name": "pfghtj.zip",
+          "dependencies": [
+            "sgemf.zip"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "核心齿轮 - 战略变异装甲 (941024 Japan)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Powered Gear - strategic variant armor equipment (941024 Japan)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/pgear.zip",
+      "tags": [
+        "CPS2",
+        "Japan",
+        "clone"
+      ],
+      "screenshots": [
+        "screenshots/0d3a5038e7ce2ca75dffb73c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pgear.zip",
+          "size": 1056145,
+          "sha256": "3c8c8084ff6722d842d068baaaccf7249bb10d132c17073f5c9b63457e9c6e7f",
+          "rom_name": "pgear",
+          "file_name": "pgear.zip",
+          "dependencies": [
+            "armwar.zip"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "魔法方块 (940608 Japan)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Compile (Capcom license)",
+      "name_en": "Pnickies (940608 Japan)",
+      "system": "CPS1",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/pnickj.zip",
+      "tags": [
+        "CPS1",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/45a04c3b101cefd02dc540d1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pnickj.zip",
+          "size": 777885,
+          "sha256": "1f6e1c5934adbe1d328b802b416d4cb8356392a0be2c2afed4a72809ce918ac6",
+          "rom_name": "pnickj",
+          "file_name": "pnickj.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "能源之岚 (010117 USA)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Capcom / Cave",
+      "name_en": "Progear (010117 USA)",
+      "system": "CPS2",
+      "year": "2001",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/progear.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/add270f26808c1d9e76224f7.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/progear.zip",
+          "size": 13892687,
+          "sha256": "09bbf348d41836733ca49248e49b56a79cf198ba0ba6985685355af01c967d8c",
+          "rom_name": "progear",
+          "file_name": "progear.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "惩罚者 (930422 etc)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "The Punisher (930422 etc)",
+      "system": "CPS1",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/punisher.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/8f379b0fcb760002e9a26f95.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/punisher.zip",
+          "size": 4068543,
+          "sha256": "608db124f09ca606f79b1aa8a6f0c4454d062ccddcaa89da38d7747792b67628",
+          "rom_name": "punisher",
+          "file_name": "punisher.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "谜球回路 2 (010302 Euro)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Mitchell, distritued by Capcom",
+      "name_en": "Puzz Loop 2 (010302 Euro)",
+      "system": "CPS2",
+      "year": "2001",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/pzloop2.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/1db31cfc6c8d75ae99a9c991.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pzloop2.zip",
+          "size": 11209261,
+          "sha256": "a06d40e51f51dd017bf41e10c590007293969367a998769b4cc3e855383e450e",
+          "rom_name": "pzloop2",
+          "file_name": "pzloop2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "龙之迷题 (capcom quiz game 920701 USA)",
+      "desc": "",
+      "genre": "街机",
+      "publisher": "Capcom",
+      "name_en": "Quiz & Dragons (capcom quiz game 920701 USA)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/qad.zip",
+      "tags": [
+        "CPS1",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/db8e60a6cfd4e1ffddc9c824.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/qad.zip",
+          "size": 1102080,
+          "sha256": "ad274a94ca1f30fb906d04770b25f0e16d6e6bbac2a35bb635788d5e701cd407",
+          "rom_name": "qad",
+          "file_name": "qad.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "真实之梦问答 - 虹色町的奇迹 (nanairo dreams 960826 Japan)",
+      "desc": "",
+      "genre": "街机",
+      "publisher": "Capcom",
+      "name_en": "Quiz Nanairo Dreams - nijiirochou no kiseki (nanairo dreams 960826 Japan)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/qndream.zip",
+      "tags": [
+        "CPS2",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/1ea75fd1609bc60d47eb02bb.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/qndream.zip",
+          "size": 6993273,
+          "sha256": "bf705a99be29e93089df81238783cdd04b5a7d688419244c17c29b7d5303c3bb",
+          "rom_name": "qndream",
+          "file_name": "qndream.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "赤色大地 (Euro 961121)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Red Earth / War-Zard (Euro 961121)",
+      "system": "CPS3",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/redearth.zip",
+      "tags": [
+        "CPS3",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/a4d2607f91c081ec605b565b.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/redearth.zip",
+          "size": 38381806,
+          "sha256": "b5a5d2a15ce94745201f196eb77abb6537500c5c53a76bd4b397833c6249d154",
+          "rom_name": "redearth",
+          "file_name": "redearth.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "毁坏之环 - 摔角霸王 II (940902 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Ring of Destruction - slammasters II (940902 Euro)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ringdest.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/bce1ce9ec778895ef8221bad.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ringdest.zip",
+          "size": 13152630,
+          "sha256": "7d53e7b903da623f6d481e3ce0bc81296d377d6e21a9469f4def9507f75d3226",
+          "rom_name": "ringdest",
+          "file_name": "ringdest.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "洛克人 2 - 力量对决 (960708 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Rockman 2 - the power fighters (960708 Japan)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/rockman2j.zip",
+      "tags": [
+        "CPS2",
+        "Japan",
+        "clone"
+      ],
+      "screenshots": [
+        "screenshots/96105cfe563030d2e812b2a6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/rockman2j.zip",
+          "size": 528932,
+          "sha256": "7c5b267d8a89dbd69b0d50ba2648ebfdf0f1855619464b323bcd08e2e1e14082",
+          "rom_name": "rockman2j",
+          "file_name": "rockman2j.zip",
+          "dependencies": [
+            "megaman2.zip"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 II - 天下斗士 (910522 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter II - The World Warrior (910522 etc)",
+      "system": "CPS1",
+      "year": "1991",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/sf2.zip",
+      "tags": [
+        "CPS1",
+        "World"
+      ],
+      "screenshots": [
+        "screenshots/6a4b7fb0c9642294369f158d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sf2.zip",
+          "size": 3588612,
+          "sha256": "3d822f3932aae8f24d8949719e01db885a26383a680612e3f7c346c39cc6c601",
+          "rom_name": "sf2",
+          "file_name": "sf2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 II - 四大天王 (street fighter 2' 920513 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter II' - Champion Edition (street fighter 2' 920513 etc)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/sf2ce.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/582ae03f819c842859aac78b.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sf2ce.zip",
+          "size": 3621412,
+          "sha256": "2c830ae5dabf077bc211b0e803fef765dc9499ef7c9353e61d565a86d62d2092",
+          "rom_name": "sf2ce",
+          "file_name": "sf2ce.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 II - 战斗宣言 (street fighter 2' T 921209 ETC)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter II' - Hyper Fighting (street fighter 2' T 921209 ETC)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/sf2hf.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/96d51124dc3a5510d3730892.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sf2hf.zip",
+          "size": 3677530,
+          "sha256": "d55010243b851859a156715c603a20a554f8d21cacf30a9da2a490c666541481",
+          "rom_name": "sf2hf",
+          "file_name": "sf2hf.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "少年街霸 - 斗士之梦 (950727 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter Alpha - warriors' dreams (950727 Euro)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/sfa.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/7a15be5c6756cea864cfbaaf.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfa.zip",
+          "size": 7442488,
+          "sha256": "4e2d65f08bf925fae548ff5f65483f536240cd3d2327fb68c3928187e85d12ae",
+          "rom_name": "sfa",
+          "file_name": "sfa.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "少年街霸 2 (960229 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter Alpha 2 (960229 Euro)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/sfa2.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/62f78cfcd131dbe6ff414263.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfa2.zip",
+          "size": 13862014,
+          "sha256": "6258cbdcaff20b7d607d97fcd9b469504821452a7c60efb96079b63b63cb917a",
+          "rom_name": "sfa2",
+          "file_name": "sfa2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "少年街霸 3 (980904 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter Alpha 3 (980904 Euro)",
+      "system": "CPS2",
+      "year": "1998",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/sfa3.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/0cd61a9a0a6512a186f24576.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfa3.zip",
+          "size": 23632703,
+          "sha256": "a21ad20d59f9da47af4d82e8e02890455065151a32d7a2cd74d6a025d6526c86",
+          "rom_name": "sfa3",
+          "file_name": "sfa3.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 III - 新的时代 (USA 970204)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter III: New Generation (USA 970204)",
+      "system": "CPS3",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/sfiii.zip",
+      "tags": [
+        "CPS3",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/88c2f3bd685391bc4ed07b6d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfiii.zip",
+          "size": 38882015,
+          "sha256": "9a4282af3e264c58fb413f07f6ae069dc9430e4b0c15b812d13578628b242298",
+          "rom_name": "sfiii",
+          "file_name": "sfiii.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 III 二度冲击 - 巨型攻击 (USA 970930)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter III 2nd Impact: Giant Attack (USA 970930)",
+      "system": "CPS3",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/sfiii2.zip",
+      "tags": [
+        "CPS3",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/5420b42750c9d10fb1d0899d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfiii2.zip",
+          "size": 43848121,
+          "sha256": "f8014f95f07094122ce8536108b1305996f8cf8b461ac1459315dc3ce1ad864a",
+          "rom_name": "sfiii2",
+          "file_name": "sfiii2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "街头霸王 III 三次攻击 - 未来战斗 (Euro 990608)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter III 3rd Strike: Fight for the Future (Euro 990608)",
+      "system": "CPS3",
+      "year": "1999",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS3/sfiii3.zip",
+      "tags": [
+        "CPS3",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/4f6255566d7e8e1814822db4.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfiii3.zip",
+          "size": 70611026,
+          "sha256": "2e2cb056c6d42bcf0d209dc020a141aeecd0c091fe01cf3367522c39847257fe",
+          "rom_name": "sfiii3",
+          "file_name": "sfiii3.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "Street Fighter Zero (CPS Changer, 951020 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter Zero (CPS Changer, 951020 Japan)",
+      "system": "CPS1",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/sfzch.zip",
+      "tags": [
+        "CPS1",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/9f7e0f318419f408355e38af.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfzch.zip",
+          "size": 3945915,
+          "sha256": "95fa1beec7ddf51b1a31d60da39dc69a4620b7df61bc4abf45577f8b0b7eb7bb",
+          "rom_name": "sfzch",
+          "file_name": "sfzch.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超级口袋战士 (970904 USA)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Super Gem Fighter Mini Mix (970904 USA)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/sgemf.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/d03cebc79a7007c01df24745.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sgemf.zip",
+          "size": 16605518,
+          "sha256": "e920defaf4c8bf837c65ba9afba3012c75ca7105f83f83749816c5b4c12082ad",
+          "rom_name": "sgemf",
+          "file_name": "sgemf.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "摔角霸王 (Slam Masters 930713 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Saturday Night Slam Masters (Slam Masters 930713 etc)",
+      "system": "CPS1",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/slammast.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/6717cf544148bb7d313fc32d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/slammast.zip",
+          "size": 6632804,
+          "sha256": "b219dc174617542cbc0b04c6553754908e1a1ce2e7fed03e1c09d23c94222e66",
+          "rom_name": "slammast",
+          "file_name": "slammast.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超级肌肉爆弹 - 劲爆国际 (940831 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Super Muscle Bomber - the international blowout (940831 Japan)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/smbomb.zip",
+      "tags": [
+        "CPS2",
+        "Japan",
+        "clone"
+      ],
+      "screenshots": [
+        "screenshots/b6abe95fc9063501d8ecccf6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/smbomb.zip",
+          "size": 612545,
+          "sha256": "ecafd18b8937647595b703ab604bae6e77599363c9148bc3272364de9c6ff886",
+          "rom_name": "smbomb",
+          "file_name": "smbomb.zip",
+          "dependencies": [
+            "ringdest.zip"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "超级街霸方块 II 加速版 (Super Puzzle Fighter 2 Turbo 960620 USA)",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "Capcom",
+      "name_en": "Super Puzzle Fighter II Turbo (Super Puzzle Fighter 2 Turbo 960620 USA)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/spf2t.zip",
+      "tags": [
+        "CPS2",
+        "USA"
+      ],
+      "screenshots": [
+        "screenshots/d9965d3047727f942f7f1154.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/spf2t.zip",
+          "size": 5275126,
+          "sha256": "0509cd01cc748d06ac516587b07cb3253b0583f5242058d24cbdfb56e8a6b509",
+          "rom_name": "spf2t",
+          "file_name": "spf2t.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超级街头霸王 II - 新的挑战者 (super street fighter 2 930911 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Super Street Fighter II - the new challengers (super street fighter 2 930911 etc)",
+      "system": "CPS2",
+      "year": "1993",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ssf2.zip",
+      "tags": [
+        "CPS2"
+      ],
+      "screenshots": [
+        "screenshots/640a4885cfcb6125f9b4f7d9.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ssf2.zip",
+          "size": 10437552,
+          "sha256": "041be7d890c6278c4dc1372658cf505fd6091817938828f738e73510b401eb17",
+          "rom_name": "ssf2",
+          "file_name": "ssf2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "超级街头霸王 II 加速版 (super street fighter 2 X 940223 etc)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Super Street Fighter II Turbo (super street fighter 2 X 940223 etc)",
+      "system": "CPS2",
+      "year": "1994",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ssf2t.zip",
+      "tags": [
+        "CPS2"
+      ],
+      "screenshots": [
+        "screenshots/65e0eb0e9f46cb0c46f226b9.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ssf2t.zip",
+          "size": 12026222,
+          "sha256": "4ebc7b08aed4a19588c12e0f09a8ae887bddd8f60e3cca87deedf5c0cf28a89e",
+          "rom_name": "ssf2t",
+          "file_name": "ssf2t.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "出击飞龙 (US set 1)",
+      "desc": "",
+      "genre": "平台动作",
+      "publisher": "Capcom",
+      "name_en": "Strider (US set 1)",
+      "system": "CPS1",
+      "year": "1989",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/strider.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/99ee7920413c27d91edfb8b3.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/strider.zip",
+          "size": 2122398,
+          "sha256": "942706f31688f22356fcc6b8d20736654f80cc1d4c62b3f50d5357dfb1ff64aa",
+          "rom_name": "strider",
+          "file_name": "strider.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "维和部队 (US)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Daipro / Capcom",
+      "name_en": "U.N. Squadron (US)",
+      "system": "CPS1",
+      "year": "1989",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/unsquad.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/19547683058cdc1bf30a8392.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/unsquad.zip",
+          "size": 1287042,
+          "sha256": "5232055f3f82b3b5684bf6e379142b1bd373ed44731df79acef8ae3d34d30433",
+          "rom_name": "unsquad",
+          "file_name": "unsquad.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "威虎战机 - 雷暴行动 (920714 etc)",
+      "desc": "",
+      "genre": "纵版射击",
+      "publisher": "Capcom",
+      "name_en": "Varth - operation thunderstorm (920714 etc)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/varth.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/825176306e53868c16581934.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/varth.zip",
+          "size": 1556743,
+          "sha256": "7935549bd106c4e7f33221ca35416bcc409b18a647724dfdcaa332de50a15b00",
+          "rom_name": "varth",
+          "file_name": "varth.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恶魔猎人 2 - 恶魔的复仇 (970929 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Vampire Hunter 2 - darkstalkers revenge (970929 Japan)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/vhunt2.zip",
+      "tags": [
+        "CPS2",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/ea0f915280045ce65fe6ce5f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/vhunt2.zip",
+          "size": 23723816,
+          "sha256": "d99bb1925c91a07e7aa8d4684c2eaf34a70a4412716f974bf7cf374771fe6ac0",
+          "rom_name": "vhunt2",
+          "file_name": "vhunt2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恶魔救世主 - 吸血鬼贵族 (970519 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Vampire Savior - the lord of vampire (970519 Euro)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/vsav.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/d4af30ff3320f4ee0b825d3b.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/vsav.zip",
+          "size": 23684420,
+          "sha256": "7547a392dba2bcbf19d61d5aee1146dbae6befbc7a677f0f94fb4fae230ad5cc",
+          "rom_name": "vsav",
+          "file_name": "vsav.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "恶魔救世主 2 - 吸血鬼贵族 (970913 Japan)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Vampire Savior 2 - the lord of vampire (970913 Japan)",
+      "system": "CPS2",
+      "year": "1997",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/vsav2.zip",
+      "tags": [
+        "CPS2",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/9a11d2bab8dd06ae921b6882.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/vsav2.zip",
+          "size": 23679875,
+          "sha256": "d4d3e2997c006c1f7c6c3c5bcde10fd144737fcddb192f559e73f7af5e5c770b",
+          "rom_name": "vsav2",
+          "file_name": "vsav2.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "威洛之旅 (US)",
+      "desc": "",
+      "genre": "平台动作",
+      "publisher": "Capcom",
+      "name_en": "Willow (US)",
+      "system": "CPS1",
+      "year": "1989",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/willow.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/943c91f0014fec7d34dd3c29.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/willow.zip",
+          "size": 1792333,
+          "sha256": "9e976b8b0afa5e961790939949afad8eee986e99b0b538a993f1706e0f3c8579",
+          "rom_name": "willow",
+          "file_name": "willow.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "三国志 II (921031 etc)",
+      "desc": "",
+      "genre": "动作过关",
+      "publisher": "Capcom",
+      "name_en": "Warriors of Fate (921031 etc)",
+      "system": "CPS1",
+      "year": "1992",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS1/wof.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/07df11ca2bb9fcffb010dacc.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/wof.zip",
+          "size": 3970273,
+          "sha256": "8d1f053e54ea14be3e13dafc806f297264c421569a2b4cfdde83a8fb72a96a78",
+          "rom_name": "wof",
+          "file_name": "wof.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "X 战警 - 磁场原子人 (950105 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "X-Men - children of the atom (950105 Euro)",
+      "system": "CPS2",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/xmcota.zip",
+      "tags": [
+        "CPS2",
+        "Euro",
+        "clone"
+      ],
+      "screenshots": [
+        "screenshots/8c5b1c56fd27a171050d1cdd.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/xmcotar1.zip",
+          "size": 20326902,
+          "sha256": "cff74275abcf28d6428ecf44a5879fb6215b9f32492ce20a24b424e3171cf5ea",
+          "rom_name": "xmcotar1",
+          "file_name": "xmcotar1.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "X 战警对街头霸王 (961004 Euro)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "X-Men vs Street Fighter (961004 Euro)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/xmvsf.zip",
+      "tags": [
+        "CPS2",
+        "Euro"
+      ],
+      "screenshots": [
+        "screenshots/cb04897d5336f0efd6a2b6d4.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/xmvsf.zip",
+          "size": 19891137,
+          "sha256": "1494190c08b08137f547b57f23e302807d665ff27a8b18b53c83418986b98a3c",
+          "rom_name": "xmvsf",
+          "file_name": "xmvsf.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "加油! 马林君 (Marine 2K0411 JPN)",
+      "desc": "",
+      "genre": "横版射击",
+      "publisher": "Capcom",
+      "name_en": "Ganbare! Marine Kun (Marine 2K0411 JPN)",
+      "system": "CPS1",
+      "year": "2000",
+      "source_url": "https://archive.org/download/fba-arcade-v0.2.97.29/ganbare.zip",
+      "tags": [
+        "CPS1"
+      ],
+      "screenshots": [
+        "screenshots/edaa5a67eac22ba90de366e2.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ganbare.zip",
+          "size": 660415,
+          "sha256": "378858c4978d70f9344a29c0fad8d14b2fa7e53ae36ebe89c05c073e52627611",
+          "rom_name": "ganbare",
+          "file_name": "ganbare.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "雀国志 - 覇王的采牌 (990527 Japan)",
+      "desc": "",
+      "genre": "街机",
+      "publisher": "Mitchell",
+      "name_en": "Jyangokushi  -Haoh no Saihai- (990527 Japan)",
+      "system": "CPS2",
+      "year": "1999",
+      "source_url": "https://archive.org/download/fba-arcade-v0.2.97.29/jyangoku.zip",
+      "tags": [
+        "CPS2",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/70adbc95bcd819f1b68982a5.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jyangoku.zip",
+          "size": 3944944,
+          "sha256": "7b54d18b8061ba29008eff82922d88260bebdee5689b25a3c504e51217f71280",
+          "rom_name": "jyangoku",
+          "file_name": "jyangoku.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "殿样之野望 2 全国版问答 (tonosama 2 950123 Japan)",
+      "desc": "",
+      "genre": "街机",
+      "publisher": "Capcom",
+      "name_en": "Quiz Tonosama no Yabou 2 Zenkoku-ban (tonosama 2 950123 Japan)",
+      "system": "CPS1",
+      "year": "1995",
+      "source_url": "https://archive.org/download/fba-arcade-v0.2.97.29/qtono2j.zip",
+      "tags": [
+        "CPS1",
+        "Japan"
+      ],
+      "screenshots": [
+        "screenshots/1e7bbb7ae08086013237c4ea.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/qtono2j.zip",
+          "size": 1945250,
+          "sha256": "05bc1d32d51c25465baa9681473d18853c91736e2f0003962b407ac3815a1113",
+          "rom_name": "qtono2j",
+          "file_name": "qtono2j.zip",
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "name": "少年街霸 2 Alpha (960826 Asia)",
+      "desc": "",
+      "genre": "格斗",
+      "publisher": "Capcom",
+      "name_en": "Street Fighter Zero 2 Alpha (960826 Asia)",
+      "system": "CPS2",
+      "year": "1996",
+      "source_url": "https://archive.org/download/fba-arcade-v0.2.97.29/sfz2al.zip",
+      "tags": [
+        "CPS2",
+        "Asia"
+      ],
+      "screenshots": [
+        "screenshots/a302d44254a9a3c057b48f84.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sfz2al.zip",
+          "size": 13713488,
+          "sha256": "cd397fdf4ac3175023500ef19c49bbd0c2e5bbca9e224012bb6851f92a7846a6",
+          "rom_name": "sfz2al",
+          "file_name": "sfz2al.zip",
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "dependency_files": [
+    {
+      "file_name": "armwar.zip",
+      "sha256": "e90cd1da2dccf3382a0aedc7e79d7f1778fcbb65537c1d3350c156588319e6f9",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/armwar.zip",
+      "download_url": "roms/armwar.zip",
+      "size": 15715749
+    },
+    {
+      "file_name": "megaman2.zip",
+      "sha256": "ed9f695e85987855a7e348aa811d1348d2d5350a70194d35f7e27a67057e368e",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/megaman2.zip",
+      "download_url": "roms/megaman2.zip",
+      "size": 7470747
+    },
+    {
+      "file_name": "ringdest.zip",
+      "sha256": "7d53e7b903da623f6d481e3ce0bc81296d377d6e21a9469f4def9507f75d3226",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/ringdest.zip",
+      "download_url": "roms/ringdest.zip",
+      "size": 13152630
+    },
+    {
+      "file_name": "sgemf.zip",
+      "sha256": "e920defaf4c8bf837c65ba9afba3012c75ca7105f83f83749816c5b4c12082ad",
+      "source_url": "https://archive.org/download/fba2012_cps123neogeo/FBA2012-CPS2/sgemf.zip",
+      "download_url": "roms/sgemf.zip",
+      "size": 16605518
+    }
+  ]
+}

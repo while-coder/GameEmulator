@@ -7,6 +7,7 @@ export type RomEntry = RomMetadata & { download_url: string; file_size?: number;
 export type RomCatalog = { updated_at?: string; base_url?: string; games: RomEntry[] }
 
 export const DEFAULT_CATALOG_URL = new URL(catalogUrl, import.meta.url).href
+const configuredCatalogUrl = import.meta.env.VITE_NES_CATALOG_URL?.trim() || DEFAULT_CATALOG_URL
 
 async function requestCatalog(url: string, signal?: AbortSignal): Promise<unknown> {
   const abort = new AbortController()
@@ -28,19 +29,45 @@ async function requestCatalog(url: string, signal?: AbortSignal): Promise<unknow
   }
 }
 
-const cacheKey = (url: string) => `nes:${new URL(url).href}`
+const cacheKey = (url: string) => `nes:${url}`
 
-export function readCachedRomCatalog(url = DEFAULT_CATALOG_URL) {
+function readCachedRomCatalog(url: string) {
   return readCatalogCache(cacheKey(url), value => parseCatalog(value, url))
 }
 
-export async function loadRomCatalog(url = DEFAULT_CATALOG_URL, options: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
-  const value = await requestCatalog(url, options.signal)
+async function loadAndCacheCatalog(url: string, signal?: AbortSignal) {
+  const value = await requestCatalog(url, signal)
   const catalog = parseCatalog(value, url)
-  options.signal?.throwIfAborted()
-  await cacheCatalog(cacheKey(url), value, options.signal)
-  options.signal?.throwIfAborted()
+  signal?.throwIfAborted()
+  await cacheCatalog(cacheKey(url), value, signal)
+  signal?.throwIfAborted()
   return catalog
+}
+
+export async function loadRomCatalog(url = configuredCatalogUrl, { signal }: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
+  signal?.throwIfAborted()
+  if (url !== DEFAULT_CATALOG_URL) {
+    if (navigator.onLine !== false) {
+      try {
+        await loadAndCacheCatalog(url, signal)
+      } catch {
+        signal?.throwIfAborted()
+      }
+    }
+    const cached = await readCachedRomCatalog(url)
+    signal?.throwIfAborted()
+    if (cached) return cached
+  }
+
+  try {
+    return await loadAndCacheCatalog(DEFAULT_CATALOG_URL, signal)
+  } catch (error) {
+    signal?.throwIfAborted()
+    const cached = await readCachedRomCatalog(DEFAULT_CATALOG_URL)
+    signal?.throwIfAborted()
+    if (cached) return cached
+    throw error
+  }
 }
 
 function parseCatalog(value: unknown, url: string): RomCatalog {

@@ -1,0 +1,5016 @@
+{
+  "updated_at": "2026-11-17",
+  "generated_at": "2026-11-17T15:57:39.610421+00:00",
+  "system": "gba",
+  "sources": [
+    {
+      "repository": "AlexBlackmore/roms",
+      "revision": "d76e034c11599ea9da7f775bde15a45634798d12",
+      "source_page": "https://github.com/AlexBlackmore/roms",
+      "platforms": {
+        "gba": "^(Advance Wars|Astro Boy|Castlevania|ChuChu|Drill Dozer|Final Fantasy|Fire Emblem|Golden Sun|Gunstar|Kirby|Kuru Kuru|Legend of Zelda|Mario & Luigi|Mario Kart|Mario Tennis|Mario Golf|Mega Man Zero|Metroid|Pokemon|Sonic Advance|Super Mario Advance|Wario Land|WarioWare, Inc|F-Zero|Harvest Moon)",
+        "gb": "^(Alleyway|Balloon Kid|Bionic Commando|Bomberman|Castlevania|Contra|Donkey Kong|Dr. Mario|DuckTales|Gargoyle|Kirby|Legend of Zelda|Mega Man|Metroid|Pokemon|Super Mario Land|Tetris|Wario Land)",
+        "gbc": "^(Bionic Commando|Bomberman|Crystalis|Dragon Warrior|Harvest Moon|Legend of Zelda|Lufia|Mario Golf|Mario Tennis|Metal Gear|Pokemon|Shantae|Super Mario Bros|Tetris|Wario Land)",
+        "snes": "^(ActRaiser|Axelay|Breath of Fire|Castlevania|Chrono Trigger|Contra|Demon|Donkey Kong Country|EarthBound|F-Zero|Final Fantasy|Final Fight|Gradius|Harvest Moon|Illusion of Gaia|Kirby|Legend of Zelda|Mega Man X|Ogre Battle|Pilotwings|Secret of|Seiken Densetsu|Shadowrun|Soul Blazer|Star Fox|Super Bomberman|Super Castlevania|Super Ghouls|Super Mario|Super Metroid|Super Punch|Super R-Type|Super Street Fighter|Tales of Phantasia|Tetris Attack|Yoshi's Cookie)"
+      }
+    },
+    {
+      "system": "gba",
+      "repository": "retrobrews/gba-games",
+      "revision": "add86969f1a7a3b9534822a9a015d05ed20a0dcf",
+      "source_page": "https://github.com/retrobrews/gba-games"
+    }
+  ],
+  "base_url": "https://raw.githubusercontent.com/while-coder/gba-roms/main/",
+  "games": [
+    {
+      "name": "Advance Wars",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Advance Wars",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Advance%20Wars%20%28USA%29%20%28Rev%201%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Advance%20Wars%20%28USA%29%20%28Rev%201%29.gba",
+          "size": 4194304,
+          "sha256": "4dd4bd22441f29b22ca5af554f30bf0eb7d2b1a5daff0e2cd071a43e11383305"
+        }
+      ]
+    },
+    {
+      "name": "Advance Wars 2 - Black Hole Rising",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Advance Wars 2 - Black Hole Rising",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Advance%20Wars%202%20-%20Black%20Hole%20Rising%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Advance%20Wars%202%20-%20Black%20Hole%20Rising%20%28USA%2C%20Australia%29.gba",
+          "size": 8388608,
+          "sha256": "ef3cc89273f9df88020f07751ea6306b25c39df01893822fe431550eedf9b134"
+        }
+      ]
+    },
+    {
+      "name": "Astro Boy - Omega Factor",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Astro Boy - Omega Factor",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Astro%20Boy%20-%20Omega%20Factor%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Astro%20Boy%20-%20Omega%20Factor%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+          "size": 8388608,
+          "sha256": "27d194147f65cc20319e8281e595f27309d7aef10571ba6fc13ab4375c4e9bcd"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania - Aria of Sorrow",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania - Aria of Sorrow",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Castlevania%20-%20Aria%20of%20Sorrow%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20-%20Aria%20of%20Sorrow%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "910f88d3701e6c9f99c0d63660c14c61d8b79b0c17bfd7b35a15185be36430a5"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania - Circle of the Moon",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania - Circle of the Moon",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Castlevania%20-%20Circle%20of%20the%20Moon%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20-%20Circle%20of%20the%20Moon%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "ad9fabaf4398e0f4a2a095bacddc6c0dc7e139903b41e088ca3590c44b684da0"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania - Harmony of Dissonance",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania - Harmony of Dissonance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Castlevania%20-%20Harmony%20of%20Dissonance%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20-%20Harmony%20of%20Dissonance%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "85e0a40de22783badbbc95d6bcad68a3a25d0916c4111956213f8281358a61db"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania Double Pack",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania Double Pack",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Castlevania%20Double%20Pack%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20Double%20Pack%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "0471c34b0e30321ec4f6a6711a6f5bf5ac3d088320141918a0ca213d59e29af8"
+        }
+      ]
+    },
+    {
+      "name": "ChuChu Rocket!",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "ChuChu Rocket!",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/ChuChu%20Rocket%21%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ChuChu%20Rocket%21%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%29.gba",
+          "size": 4194304,
+          "sha256": "41a7fafd0ab67e28f822d2d8761a6155d7f53f6084a86617b46146ce6d555a8c"
+        }
+      ]
+    },
+    {
+      "name": "Drill Dozer",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Drill Dozer",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Drill%20Dozer%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Drill%20Dozer%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "95b8a2b69103dcbc6fae3504d6c8d93609f3e228444749670592cefcd6bcf47f"
+        }
+      ]
+    },
+    {
+      "name": "F-Zero - GP Legend",
+      "desc": "",
+      "genre": "竞速",
+      "publisher": "",
+      "name_en": "F-Zero - GP Legend",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/F-Zero%20-%20GP%20Legend%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/F-Zero%20-%20GP%20Legend%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "f499a88fae072452a1b157b266ff516f033eb792b6a442d28e273bb2eeee4391"
+        }
+      ]
+    },
+    {
+      "name": "F-Zero - Maximum Velocity",
+      "desc": "",
+      "genre": "竞速",
+      "publisher": "",
+      "name_en": "F-Zero - Maximum Velocity",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/F-Zero%20-%20Maximum%20Velocity%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/F-Zero%20-%20Maximum%20Velocity%20%28USA%2C%20Europe%29.gba",
+          "size": 4194304,
+          "sha256": "50c211f4299818f7c61f5e7ad521e1e086d039452773835c8584be7c65c29560"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy I & II - Dawn of Souls",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy I & II - Dawn of Souls",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Final%20Fantasy%20I%20%26%20II%20-%20Dawn%20of%20Souls%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20I%20%26%20II%20-%20Dawn%20of%20Souls%20%28USA%2C%20Australia%29.gba",
+          "size": 16777216,
+          "sha256": "bbafb77d2be577ca0a4bfcbec9fc3004b589f24478ec5e406d61645296449422"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy IV Advance",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy IV Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Final%20Fantasy%20IV%20Advance%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20IV%20Advance%20%28USA%2C%20Australia%29.gba",
+          "size": 8388608,
+          "sha256": "fdc7a48c4cf22746bf13c9a953d92d92f73e76218d0173495d4692c3d6c91abd"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy Tactics Advance",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Final Fantasy Tactics Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Final%20Fantasy%20Tactics%20Advance%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20Tactics%20Advance%20%28USA%2C%20Australia%29.gba",
+          "size": 16777216,
+          "sha256": "43fc8204c6dceee58828aebc7af0c72eb807e99f35ad641c8bb0a4fa8b6edc19"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy V Advance",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy V Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Final%20Fantasy%20V%20Advance%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20V%20Advance%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "55c5f8222759b556c562fc6f72f54ac01128e077e3dde25035be1158ff704374"
+        }
+      ]
+    },
+    {
+      "name": "Final Fantasy VI Advance",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Final Fantasy VI Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Final%20Fantasy%20VI%20Advance%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Final%20Fantasy%20VI%20Advance%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "1310f2ad3c13f5446cf6c43d01d48aad640d6b8a4fbba2b92c776f4f6d90e6ff"
+        }
+      ]
+    },
+    {
+      "name": "Fire Emblem",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Fire Emblem",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Fire%20Emblem%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Fire%20Emblem%20%28USA%2C%20Australia%29.gba",
+          "size": 16777216,
+          "sha256": "f1200d19771b366b6ead15dec0eee4a7785b538d894c069c36f7592321ee799b"
+        }
+      ]
+    },
+    {
+      "name": "Fire Emblem - The Sacred Stones",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Fire Emblem - The Sacred Stones",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Fire%20Emblem%20-%20The%20Sacred%20Stones%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Fire%20Emblem%20-%20The%20Sacred%20Stones%20%28USA%2C%20Australia%29.gba",
+          "size": 16777216,
+          "sha256": "638cda9d9b72657220fbf7e7a500cd3b64d9686c36e8a56fca69d26d13886f2f"
+        }
+      ]
+    },
+    {
+      "name": "Golden Sun",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Golden Sun",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Golden%20Sun%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Golden%20Sun%20%28USA%2C%20Europe%29.gba",
+          "size": 8388608,
+          "sha256": "c14f1151897e8d73f25ffdd67e21eebb6dc57973ff2458872ee89fa9060aaca1"
+        }
+      ]
+    },
+    {
+      "name": "Golden Sun - The Lost Age",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Golden Sun - The Lost Age",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Golden%20Sun%20-%20The%20Lost%20Age%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Golden%20Sun%20-%20The%20Lost%20Age%20%28USA%2C%20Europe%29.gba",
+          "size": 16777216,
+          "sha256": "4199d82f845edf3e2e92f3783bca00190b5bc102d7c8aa339b951de280b1e6cc"
+        }
+      ]
+    },
+    {
+      "name": "Gunstar Super Heroes",
+      "desc": "",
+      "genre": "射击",
+      "publisher": "",
+      "name_en": "Gunstar Super Heroes",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Gunstar%20Super%20Heroes%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Gunstar%20Super%20Heroes%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "392eff9282764f7ef9e6d91b677660ec105bde53dae450088a94d86e647cd171"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon - Friends of Mineral Town",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon - Friends of Mineral Town",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Harvest%20Moon%20-%20Friends%20of%20Mineral%20Town%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%20-%20Friends%20of%20Mineral%20Town%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "ca6cebe7211b6f2693af210709f76222204bf9f7621dec08b30ca268117460dd"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon - More Friends of Mineral Town",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon - More Friends of Mineral Town",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Harvest%20Moon%20-%20More%20Friends%20of%20Mineral%20Town%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%20-%20More%20Friends%20of%20Mineral%20Town%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "e754155f92b4809d9f63765592d415f16497d290189cfe1267ea9571a6e14d8e"
+        }
+      ]
+    },
+    {
+      "name": "Kirby & the Amazing Mirror",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby & the Amazing Mirror",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Kirby%20%26%20the%20Amazing%20Mirror%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%20%26%20the%20Amazing%20Mirror%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "cfb194cd0cb373787094a962852e3e564fb2ecdb0609fe065afdd8de3f4e11f1"
+        }
+      ]
+    },
+    {
+      "name": "Kirby - Nightmare in Dream Land",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby - Nightmare in Dream Land",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Kirby%20-%20Nightmare%20in%20Dream%20Land%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%20-%20Nightmare%20in%20Dream%20Land%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "caa4e11b6102257939297710dc4b49f6cec307de67838b2e7b7627e81b155db8"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - A Link to the Past & Four Swords",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - A Link to the Past & Four Swords",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%26%20Four%20Swords%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20A%20Link%20to%20the%20Past%20%26%20Four%20Swords%20%28USA%2C%20Australia%29.gba",
+          "size": 8388608,
+          "sha256": "f328f8f07d736288a00c80d31cc1630f3aa02aaf20efdcba73d31dae832b5d76"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - The Minish Cap",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - The Minish Cap",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Legend%20of%20Zelda%2C%20The%20-%20The%20Minish%20Cap%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20The%20Minish%20Cap%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "bedc74df62755f705398273de8ed3bc59be610cf55760d0b9aa277f1f5035e73"
+        }
+      ]
+    },
+    {
+      "name": "Mario & Luigi - Superstar Saga",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mario & Luigi - Superstar Saga",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mario%20%26%20Luigi%20-%20Superstar%20Saga%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20%26%20Luigi%20-%20Superstar%20Saga%20%28USA%2C%20Australia%29.gba",
+          "size": 16777216,
+          "sha256": "af9066e7eacdab919e92987db8856d038e4b75d4ed011259c893702085a886be"
+        }
+      ]
+    },
+    {
+      "name": "Mario Golf - Advance Tour",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "",
+      "name_en": "Mario Golf - Advance Tour",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mario%20Golf%20-%20Advance%20Tour%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20Golf%20-%20Advance%20Tour%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "f58b827e5b1d2ccbd1cb5eab81d38a3dc6716f0ff6c2591475bb06a862bffc0f"
+        }
+      ]
+    },
+    {
+      "name": "Mario Kart - Super Circuit",
+      "desc": "",
+      "genre": "竞速",
+      "publisher": "",
+      "name_en": "Mario Kart - Super Circuit",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mario%20Kart%20-%20Super%20Circuit%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20Kart%20-%20Super%20Circuit%20%28USA%29.gba",
+          "size": 4194304,
+          "sha256": "aadc8b9f3c947ff6f610b6c8d7fddaaa9bea98b4bd43576df84f26c457ae1f90"
+        }
+      ]
+    },
+    {
+      "name": "Mario Tennis - Power Tour",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "",
+      "name_en": "Mario Tennis - Power Tour",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mario%20Tennis%20-%20Power%20Tour%20%28USA%2C%20Australia%29%20%28En%2CFr%2CDe%2CEs%2CIt%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20Tennis%20-%20Power%20Tour%20%28USA%2C%20Australia%29%20%28En%2CFr%2CDe%2CEs%2CIt%29.gba",
+          "size": 16777216,
+          "sha256": "bffa41f7ca1bd0c26920c752fc08b01f754a89f6411b16e17fe375bacc595082"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man Zero",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man Zero",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mega%20Man%20Zero%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20Zero%20%28USA%2C%20Europe%29.gba",
+          "size": 8388608,
+          "sha256": "cf505422d68295fba36136a49a3c9dedb104ab16aa542edaeecbb89efdd57807"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man Zero 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man Zero 2",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mega%20Man%20Zero%202%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20Zero%202%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "4bb8b71ca8d50b5a8f0c737082d8f86c9ad31bd0abebddfa519b3af1ff3853a5"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man Zero 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man Zero 3",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mega%20Man%20Zero%203%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20Zero%203%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "067f420fbd4aabc1ccc11adce410ee10c89aae5b9a7473e29b9b45a4ef2b8b0d"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man Zero 4",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man Zero 4",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Mega%20Man%20Zero%204%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20Zero%204%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "61c344754f25f8ec56531731718d9b60e561662bc86e8589f4426493cf42aaec"
+        }
+      ]
+    },
+    {
+      "name": "Metroid - Zero Mission",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Metroid - Zero Mission",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Metroid%20-%20Zero%20Mission%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Metroid%20-%20Zero%20Mission%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "fc94f65380b65b870a30b9b04b39cca1dc63d6e46a4a373d3904adc0912ebc37"
+        }
+      ]
+    },
+    {
+      "name": "Metroid Fusion",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Metroid Fusion",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Metroid%20Fusion%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Metroid%20Fusion%20%28USA%2C%20Australia%29.gba",
+          "size": 8388608,
+          "sha256": "a56ce3d7f8f3f4f4d0468d421fff5dd3ee3aec99a58244377e43aae769dc3fe8"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Emerald Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Emerald Version",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20-%20Emerald%20Version%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Emerald%20Version%20%28USA%2C%20Europe%29.gba",
+          "size": 16777216,
+          "sha256": "a9dec84dfe7f62ab2220bafaef7479da0929d066ece16a6885f6226db19085af"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - FireRed Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - FireRed Version",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20-%20FireRed%20Version%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20FireRed%20Version%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "3d0c79f1627022e18765766f6cb5ea067f6b5bf7dca115552189ad65a5c3a8ac"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - LeafGreen Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - LeafGreen Version",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20-%20LeafGreen%20Version%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20LeafGreen%20Version%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "78d310d557ceebc593bd393acc52d1b19a8f023fec40bc200e6063880d8531fc"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Ruby Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Ruby Version",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20-%20Ruby%20Version%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Ruby%20Version%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "53d591215de2cab847d14fbcf8c516f0128cfa8556f1236065e0535aa5936d4e"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Sapphire Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Sapphire Version",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20-%20Sapphire%20Version%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Sapphire%20Version%20%28USA%29.gba",
+          "size": 16777216,
+          "sha256": "c36c1b899503e8823ee7eb607eea583adcef7ea92ff804838b193c227f2c6657"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon Mystery Dungeon - Red Rescue Team",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon Mystery Dungeon - Red Rescue Team",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20Mystery%20Dungeon%20-%20Red%20Rescue%20Team%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20Mystery%20Dungeon%20-%20Red%20Rescue%20Team%20%28USA%2C%20Australia%29.gba",
+          "size": 33554432,
+          "sha256": "ad316814c77ed083734d816ebcde2ece390efae8d15bcb6c66d7c2862d82eb68"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon Pinball - Ruby & Sapphire",
+      "desc": "",
+      "genre": "弹珠",
+      "publisher": "",
+      "name_en": "Pokemon Pinball - Ruby & Sapphire",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Pokemon%20Pinball%20-%20Ruby%20%26%20Sapphire%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20Pinball%20-%20Ruby%20%26%20Sapphire%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "1a2bbb845456873de0e50ba01383977d7b3500f85dceac929c5fb0111389d9a1"
+        }
+      ]
+    },
+    {
+      "name": "Sonic Advance",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Sonic Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Sonic%20Advance%20%28USA%29%20%28En%2CJa%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Sonic%20Advance%20%28USA%29%20%28En%2CJa%29.gba",
+          "size": 8388608,
+          "sha256": "afc29e3325baf68a1822e88b25fcb59c8bdc29b8cdc48fa21c56defbd60ca020"
+        }
+      ]
+    },
+    {
+      "name": "Sonic Advance 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Sonic Advance 2",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Sonic%20Advance%202%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Sonic%20Advance%202%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+          "size": 16777216,
+          "sha256": "f2b7a3329401a02706d87560f61da3e6da2ca42f2b9ae98a86d78e0529cb7260"
+        }
+      ]
+    },
+    {
+      "name": "Sonic Advance 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Sonic Advance 3",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Sonic%20Advance%203%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Sonic%20Advance%203%20%28USA%29%20%28En%2CJa%2CFr%2CDe%2CEs%2CIt%29.gba",
+          "size": 16777216,
+          "sha256": "f937fa93b97b14b9fb9fce98844c534f936222d21d1fdb5f1af42292bad32c85"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Advance",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Advance",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Super%20Mario%20Advance%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Advance%20%28USA%2C%20Europe%29.gba",
+          "size": 4194304,
+          "sha256": "d29dec02caacbf449e2a93c6042258b0669542e102eb0e6fd0eb92a5411e0244"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Advance 2 - Super Mario World",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Advance 2 - Super Mario World",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Super%20Mario%20Advance%202%20-%20Super%20Mario%20World%20%28USA%2C%20Australia%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Advance%202%20-%20Super%20Mario%20World%20%28USA%2C%20Australia%29.gba",
+          "size": 4194304,
+          "sha256": "63d9fff04c635990a5c205a99ea64bfa698aa5cb9ec1333360063bbee949a4f3"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Advance 3 - Yoshi's Island",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Advance 3 - Yoshi's Island",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Super%20Mario%20Advance%203%20-%20Yoshi%27s%20Island%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Advance%203%20-%20Yoshi%27s%20Island%20%28USA%29.gba",
+          "size": 4194304,
+          "sha256": "a8bb331a6f0ff7af4387df9ac8566ae395863c2f79a5a597528a64c8bff57941"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Advance 4 - Super Mario Bros. 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Advance 4 - Super Mario Bros. 3",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Super%20Mario%20Advance%204%20-%20Super%20Mario%20Bros.%203%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Advance%204%20-%20Super%20Mario%20Bros.%203%20%28USA%29.gba",
+          "size": 4194304,
+          "sha256": "d99f8e5288b9ae17bdb3cc440cdc6870f5ea0fa99f6eb6c22a5a1197ad7f62d9"
+        }
+      ]
+    },
+    {
+      "name": "Wario Land 4",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Wario Land 4",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/Wario%20Land%204%20%28USA%2C%20Europe%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Wario%20Land%204%20%28USA%2C%20Europe%29.gba",
+          "size": 8388608,
+          "sha256": "d16c7bf6e62bb84049fff1b387108fbd1e6e2cd38ca994ab5310dd9cbf9ba414"
+        }
+      ]
+    },
+    {
+      "name": "WarioWare, Inc. - Mega Microgame$!",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "WarioWare, Inc. - Mega Microgame$!",
+      "system": "GBA",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gba/WarioWare%2C%20Inc.%20-%20Mega%20Microgame%24%21%20%28USA%29.gba",
+      "tags": [
+        "GBA",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/WarioWare%2C%20Inc.%20-%20Mega%20Microgame%24%21%20%28USA%29.gba",
+          "size": 8388608,
+          "sha256": "c09be39a09b37f6a84849dee0a6f4ce2bd0f2bc06cfe3a64ca8e7834eebb2724"
+        }
+      ]
+    },
+    {
+      "name": "Alleyway",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Alleyway",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Alleyway%20%28World%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Alleyway%20%28World%29.gb",
+          "size": 32768,
+          "sha256": "ed8070e011713527bdc03e2b9cec9f9c4a7e3aaa00e57e8786a186b265da1bb2"
+        }
+      ]
+    },
+    {
+      "name": "Balloon Kid",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Balloon Kid",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Balloon%20Kid%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Balloon%20Kid%20%28USA%2C%20Europe%29.gb",
+          "size": 131072,
+          "sha256": "1b48b454bb421836c33c2d572c61f69145a077ebcecbf8194dfb05fc6581ff82"
+        }
+      ]
+    },
+    {
+      "name": "Bionic Commando",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bionic Commando",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Bionic%20Commando%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bionic%20Commando%20%28USA%29.gb",
+          "size": 262144,
+          "sha256": "692e62d9e0048350256ee124d55c6ef225dc2bb54e0808fd882312d4dcaf0f28"
+        }
+      ]
+    },
+    {
+      "name": "Bomberman GB",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bomberman GB",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Bomberman%20GB%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bomberman%20GB%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 262144,
+          "sha256": "16d6a4650566ede0ec9e3e23a85544737faab4154d6381668e8547047340eee6"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania - The Adventure",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania - The Adventure",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Castlevania%20-%20The%20Adventure%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20-%20The%20Adventure%20%28USA%29.gb",
+          "size": 65536,
+          "sha256": "edb101e924f22149bdcbcfe6603801fdb4ec0139a40493d700fa0205f6dab30c"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania II - Belmont's Revenge",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania II - Belmont's Revenge",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Castlevania%20II%20-%20Belmont%27s%20Revenge%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20II%20-%20Belmont%27s%20Revenge%20%28USA%2C%20Europe%29.gb",
+          "size": 131072,
+          "sha256": "17570ceec1b22153604622c4412d048dd8f7ccb4626daf9ddea96de8a062dbf2"
+        }
+      ]
+    },
+    {
+      "name": "Castlevania Legends",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Castlevania Legends",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Castlevania%20Legends%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Castlevania%20Legends%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 262144,
+          "sha256": "56d3dee063b8801704a284bd1bc229b94f15a3a448f485d347f04283d9bd16d7"
+        }
+      ]
+    },
+    {
+      "name": "Contra - The Alien Wars",
+      "desc": "",
+      "genre": "策略",
+      "publisher": "",
+      "name_en": "Contra - The Alien Wars",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Contra%20-%20The%20Alien%20Wars%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Contra%20-%20The%20Alien%20Wars%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+          "size": 131072,
+          "sha256": "d8e44a2c2aa67f9afa49365f62802160842aef48d2003a69daeb109813f6f20c"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Donkey%20Kong%20%28Japan%2C%20USA%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20%28Japan%2C%20USA%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "2781f6b1014336e3318073f162cadd970329c8148fc62b5e795441cd6fd57051"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong Land",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong Land",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Donkey%20Kong%20Land%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20Land%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "eaf831ddd75e7cbc9990e478a139ac162034c03377670fdb79615a9aa2cc570d"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong Land 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong Land 2",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Donkey%20Kong%20Land%202%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20Land%202%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "7722555df42413c6fd5434b717e82ba4a842cc0df3ef02fd0cd9b45b1bb5f2ca"
+        }
+      ]
+    },
+    {
+      "name": "Donkey Kong Land III",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Donkey Kong Land III",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Donkey%20Kong%20Land%20III%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Donkey%20Kong%20Land%20III%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "962a169e4fd975f57d8147c4aa4472761e8df8ed80e32c8ce8c1e073b5f02810"
+        }
+      ]
+    },
+    {
+      "name": "Dr. Mario",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Dr. Mario",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Dr.%20Mario%20%28World%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dr.%20Mario%20%28World%29.gb",
+          "size": 32768,
+          "sha256": "3296ce126e2ebf61f99e39d82e20e0f7d7ade84539ddd48f7c0e21fef5f46932"
+        }
+      ]
+    },
+    {
+      "name": "DuckTales",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "DuckTales",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/DuckTales%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/DuckTales%20%28USA%29.gb",
+          "size": 65536,
+          "sha256": "8182c444dd9457c0396cb1b5b17aeaba0e8d428ac16599cd1d7528e3fe50314c"
+        }
+      ]
+    },
+    {
+      "name": "DuckTales 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "DuckTales 2",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/DuckTales%202%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/DuckTales%202%20%28USA%29.gb",
+          "size": 131072,
+          "sha256": "0175d150df92e4e5823bf82b77eb27e44ba0ff83b63044c77f86d6973ac485ea"
+        }
+      ]
+    },
+    {
+      "name": "Gargoyle's Quest",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Gargoyle's Quest",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Gargoyle%27s%20Quest%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Gargoyle%27s%20Quest%20%28USA%2C%20Europe%29.gb",
+          "size": 131072,
+          "sha256": "ad6f9fe97a40418279d3b834a64d9c6c52c0da209f430718f2bd02611892326f"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Block Ball",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Block Ball",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Kirby%27s%20Block%20Ball%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Block%20Ball%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "0b5f1ddb0b40b34735c1adf42b46651526d1e55c14c13969659cf04fc2173e16"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Dream Land",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Dream Land",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Kirby%27s%20Dream%20Land%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Dream%20Land%20%28USA%2C%20Europe%29.gb",
+          "size": 262144,
+          "sha256": "0f6dba94fae248d419083001c42c02a78be6bd3dff679c895517559e72c98d58"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Dream Land 2",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Dream Land 2",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Kirby%27s%20Dream%20Land%202%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Dream%20Land%202%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "08ddc36709d551b6c2b768e8280e0213ebe89a5088b34e1cc6c0e14977b8e312"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Pinball Land",
+      "desc": "",
+      "genre": "弹珠",
+      "publisher": "",
+      "name_en": "Kirby's Pinball Land",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Kirby%27s%20Pinball%20Land%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Pinball%20Land%20%28USA%2C%20Europe%29.gb",
+          "size": 262144,
+          "sha256": "43bbc3111fe66b5d87940da810a1a0839ab7d48b50c327807538026241b40295"
+        }
+      ]
+    },
+    {
+      "name": "Kirby's Star Stacker",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Kirby's Star Stacker",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Kirby%27s%20Star%20Stacker%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Kirby%27s%20Star%20Stacker%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 262144,
+          "sha256": "e497ee2ed48507c32bb3a0c89f449d6f3e3e6b3850534f6af814aaa6d5dcefbd"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - Link's Awakening",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - Link's Awakening",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Legend%20of%20Zelda%2C%20The%20-%20Link%27s%20Awakening%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20Link%27s%20Awakening%20%28USA%2C%20Europe%29.gb",
+          "size": 524288,
+          "sha256": "21f712e213f43f9efb93ca039a5190fc09325d5d932af1fb2f8e90b4f9fd169f"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man - Dr. Wily's Revenge",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man - Dr. Wily's Revenge",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Mega%20Man%20-%20Dr.%20Wily%27s%20Revenge%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20-%20Dr.%20Wily%27s%20Revenge%20%28USA%29.gb",
+          "size": 262144,
+          "sha256": "33d16365318411f063edd9100c79458aabb7ea71bb1873e30f38b93814f0ec6e"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man II",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man II",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Mega%20Man%20II%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20II%20%28USA%29.gb",
+          "size": 262144,
+          "sha256": "be3fc7ab2d7eb79a9e2538b090bdecc2694740f3beda933f34cb1e4059b10a11"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man III",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man III",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Mega%20Man%20III%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20III%20%28USA%29.gb",
+          "size": 262144,
+          "sha256": "7344a36fcfc8151098238529218762e44c5a1546fab7e7fd5d32927e06cbf5a8"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man IV",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man IV",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Mega%20Man%20IV%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20IV%20%28USA%29.gb",
+          "size": 524288,
+          "sha256": "4d980ca46a83cd127312dbc445ed1a83e97ed7a8026dce6fdd22a01b1895781b"
+        }
+      ]
+    },
+    {
+      "name": "Mega Man V",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Mega Man V",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Mega%20Man%20V%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mega%20Man%20V%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "7a108770a7c1ad592b52d0c46d7ead422d0a20961abaafca3d40086e3f2f588f"
+        }
+      ]
+    },
+    {
+      "name": "Metroid II - Return of Samus",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Metroid II - Return of Samus",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Metroid%20II%20-%20Return%20of%20Samus%20%28World%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Metroid%20II%20-%20Return%20of%20Samus%20%28World%29.gb",
+          "size": 262144,
+          "sha256": "3080bcc2eb9965de463f5f4e02f0dabbb13b060e1654a18da8b50948c10af4a6"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Blue Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Blue Version",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Pokemon%20-%20Blue%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Blue%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 1048576,
+          "sha256": "2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Red Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Red Version",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Pokemon%20-%20Red%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Red%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 1048576,
+          "sha256": "5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Yellow Version - Special Pikachu Edition",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Yellow Version - Special Pikachu Edition",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Pokemon%20-%20Yellow%20Version%20-%20Special%20Pikachu%20Edition%20%28USA%2C%20Europe%29%20%28GBC%2CSGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Yellow%20Version%20-%20Special%20Pikachu%20Edition%20%28USA%2C%20Europe%29%20%28GBC%2CSGB%20Enhanced%29.gb",
+          "size": 1048576,
+          "sha256": "8cbaa499397e4f1a679c992ea9382a2dd7942ab398b48c19829c2d9529de47bf"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Land",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Land",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Super%20Mario%20Land%20%28World%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Land%20%28World%29.gb",
+          "size": 65536,
+          "sha256": "470d6c45c9bcf7f0397d00c1ae6de727c63dd471049c8eedbefdc540ceea80b4"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Land 2 - 6 Golden Coins",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Land 2 - 6 Golden Coins",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Super%20Mario%20Land%202%20-%206%20Golden%20Coins%20%28USA%2C%20Europe%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Land%202%20-%206%20Golden%20Coins%20%28USA%2C%20Europe%29.gb",
+          "size": 524288,
+          "sha256": "5450dce1bd0c073964c374b5b5b5729dce8d00f2e807892c34af32b8bce1392e"
+        }
+      ]
+    },
+    {
+      "name": "Tetris",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Tetris%20%28World%29%20%28Rev%20A%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20%28World%29%20%28Rev%20A%29.gb",
+          "size": 32768,
+          "sha256": "0d6535aef23969c7e5af2b077acaddb4a445b3d0df7bf34c8acef07b51b015c3"
+        }
+      ]
+    },
+    {
+      "name": "Tetris 2",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris 2",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Tetris%202%20%28USA%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%202%20%28USA%29.gb",
+          "size": 131072,
+          "sha256": "771d24adf7dd11ff166fc43d3f2be66dd7a24251b8920e813956c62514813051"
+        }
+      ]
+    },
+    {
+      "name": "Tetris Attack",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris Attack",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Tetris%20Attack%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20Attack%20%28USA%29%20%28SGB%20Enhanced%29.gb",
+          "size": 524288,
+          "sha256": "b8765e752153310f835e10d6ceaee80b0e0913cdadf832b9516af8bf974e9666"
+        }
+      ]
+    },
+    {
+      "name": "Tetris Blast",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris Blast",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Tetris%20Blast%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20Blast%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 131072,
+          "sha256": "6c687144a84157e13a6eee2ff2a587d387155f9a00289ebdb1dc4dd2f7039ded"
+        }
+      ]
+    },
+    {
+      "name": "Tetris Plus",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris Plus",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Tetris%20Plus%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20Plus%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 262144,
+          "sha256": "2526a8d3a5704d6bed3cd5cf64472ce77981f4adf98836066dcc19893c6053ce"
+        }
+      ]
+    },
+    {
+      "name": "Wario Land - Super Mario Land 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Wario Land - Super Mario Land 3",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Wario%20Land%20-%20Super%20Mario%20Land%203%20%28World%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Wario%20Land%20-%20Super%20Mario%20Land%203%20%28World%29.gb",
+          "size": 524288,
+          "sha256": "ac1682f17abcf590311a233289ee325214c2d71ab3a5aa175004002d85075e56"
+        }
+      ]
+    },
+    {
+      "name": "Wario Land II",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Wario Land II",
+      "system": "GB",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gb/Wario%20Land%20II%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+      "tags": [
+        "GB",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Wario%20Land%20II%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gb",
+          "size": 1048576,
+          "sha256": "e95a791b521c23792a3eecdaed73dfbcc98938980223796e6d2bbdf64f0fc63d"
+        }
+      ]
+    },
+    {
+      "name": "Bionic Commando - Elite Forces",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bionic Commando - Elite Forces",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Bionic%20Commando%20-%20Elite%20Forces%20%28USA%2C%20Australia%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bionic%20Commando%20-%20Elite%20Forces%20%28USA%2C%20Australia%29.gbc",
+          "size": 2097152,
+          "sha256": "209eb947d0c5104264308a3bc769df48c77b13be1711daff8d51000bc98e4d76"
+        }
+      ]
+    },
+    {
+      "name": "Bomberman Max - Blue Champion",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bomberman Max - Blue Champion",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Bomberman%20Max%20-%20Blue%20Champion%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bomberman%20Max%20-%20Blue%20Champion%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "27d2eb237362b5647b020d0b22a08b079b40e50347dacc43b732830b9519a852"
+        }
+      ]
+    },
+    {
+      "name": "Bomberman Max - Red Challenger",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bomberman Max - Red Challenger",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Bomberman%20Max%20-%20Red%20Challenger%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bomberman%20Max%20-%20Red%20Challenger%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "5f7c1cdf6adbe6d6dcef488bd37d0da82fa356b79fd579b2022a149e983abc39"
+        }
+      ]
+    },
+    {
+      "name": "Bomberman Quest",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Bomberman Quest",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Bomberman%20Quest%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Bomberman%20Quest%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 1048576,
+          "sha256": "0e885739f2b4ce4a6a196e4db9f317d3346ce270276e44adce078927231096df"
+        }
+      ]
+    },
+    {
+      "name": "Crystalis",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Crystalis",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Crystalis%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Crystalis%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "3ab8bcd08f0aa01c16ccc2bc286fc6c50cf2d140fd3ed411ef0e16e586410110"
+        }
+      ]
+    },
+    {
+      "name": "Dragon Warrior I & II",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Dragon Warrior I & II",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Dragon%20Warrior%20I%20%26%20II%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dragon%20Warrior%20I%20%26%20II%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "3996cbfb2f133a48f58a0d81420362caceaa3e348704d496ba6cbff0eb47139f"
+        }
+      ]
+    },
+    {
+      "name": "Dragon Warrior III",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Dragon Warrior III",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Dragon%20Warrior%20III%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dragon%20Warrior%20III%20%28USA%29.gbc",
+          "size": 4194304,
+          "sha256": "34f11935cb3c23102462aab9d96c09e25b81b35eef91f5e5456b2c3665734f0e"
+        }
+      ]
+    },
+    {
+      "name": "Dragon Warrior Monsters",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Dragon Warrior Monsters",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Dragon%20Warrior%20Monsters%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dragon%20Warrior%20Monsters%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "137a9bd2b0ab83f0547f12560b1bc5392e5412514645d18ac7d79c607902cc01"
+        }
+      ]
+    },
+    {
+      "name": "Dragon Warrior Monsters 2 - Cobi's Journey",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Dragon Warrior Monsters 2 - Cobi's Journey",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Dragon%20Warrior%20Monsters%202%20-%20Cobi%27s%20Journey%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dragon%20Warrior%20Monsters%202%20-%20Cobi%27s%20Journey%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 4194304,
+          "sha256": "8e38a7420ef5239c7196aa4fd4b1499e65db2823e875bbf8241bb2199e766d4e"
+        }
+      ]
+    },
+    {
+      "name": "Dragon Warrior Monsters 2 - Tara's Adventure",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Dragon Warrior Monsters 2 - Tara's Adventure",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Dragon%20Warrior%20Monsters%202%20-%20Tara%27s%20Adventure%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Dragon%20Warrior%20Monsters%202%20-%20Tara%27s%20Adventure%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 4194304,
+          "sha256": "fc6809c31ff69c889dee80c5f39f4d8069042a2b4d933edd83d1627c32e013cc"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon 2 GBC",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon 2 GBC",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Harvest%20Moon%202%20GBC%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%202%20GBC%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "44a86e671cfbd0c6c33cc52ee7e8b21072b6f113ac84aeb89ced28e8d4d3563d"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon 3 GBC",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon 3 GBC",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Harvest%20Moon%203%20GBC%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%203%20GBC%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "6324b84bda4939f81a79262cd8652178658221f4bfdf4154c16b75bcd06b39ad"
+        }
+      ]
+    },
+    {
+      "name": "Harvest Moon GB",
+      "desc": "",
+      "genre": "模拟经营",
+      "publisher": "",
+      "name_en": "Harvest Moon GB",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Harvest%20Moon%20GB%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Harvest%20Moon%20GB%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 1048576,
+          "sha256": "54fe95af5ded33631db84b6ba4ecc4a86f9f7528c9c56ca678150a3246d49623"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - Link's Awakening DX",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - Link's Awakening DX",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Legend%20of%20Zelda%2C%20The%20-%20Link%27s%20Awakening%20DX%20%28USA%2C%20Europe%29%20%28Rev%20A%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20Link%27s%20Awakening%20DX%20%28USA%2C%20Europe%29%20%28Rev%20A%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 1048576,
+          "sha256": "6285ba6201f17bc8595c600ebc2477d52561f0aff29b11f7fc3343bacb2e230b"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - Oracle of Ages",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - Oracle of Ages",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Legend%20of%20Zelda%2C%20The%20-%20Oracle%20of%20Ages%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20Oracle%20of%20Ages%20%28USA%29.gbc",
+          "size": 1048576,
+          "sha256": "0b56b78a9e45452e98c33edd111234931f1e034dc097f6f23082eb8db6055474"
+        }
+      ]
+    },
+    {
+      "name": "Legend of Zelda, The - Oracle of Seasons",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Legend of Zelda, The - Oracle of Seasons",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Legend%20of%20Zelda%2C%20The%20-%20Oracle%20of%20Seasons%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Legend%20of%20Zelda%2C%20The%20-%20Oracle%20of%20Seasons%20%28USA%29.gbc",
+          "size": 1048576,
+          "sha256": "862a51368fb30539279d336b3fe193b43876d2cb15c87a36f5da517804ab3971"
+        }
+      ]
+    },
+    {
+      "name": "Lufia - The Legend Returns",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Lufia - The Legend Returns",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Lufia%20-%20The%20Legend%20Returns%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Lufia%20-%20The%20Legend%20Returns%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "4231fd9f25a5729208475d2d6aa6c2a6e53b1e918e7731a1eee3ce532993301b"
+        }
+      ]
+    },
+    {
+      "name": "Mario Golf",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "",
+      "name_en": "Mario Golf",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Mario%20Golf%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20Golf%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "3b6938db5bb58350957cd0dd79daa8c15ab3560913e548588bd6382d2f556b9a"
+        }
+      ]
+    },
+    {
+      "name": "Mario Tennis",
+      "desc": "",
+      "genre": "体育",
+      "publisher": "",
+      "name_en": "Mario Tennis",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Mario%20Tennis%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Mario%20Tennis%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "7dc77712f477e3813a80731a842371e98501964787dbe4a6096886c9dc609893"
+        }
+      ]
+    },
+    {
+      "name": "Metal Gear Solid",
+      "desc": "",
+      "genre": "动作冒险",
+      "publisher": "",
+      "name_en": "Metal Gear Solid",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Metal%20Gear%20Solid%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Metal%20Gear%20Solid%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "56a69d19ba26941a25adad8bdf17c7baba12245097e901999f4c897eec877ddb"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Crystal Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Crystal Version",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20-%20Crystal%20Version%20%28USA%2C%20Europe%29%20%28Rev%20A%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Crystal%20Version%20%28USA%2C%20Europe%29%20%28Rev%20A%29.gbc",
+          "size": 2097152,
+          "sha256": "fdcc3c8c43813cf8731fc037d2a6d191bac75439c34b24ba1c27526e6acdc8a2"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Gold Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Gold Version",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20-%20Gold%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Gold%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "fb0016d27b1e5374e1ec9fcad60e6628d8646103b5313ca683417f52b97e7e4e"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon - Silver Version",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon - Silver Version",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20-%20Silver%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20-%20Silver%20Version%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "72b190859a59623cbef6c49d601f8de52c1d2331b4f08a8d2acc17274fc19a8c"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon Pinball",
+      "desc": "",
+      "genre": "弹珠",
+      "publisher": "",
+      "name_en": "Pokemon Pinball",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20Pinball%20%28USA%29%20%28Rumble%20Version%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20Pinball%20%28USA%29%20%28Rumble%20Version%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 1048576,
+          "sha256": "7672001d4710272009df6a41e3cbada65decd56e0eb2f185cb3d59c08d33ea0e"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon Puzzle Challenge",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Pokemon Puzzle Challenge",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20Puzzle%20Challenge%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20Puzzle%20Challenge%20%28USA%29.gbc",
+          "size": 2097152,
+          "sha256": "42e6bf3b26f186f1ddf23d2ab0e78dea423c55562119f1988ffab906e8f86fe6"
+        }
+      ]
+    },
+    {
+      "name": "Pokemon Trading Card Game",
+      "desc": "",
+      "genre": "角色扮演",
+      "publisher": "",
+      "name_en": "Pokemon Trading Card Game",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Pokemon%20Trading%20Card%20Game%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Pokemon%20Trading%20Card%20Game%20%28USA%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 1048576,
+          "sha256": "a54515bb6b3e364964d3c0226f5a6b0c8c0f7318c9296ef2e321df0bbb8541ce"
+        }
+      ]
+    },
+    {
+      "name": "Shantae",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Shantae",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Shantae%20%28USA%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Shantae%20%28USA%29.gbc",
+          "size": 4194304,
+          "sha256": "1b92e22d5510c51bab97d23074e4aad7464d93eb15f7596ef7da0a5efa27a19d"
+        }
+      ]
+    },
+    {
+      "name": "Super Mario Bros. Deluxe",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Super Mario Bros. Deluxe",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Super%20Mario%20Bros.%20Deluxe%20%28USA%2C%20Europe%29%20%28Rev%20B%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Super%20Mario%20Bros.%20Deluxe%20%28USA%2C%20Europe%29%20%28Rev%20B%29.gbc",
+          "size": 1048576,
+          "sha256": "c06af1a1c2a804e4169fd9bfd6eee7073545d88c97febc96c345dd10efd77547"
+        }
+      ]
+    },
+    {
+      "name": "Tetris DX",
+      "desc": "",
+      "genre": "益智",
+      "publisher": "",
+      "name_en": "Tetris DX",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Tetris%20DX%20%28World%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Tetris%20DX%20%28World%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 524288,
+          "sha256": "d349dc93423c6abcd775d3b6a8797df715a44a42ec837afb21bf17ae43b40a9e"
+        }
+      ]
+    },
+    {
+      "name": "Wario Land 3",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Wario Land 3",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Wario%20Land%203%20%28World%29%20%28En%2CJa%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Wario%20Land%203%20%28World%29%20%28En%2CJa%29.gbc",
+          "size": 2097152,
+          "sha256": "b625ed03e7553cc29ebc4203d919838312fc9f9f85915f5d2eddfe14aec77406"
+        }
+      ]
+    },
+    {
+      "name": "Wario Land II",
+      "desc": "",
+      "genre": "动作",
+      "publisher": "",
+      "name_en": "Wario Land II",
+      "system": "GBC",
+      "category": "classic",
+      "source_url": "https://github.com/AlexBlackmore/roms/blob/d76e034c11599ea9da7f775bde15a45634798d12/gbc/Wario%20Land%20II%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+      "tags": [
+        "GBC",
+        "经典游戏",
+        "英语"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/Wario%20Land%20II%20%28USA%2C%20Europe%29%20%28SGB%20Enhanced%29.gbc",
+          "size": 2097152,
+          "sha256": "40f366ccd5bd6a9643dc317db63a286f9104f164f9fc46ff037e548d5e83ed52"
+        }
+      ]
+    },
+    {
+      "name": "3 WEEKS IN PARADISE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bootlegger",
+      "name_en": "3 WEEKS IN PARADISE",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Bootlegger",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/3weeksinparadise.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/e4f7c6cfa468ab0e629f8057.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/3weeksinparadise.gba",
+          "size": 3818646,
+          "sha256": "4871446c5ca8916a2564fac54bfb7eda2af91e8275bfe36895d09f558ea869a2"
+        }
+      ]
+    },
+    {
+      "name": "AIRBALL",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "AIRBALL",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/airball.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/265e9a2abbfbefb20fb521de.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/airball.gba",
+          "size": 1365740,
+          "sha256": "a8e1bb07c7186c6297d3a1d9c334bb2c158e017d790c1d6b7f444bf669326d4a"
+        }
+      ]
+    },
+    {
+      "name": "ANGUNA",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Nathan Tolbert, Chris Hildenbrand",
+      "name_en": "ANGUNA",
+      "system": "GBA",
+      "year": "2002",
+      "developer": "Nathan Tolbert, Chris Hildenbrand",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/anguna.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/417093dc0867fb4d74ac3f9d.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/anguna.gba",
+          "size": 1710888,
+          "sha256": "cd3b969d5ed6b38b2039c11b894d6db2fc3fad209a7fd046bee241cc66069851"
+        }
+      ]
+    },
+    {
+      "name": "ANOTHER WORLD",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "ANOTHER WORLD",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/anotherworld.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/e3da89b9122f0008f785a724.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/anotherworld.gba",
+          "size": 2010358,
+          "sha256": "77d1b9c47241772154413ad03cdcf82fb1f94505bbe9ed03af6a7737cda25b53"
+        }
+      ]
+    },
+    {
+      "name": "ASTEROIDS [BAGLEY]",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jim Bagley",
+      "name_en": "ASTEROIDS [BAGLEY]",
+      "system": "GBA",
+      "year": "2001",
+      "developer": "Jim Bagley",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/asteroidsb.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/78b24825919061972c5927a8.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/asteroidsb.gba",
+          "size": 80240,
+          "sha256": "441793d35758d554fa3464d630094a2032545d649966280c043cdcb0c313e43a"
+        }
+      ]
+    },
+    {
+      "name": "A WEREWOLF TALE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Genecyst",
+      "name_en": "A WEREWOLF TALE",
+      "system": "GBA",
+      "year": "2012",
+      "developer": "Genecyst",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/awerewolftale.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/3ef9fcc6edfaf2d9b70755f7.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/awerewolftale.gba",
+          "size": 7359860,
+          "sha256": "1a828f15fe53d77852bd4037fafbe0564ce6066d24791d2ffea94cf0beabf6e0"
+        }
+      ]
+    },
+    {
+      "name": "BALLE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Brunni",
+      "name_en": "BALLE",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Brunni",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/balle.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/61f61d51c5bccf8a60abbdeb.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/balle.gba",
+          "size": 342988,
+          "sha256": "92a888816a3a0c05095293a6171b0e54b1774cc96f132c3072e9104f68d12c5d"
+        }
+      ]
+    },
+    {
+      "name": "BATTLE PICROSS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Sean Reid",
+      "name_en": "BATTLE PICROSS",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Sean Reid",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/battlepicross.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/c7122cc9c719d8e42aac9270.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/battlepicross.gba",
+          "size": 194784,
+          "sha256": "7be4b1c8370dc7dfdf8900b54a924e64161a0b30b1f34dec00037639311cb54d"
+        }
+      ]
+    },
+    {
+      "name": "BLAST ARENA ADVANCE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Mathew Carr",
+      "name_en": "BLAST ARENA ADVANCE",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Mathew Carr",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/blastarenaadvance.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/1027bc98a8084870e52946f7.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/blastarenaadvance.gba",
+          "size": 1242192,
+          "sha256": "fa15de57991bc4f2d29663be6b9a901df03e05a182bf44d93dc0a6d26fd6f91a"
+        }
+      ]
+    },
+    {
+      "name": "BLOCKTRAP",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Francois Pessaux",
+      "name_en": "BLOCKTRAP",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Francois Pessaux",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/blocktrap.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/23a142f87cd79d3dd7ea5843.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/blocktrap.gba",
+          "size": 229368,
+          "sha256": "50f68f35e2d495c2f0bdeaa003816d95c39299715d68b92ef95d150aec313846"
+        }
+      ]
+    },
+    {
+      "name": "BRIDGE RACER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bootlegger",
+      "name_en": "BRIDGE RACER",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Bootlegger",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/bridgeracer.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/2da5cf7608f7110b70ebeaca.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/bridgeracer.gba",
+          "size": 43800,
+          "sha256": "1b0eacfc576141ab5804dd8f7a2407f87d8505664191c4e37b34284a7de1d681"
+        }
+      ]
+    },
+    {
+      "name": "BUNNY XMAS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "BUNNY XMAS",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/bunnyxmas.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/30a92e8b951bcf244b30c1de.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/bunnyxmas.gba",
+          "size": 588260,
+          "sha256": "20f76a8b34e0a7b25ba05408925f9d52386296bf26baeb4f66e6f69a86201a59"
+        }
+      ]
+    },
+    {
+      "name": "BYTES",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Ekid",
+      "name_en": "BYTES",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Ekid",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/bytes.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/e42df921504161f9da8876be.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/bytes.gba",
+          "size": 42140,
+          "sha256": "ce2c468817b81ab2ada5777446997226ba8ee21cb41f622b048c7fca931a7e03"
+        }
+      ]
+    },
+    {
+      "name": "CASTLE MASTER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Quirky",
+      "name_en": "CASTLE MASTER",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Quirky",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/castlemaster.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/3d6d63756ccfa13dff3e1c32.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/castlemaster.gba",
+          "size": 259192,
+          "sha256": "682b0414bf677c5523e3734d1f1643c3856222a70d63c2d67f7b8b97bd60d0b8"
+        }
+      ]
+    },
+    {
+      "name": "CCCP",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Torlus",
+      "name_en": "CCCP",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Torlus",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/cccp.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/aa30bac9186c3c5568c15d05.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cccp.gba",
+          "size": 499440,
+          "sha256": "53fae4f8a89fa15f1befa03d0840f689b37b36bb281675c025d9408936d42e48"
+        }
+      ]
+    },
+    {
+      "name": "CHAOS - THE BATTLE OF WIZARDS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Quirky",
+      "name_en": "CHAOS - THE BATTLE OF WIZARDS",
+      "system": "GBA",
+      "year": "2002",
+      "developer": "Quirky",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/chaosthebattleofwizards.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/a7819c0a7b0464ee4d876fe0.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/chaosthebattleofwizards.gba",
+          "size": 222584,
+          "sha256": "7aec93a7391bc89dfab8564f8f037af1df86ab601de9eec671e4de57fe986fdb"
+        }
+      ]
+    },
+    {
+      "name": "CHIP ADVANCE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul",
+      "name_en": "CHIP ADVANCE",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Alekmaul",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/chipadvance.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b21ea386163cecead18af01a.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/chipadvance.gba",
+          "size": 4276412,
+          "sha256": "2f5a08d88e57e984b389ae8c2416a37e707e7acc5a047e2d008725fa968ca8da"
+        }
+      ]
+    },
+    {
+      "name": "CHOCOBO WORLD DELUXE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Davgav",
+      "name_en": "CHOCOBO WORLD DELUXE",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Davgav",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/chocoboworlddeluxe.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/93de05a827556b0eb7f55fa5.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/chocoboworlddeluxe.gba",
+          "size": 543800,
+          "sha256": "14034d885952ffac56e6bb6b66965dca5dc9e1b3442a14651a4a6d1d507c2c66"
+        }
+      ]
+    },
+    {
+      "name": "CLAY SHOOTER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jim Bagley",
+      "name_en": "CLAY SHOOTER",
+      "system": "GBA",
+      "year": "2001",
+      "developer": "Jim Bagley",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/clayshooter.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/988ff96f5276b3ad38fdf80a.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/clayshooter.gba",
+          "size": 245096,
+          "sha256": "c64735863601f392d52a5a5d9e2b8eabf395fdfb40ed8717929c00161ae67884"
+        }
+      ]
+    },
+    {
+      "name": "CLEANGAME ADVANCE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "S. Clarke",
+      "name_en": "CLEANGAME ADVANCE",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "S. Clarke",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/cleangameadvance.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/0670d403df5c2438afd49f14.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cleangameadvance.gba",
+          "size": 348256,
+          "sha256": "d5b16ea2680f17ffc15cc818995a19741ffd9c8f9a7f4c097dac08d9f2655f18"
+        }
+      ]
+    },
+    {
+      "name": "CODENAME HACKER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul, Lobo, Daydream",
+      "name_en": "CODENAME HACKER",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Alekmaul, Lobo, Daydream",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/codenamehacker.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/a76535ff16784c800c85fde8.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/codenamehacker.gba",
+          "size": 4064952,
+          "sha256": "adece5e11169b71b3747e1fb466355a5233dc72ae3836fe471dcf4c77ee412ea"
+        }
+      ]
+    },
+    {
+      "name": "COSMIC SMASH CLONE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jim Bagley",
+      "name_en": "COSMIC SMASH CLONE",
+      "system": "GBA",
+      "year": "2002",
+      "developer": "Jim Bagley",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/cosmic.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/9a17b7333f309aec81eab6c1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cosmic.gba",
+          "size": 700532,
+          "sha256": "6a83a27399dbe37df0bd8a1153c1a9aed68dd48cc48dc919b9d2ea9fecf6da05"
+        }
+      ]
+    },
+    {
+      "name": "CYLER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Gener Gabasa",
+      "name_en": "CYLER",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Gener Gabasa",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/cyler.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/722fa0283cc9a656e98f4a33.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/cyler.gba",
+          "size": 80640,
+          "sha256": "47f26298965db85b6fd6146e006a3d3856f189a6ef31d1968a0bd999763b5526"
+        }
+      ]
+    },
+    {
+      "name": "DEFLEKTOR",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "DEFLEKTOR",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/deflektor.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/69f8af03d9574c45fb6001f0.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/deflektor.gba",
+          "size": 386508,
+          "sha256": "021f4faef033b42df99001e40d5eb7dd2ed8acbb98565256035977f516af8187"
+        }
+      ]
+    },
+    {
+      "name": "DOOMDARKS REVENGE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Quirky",
+      "name_en": "DOOMDARKS REVENGE",
+      "system": "GBA",
+      "year": "2006",
+      "developer": "Quirky",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/doomdarksrevenge.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/0530c1eec92701385d2f1356.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/doomdarksrevenge.gba",
+          "size": 109376,
+          "sha256": "85d4a4fb15d1e5a59fe7ced4bc2da43c1e50f3c6d86ea94de282bb3bd80b7b5f"
+        }
+      ]
+    },
+    {
+      "name": "ELEVATOR",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "ELEVATOR",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/elevator.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/8c0d4d4ff72f5098c9148559.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/elevator.gba",
+          "size": 3744,
+          "sha256": "b5f8bdee655b517a10275879476dbe305a2d353d1afcfd1979f7122424a2fc79"
+        }
+      ]
+    },
+    {
+      "name": "ELIMINATOR",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "ELIMINATOR",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/eliminator.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/732e58bd807eff7c959eafb7.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/eliminator.gba",
+          "size": 747872,
+          "sha256": "1144c9385871e442aedd9939dbe5aa76d0d85d4751059c2a7ab3755426ceeb60"
+        }
+      ]
+    },
+    {
+      "name": "FACTORY BOTS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Nicholas Scheltema",
+      "name_en": "FACTORY BOTS",
+      "system": "GBA",
+      "year": "2009",
+      "developer": "Nicholas Scheltema",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/factorybots.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/02c4801486faac960a23186f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/factorybots.gba",
+          "size": 256848,
+          "sha256": "0b079b7417ff879bcf0a51654c7a74141ad0e1af168a5e5c8547e39cc76888e7"
+        }
+      ]
+    },
+    {
+      "name": "FRED FIREFIGHTER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "FRED FIREFIGHTER",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/fredfirefighter.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/2f01faeed6b2bec8f3dbe0d1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/fredfirefighter.gba",
+          "size": 178920,
+          "sha256": "fcfb51eedf4fb6977344584f4df1c6fdd813fbf0dbd3d10e40c05846126bddd3"
+        }
+      ]
+    },
+    {
+      "name": "FROGGER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bootlegger",
+      "name_en": "FROGGER",
+      "system": "GBA",
+      "year": "2017",
+      "developer": "Bootlegger",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/frogger.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/14c6e232ac229f957e948bef.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/frogger.gba",
+          "size": 445880,
+          "sha256": "8505382d83465d8e02e881ae30b37a2050747c13a950563337dca2ac55f9fc45"
+        }
+      ]
+    },
+    {
+      "name": "FROGTRIS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "FROGTRIS",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/frogtris.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/ca2c491d322aa63cd80871f5.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/frogtris.gba",
+          "size": 367276,
+          "sha256": "43194690803afa504a04870a142de66bffe801979c21f71854cb77de7c4377ed"
+        }
+      ]
+    },
+    {
+      "name": "GAPMAN",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bootlegger",
+      "name_en": "GAPMAN",
+      "system": "GBA",
+      "year": "2017",
+      "developer": "Bootlegger",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/gapman.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b345d7cac7a5e97ee990aa5b.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/gapman.gba",
+          "size": 122052,
+          "sha256": "4fbaeb6212c9808dfb044a07da77f3cc31c50e3457acb78d9379bafcdd8bae46"
+        }
+      ]
+    },
+    {
+      "name": "GBA CARDS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Flavor",
+      "name_en": "GBA CARDS",
+      "system": "GBA",
+      "year": "2001",
+      "developer": "Flavor",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/gbacards.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/ff99659b78032d31065e160f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/gbacards.gba",
+          "size": 295552,
+          "sha256": "ad4fb579c9f73921b9ca69c4721b27eb7d9ef51fd6aef0343d6fdd499ebe9139"
+        }
+      ]
+    },
+    {
+      "name": "GBA TACTICS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Davgav",
+      "name_en": "GBA TACTICS",
+      "system": "GBA",
+      "year": "2001",
+      "developer": "Davgav",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/gbatactics.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/762dc003281a4f19a1ece042.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/gbatactics.gba",
+          "size": 251816,
+          "sha256": "34967b4b0542c42631cc5f783bd4b553d8b430fbade05001acd303ed41455a94"
+        }
+      ]
+    },
+    {
+      "name": "GOLDRUNNER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "GOLDRUNNER",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/goldrunner.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/a55f021784d79407c15de386.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/goldrunner.gba",
+          "size": 527040,
+          "sha256": "baea67efb1a0d1c9d7a3d5c2e1868d6c2e217e02cc01e82a5146c87f06c45113"
+        }
+      ]
+    },
+    {
+      "name": "GOODBOY ADVANCE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Exelotl",
+      "name_en": "GOODBOY ADVANCE",
+      "system": "GBA",
+      "year": "2018",
+      "developer": "Exelotl",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/goodboyadvance.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/3c92f987431993d7f70b065e.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/goodboyadvance.gba",
+          "size": 2787328,
+          "sha256": "d97af7cc03d809c3cc10da26e6a4051242136b8fef73988e3763b0a4977b6d1f"
+        }
+      ]
+    },
+    {
+      "name": "GORF",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jess Ragan",
+      "name_en": "GORF",
+      "system": "GBA",
+      "year": "2006",
+      "developer": "Jess Ragan",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/gorf.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6f7237fb9222474c5f9e9571.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/gorf.gba",
+          "size": 4740332,
+          "sha256": "20307d75b2df24661fcb34a440f5b5770e91f5a8453d53fb4b95cf508002ccee"
+        }
+      ]
+    },
+    {
+      "name": "HEXAVIRUS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alelmaul, Mollusk",
+      "name_en": "HEXAVIRUS",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Alelmaul, Mollusk",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/hexavirus.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/f4da89e73bf1b6a3cb73f476.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/hexavirus.gba",
+          "size": 1385360,
+          "sha256": "84a12dded1f68f3dcdcb63f3550f2cfe7968fbfe64526c7caa087b89a44ffab5"
+        }
+      ]
+    },
+    {
+      "name": "HIEROGLYPHIC MAN",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "HIEROGLYPHIC MAN",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/hierogyphicman.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/c68d1e346fb2d364e7440d16.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/hierogyphicman.gba",
+          "size": 152928,
+          "sha256": "8aac701d234d22b260f41ed988e40455a1947841ce73b1159906ba39daee2d97"
+        }
+      ]
+    },
+    {
+      "name": "HOLY HELL",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Genecyst",
+      "name_en": "HOLY HELL",
+      "system": "GBA",
+      "year": "2010",
+      "developer": "Genecyst",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/holyhell.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/e70e9d3785d1ccb1bce6a8a1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/holyhell.gba",
+          "size": 1753776,
+          "sha256": "477a0f7af85ff180f2b219a4299f3fbd8e9c65e8738ae761e42b06fb67872d9f"
+        }
+      ]
+    },
+    {
+      "name": "IMPACT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Gener Gabasa",
+      "name_en": "IMPACT",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Gener Gabasa",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/impact.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/0495609a09e85556a93d27ef.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/impact.gba",
+          "size": 70772,
+          "sha256": "9161dd774a7dbb26a948f3b848dec2a7708bf8998f137852c4c0b2a931c85db7"
+        }
+      ]
+    },
+    {
+      "name": "JETPACK 2",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Mukunda Johnson",
+      "name_en": "JETPACK 2",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Mukunda Johnson",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/jetpack2.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/49dc2f3b333e686a187d329a.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jetpack2.gba",
+          "size": 1093968,
+          "sha256": "99b09da45f78b30c4e218201b11198c15bb2a4e7fa7dffe5eed3f1717c6b986a"
+        }
+      ]
+    },
+    {
+      "name": "JUMPING BARNABE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul",
+      "name_en": "JUMPING BARNABE",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Alekmaul",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/jumpingbarnabe.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/08d834c18e00e957569be438.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jumpingbarnabe.gba",
+          "size": 1863144,
+          "sha256": "705a6b8db1a3869af9ccd894acc3d9102ec598f8ff15b9efafab8eb67eaf96c1"
+        }
+      ]
+    },
+    {
+      "name": "JUMPING JIM",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul",
+      "name_en": "JUMPING JIM",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Alekmaul",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/jumpingjim.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/85e5939f91f0945c68586c9c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/jumpingjim.gba",
+          "size": 286924,
+          "sha256": "d253bb9cd89072ae5968aa415e5c3e627bccc718299bf481844798c9f1bd531e"
+        }
+      ]
+    },
+    {
+      "name": "KLAN WARS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "KLAN WARS",
+      "system": "GBA",
+      "year": "2002",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/klanwars.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/c55fb658dee90927551de4d3.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/klanwars.gba",
+          "size": 175824,
+          "sha256": "13afa4eb012650f90c6313533f076647c46e1f5720ab79bd5c1888d575bbd1d0"
+        }
+      ]
+    },
+    {
+      "name": "LLAMABOOOST",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "LLAMABOOOST",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/llamaboost.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/09b3f4cb47b5a78f7712fb3c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/llamaboost.gba",
+          "size": 576160,
+          "sha256": "d9e94b2002215aca6d59db6963a65b43e78d884e1ae11f7f8995eec9df9e0d29"
+        }
+      ]
+    },
+    {
+      "name": "LOOPED",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jason Bullough",
+      "name_en": "LOOPED",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Jason Bullough",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/looped.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6dcb44a0232791601719cb32.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/looped.gba",
+          "size": 525432,
+          "sha256": "b272f0585c1fb08dbbe6f8f3b758770c22fd726324064fd32b2f2b90d739d8da"
+        }
+      ]
+    },
+    {
+      "name": "LOOP THE LOOP",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "LOOP THE LOOP",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/looptheloop.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6023404806a35099aa7f2dd1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/looptheloop.gba",
+          "size": 516704,
+          "sha256": "2638dff164ef4eee70f4088624384b4bd695997a823ea9c1496e434491244d8c"
+        }
+      ]
+    },
+    {
+      "name": "MATRIX RUNNER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Nicholas Scheltema",
+      "name_en": "MATRIX RUNNER",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Nicholas Scheltema",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/matrixrunner.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/ba8a949aaea55784dddae3ad.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/matrixrunner.gba",
+          "size": 58352,
+          "sha256": "028d9ccaf247d6e6022c08f98cb32d17ac04de9a08899984611e1a3ff470b845"
+        }
+      ]
+    },
+    {
+      "name": "MEMORY MUNCHA",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "MEMORY MUNCHA",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/memorymuncha.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/d84ef63594a05860ea1b4e5e.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/memorymuncha.gba",
+          "size": 153612,
+          "sha256": "0295b7a458fc729dc9c44cbd9d4407868d7dc13d03cb0b07b78fe8e157b5e026"
+        }
+      ]
+    },
+    {
+      "name": "METAL WARRIOR 4: AGENTS OF METAL",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Covert Bitops",
+      "name_en": "METAL WARRIOR 4: AGENTS OF METAL",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Covert Bitops",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/metalwarrior4.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/a11bd01d036e26013891bb55.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/metalwarrior4.gba",
+          "size": 524288,
+          "sha256": "b4fab677795f78d0a3b5cb3025eb5827ddb7d06365a713438255deffc0b99741"
+        }
+      ]
+    },
+    {
+      "name": "MOSHPIT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "MOSHPIT",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/moshpit.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/3c3f5864cc8f5cb477046a07.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/moshpit.gba",
+          "size": 35012,
+          "sha256": "1b9e9df580040bde15a240bafe6705eb1183982cd874e4019469cef208bcaa44"
+        }
+      ]
+    },
+    {
+      "name": "NEBULUS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Foxy",
+      "name_en": "NEBULUS",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Foxy",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/nebulus.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/810c6cd0cb52c000541b34d9.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/nebulus.gba",
+          "size": 544372,
+          "sha256": "e3d94062fa1c725fe0764f00c6ad8bbdb196334d670b80060d65b0a4662f25db"
+        }
+      ]
+    },
+    {
+      "name": "NEGATIVE SPACE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Gener Gabasa, Mia",
+      "name_en": "NEGATIVE SPACE",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Gener Gabasa, Mia",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/negativespace.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/c2fb333303212a5bd3cf1f01.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/negativespace.gba",
+          "size": 291556,
+          "sha256": "49b7c3713d8e3b5b5b06704f4a86e8b1d4d30230b1ce810b623fa1d45ea4967f"
+        }
+      ]
+    },
+    {
+      "name": "NINJA SACK",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "NINJA SACK",
+      "system": "GBA",
+      "year": "2004",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/ninjasack.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/8bc9117fb7a84e5f40717a4c.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/ninjasack.gba",
+          "size": 264804,
+          "sha256": "9550cb4e5df8ba436b24eb2a49c5091fe56e6c414d5416b1adc7663716aab8d2"
+        }
+      ]
+    },
+    {
+      "name": "PAC RUN",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Jake Reardon",
+      "name_en": "PAC RUN",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Jake Reardon",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/pacrun.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/e36d173ed24b25ae79c49597.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pacrun.gba",
+          "size": 362392,
+          "sha256": "39c6fb51e5b86a76d37eafead9e2dbde7a3d466e12c59c56fab216e347f19fa6"
+        }
+      ]
+    },
+    {
+      "name": "PAPER SCISSOR ROCKS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Stian Hole",
+      "name_en": "PAPER SCISSOR ROCKS",
+      "system": "GBA",
+      "year": "2007",
+      "developer": "Stian Hole",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/paperscissorrocks.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/9160d7260609b15c606ff9c1.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/paperscissorrocks.gba",
+          "size": 226448,
+          "sha256": "38cb6fa95b558d6e7ebdcde0b0224dfa52759b2f4ebe5402e630d140512c89b9"
+        }
+      ]
+    },
+    {
+      "name": "POCKET MEAT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bomberdev",
+      "name_en": "POCKET MEAT",
+      "system": "GBA",
+      "year": "2016",
+      "developer": "Bomberdev",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/pocketmeat.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/0c23594c13f38679a9e9e5ab.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pocketmeat.gba",
+          "size": 861952,
+          "sha256": "4bd0bfe96e397c112b649d03136b511f333d85eeb1780137ce187e5e60a83015"
+        }
+      ]
+    },
+    {
+      "name": "POWER PIG",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Genecyst",
+      "name_en": "POWER PIG",
+      "system": "GBA",
+      "year": "2013",
+      "developer": "Genecyst",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/powerpig.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/6cf1e95d9e5a1ab04bc4a082.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/powerpig.gba",
+          "size": 2308528,
+          "sha256": "ed8a9cd94c486e75b2d6513b33bc96346e75f2e0a152302a4b60a4e0a84948db"
+        }
+      ]
+    },
+    {
+      "name": "PUSH-IT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Bootlegger",
+      "name_en": "PUSH-IT",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Bootlegger",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/pushit.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/387bc222b017699867fabbcc.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/pushit.gba",
+          "size": 245340,
+          "sha256": "c3342aebde0aa439e474047cdcf01fd4a4c29023fe005fde375d57626f8fcea4"
+        }
+      ]
+    },
+    {
+      "name": "SANTA'S SWEATSHOP",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Sumiguchi",
+      "name_en": "SANTA'S SWEATSHOP",
+      "system": "GBA",
+      "year": "2006",
+      "developer": "Sumiguchi",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/santassweatshop.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/7993c62319721fcdf0d858da.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/santassweatshop.gba",
+          "size": 1512028,
+          "sha256": "cc760ef01cc8c39e76d00fb24ee9fdd849c0ba9c8ecae88a4023a07917388f55"
+        }
+      ]
+    },
+    {
+      "name": "SHAPES",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Gener Gabasa",
+      "name_en": "SHAPES",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Gener Gabasa",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/shapes.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/98155ae9a3dc836d79325b07.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/shapes.gba",
+          "size": 681708,
+          "sha256": "289395e437d162b5a45813773abe9c0aabf27ee9a8625f2d65c7e2a43e72e3ea"
+        }
+      ]
+    },
+    {
+      "name": "SNAKE IN THE GRASS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "SNAKE IN THE GRASS",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/snakeinthegrass.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/698b385f3a1b53a966ce8224.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/snakeinthegrass.gba",
+          "size": 253152,
+          "sha256": "4a5bcf90dd93f54207699de7416ccbf3dd24a6592d185886734abb17d7ced69d"
+        }
+      ]
+    },
+    {
+      "name": "SPOUT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Alekmaul",
+      "name_en": "SPOUT",
+      "system": "GBA",
+      "year": "2006",
+      "developer": "Alekmaul",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/spout.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/35ddb1d5a6941ffc4320ec5f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/spout.gba",
+          "size": 752448,
+          "sha256": "6c57d44ec2df9717d49999f7c585f6ee3f6ce455a82f0dc026b27ac9fe35b600"
+        }
+      ]
+    },
+    {
+      "name": "SUPER HAPPY BUNNY EX [X-MAS EDITION]",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Shen Mansell",
+      "name_en": "SUPER HAPPY BUNNY EX [X-MAS EDITION]",
+      "system": "GBA",
+      "year": "2001",
+      "developer": "Shen Mansell",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/superhappy.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/7a5008b25ca75d43be8fbbc6.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/superhappy.gba",
+          "size": 541712,
+          "sha256": "a1529527bdfebdac0d73dd564241121ab360760d67df9d15098c190416d2e34d"
+        }
+      ]
+    },
+    {
+      "name": "SUPER WINGS",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Mukunda Johnson",
+      "name_en": "SUPER WINGS",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Mukunda Johnson",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/superwings.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/faef9898deb9a3de6763a827.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/superwings.gba",
+          "size": 238472,
+          "sha256": "d15243ad300b955715255938901b397d5f683261394cd5d03232c2d12b5b86fe"
+        }
+      ]
+    },
+    {
+      "name": "sworld3",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "",
+      "name_en": "sworld3",
+      "system": "GBA",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/sworld3.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/sworld3.gba",
+          "size": 304344,
+          "sha256": "43784aa43b4a6e26563afee4f3a1e307909330fe283f4da5a4d7c8f2800f970b"
+        }
+      ]
+    },
+    {
+      "name": "TAILGUNNER",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Gener Gabasa",
+      "name_en": "TAILGUNNER",
+      "system": "GBA",
+      "year": "2008",
+      "developer": "Gener Gabasa",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/tailgunner.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b764a00f6fd806be93c4376b.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/tailgunner.gba",
+          "size": 219272,
+          "sha256": "bf5acc18d60c9fc443aa36610dd41db05303e043103bca55b8fb54f4f2821457"
+        }
+      ]
+    },
+    {
+      "name": "tetravex",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "",
+      "name_en": "tetravex",
+      "system": "GBA",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/tetravex.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/tetravex.gba",
+          "size": 60972,
+          "sha256": "6b23dfc292af016826dcc0087e32fb9c26a35bd2f46760403e04a436b04f722a"
+        }
+      ]
+    },
+    {
+      "name": "tetrigram",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "",
+      "name_en": "tetrigram",
+      "system": "GBA",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/tetrigram.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/tetrigram.gba",
+          "size": 137068,
+          "sha256": "59b988757b2e6f9dfb88ccbdddb3a75ed69f014de367639569830fd626b0af7b"
+        }
+      ]
+    },
+    {
+      "name": "THE LORDS OF MIDNIGHT",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Quirky",
+      "name_en": "THE LORDS OF MIDNIGHT",
+      "system": "GBA",
+      "year": "2005",
+      "developer": "Quirky",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/thelordsofmidnight.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/3ab77ce22b0dddd08f17f0fa.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/thelordsofmidnight.gba",
+          "size": 68744,
+          "sha256": "ee9801b5dc94086ac4249ec9a0daf90d6dde2c7ac5cdbbf15c4daa934685adbe"
+        }
+      ]
+    },
+    {
+      "name": "TRON [LORD GRAGA]",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Lord Graga",
+      "name_en": "TRON [LORD GRAGA]",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Lord Graga",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/tronlordgraga.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/c7fa598810d0e6689c87eeb7.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/tronlordgraga.gba",
+          "size": 812,
+          "sha256": "77ef300b064081f46d3aeccc87a1b44f4296bb354f531f509582affec2660df4"
+        }
+      ]
+    },
+    {
+      "name": "WAIMANU - GRINDING BLOCK ADVENTURE",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Sverx",
+      "name_en": "WAIMANU - GRINDING BLOCK ADVENTURE",
+      "system": "GBA",
+      "year": "2013",
+      "developer": "Sverx",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/waimanu.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/80b159ff09c0cf573b544b13.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/waimanu.gba",
+          "size": 1739504,
+          "sha256": "d610ef8af34966cc6cb95a40038d82bf46254def19cab380e91bf17aabd43ced"
+        }
+      ]
+    },
+    {
+      "name": "WONKIE GUY",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Sean Reid",
+      "name_en": "WONKIE GUY",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Sean Reid",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/wonkieguy.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/776d9eae255ed379855e759f.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/wonkieguy.gba",
+          "size": 2276940,
+          "sha256": "11125a102b8d9d76394180f12113a5009267060ffd6c83d8abccef1caedf8386"
+        }
+      ]
+    },
+    {
+      "name": "YAHTZEE [HERG]",
+      "desc": "",
+      "genre": "自制游戏",
+      "publisher": "Herg",
+      "name_en": "YAHTZEE [HERG]",
+      "system": "GBA",
+      "year": "2003",
+      "developer": "Herg",
+      "category": "homebrew",
+      "source_url": "https://github.com/retrobrews/gba-games/blob/add86969f1a7a3b9534822a9a015d05ed20a0dcf/yahtzeeherg.gba",
+      "tags": [
+        "GBA",
+        "自制游戏"
+      ],
+      "screenshots": [
+        "screenshots/b468ea6381f8703c23d91c12.png"
+      ],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/yahtzeeherg.gba",
+          "size": 177648,
+          "sha256": "80a8836108ca5843e8bfd38b6e7d2697cac94f53e4d3d390496aa092f2303c7b"
+        }
+      ]
+    }
+  ]
+}

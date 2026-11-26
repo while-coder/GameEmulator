@@ -40,6 +40,8 @@ Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自
 
 各平台的在线目录随应用构建，源文件为 `games/<平台>/catalog.json`。每个 `games` 条目保存共用的名称、介绍、截图和标签，`versions` 列出 ROM，首项是默认版。每个版本的基本字段为 `name`、`download_url`、字节数 `size` 和 `sha256`，可附加专属 `tags` 及用于搜索的 `aliases`。存档和下载缓存以版本的 SHA-256 为键。
 
+构建时可通过 `VITE_NES_CATALOG_URL` 为 NES 指定一个远程目录，例如 `VITE_NES_CATALOG_URL=https://example.com/nes/catalog.json pnpm run build:pwa`。目录服务要允许应用跨域读取，ROM 地址使用应用支持的下载源。加载或刷新时，应用先下载并缓存通过校验的目录，再从缓存读取。下载失败、目录无效或设备离线时，沿用最近一次有效缓存。没有有效缓存时读取随应用打包的目录，省略配置时直接使用内置目录。
+
 目录的 `base_url` 指向资源根目录，`screenshots` 和 `download_url` 可使用 `screenshots/xxx.png` 和 `roms/xxx.nes` 这样的相对路径。独立上游地址直接写完整 URL。街机和 Neo Geo 的 ROM 版本另外提供 `rom_name`、`file_name` 和 `dependencies`，目录顶层的 `dependency_files` 记录父 ROM、BIOS 等支持文件。
 
 NES 版本使用 ZIP 源时，`archive_size` 记录 ZIP 字节数，`file_name` 记录解包后保存的文件名，`size` 和 `sha256` 记录解包后的 ROM。游戏和版本可填写 `source_url`，供详情页打开资料来源。
