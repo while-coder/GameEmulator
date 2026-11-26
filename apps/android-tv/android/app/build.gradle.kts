@@ -7,6 +7,7 @@ plugins {
 }
 
 val repoRoot = rootDir.resolve("../../..")
+val iconSource = repoRoot.resolve("apps/icon")
 val appVersion = (JsonSlurper().parse(repoRoot.resolve("package.json")) as Map<*, *>)["version"] as String
 val versionParts = appVersion.split('.').map(String::toInt)
 val signingFile = repoRoot.resolve("secrets/keystore.properties")
@@ -55,6 +56,7 @@ android {
     }
     buildFeatures { buildConfig = true }
     sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/frontend"))
+    sourceSets["main"].res.srcDir(iconSource.resolve("android/res"))
     sourceSets["main"].res.srcDir(layout.buildDirectory.dir("generated/artwork"))
     androidResources { noCompress += listOf("wasm") }
 }
@@ -74,10 +76,12 @@ val syncFrontend by tasks.registering(Sync::class) {
     from(dist)
     into(layout.buildDirectory.dir("generated/frontend/www"))
 }
-val syncArtwork by tasks.registering(Copy::class) {
-    from(repoRoot.resolve("apps/icon/icon.png"))
-    into(layout.buildDirectory.dir("generated/artwork/drawable"))
-    rename { "app_icon.png" }
+val syncArtwork by tasks.registering(Sync::class) {
+    from(iconSource.resolve("android-foreground.png")) {
+        into("mipmap-nodpi")
+        rename { "ic_launcher_foreground.png" }
+    }
+    into(layout.buildDirectory.dir("generated/artwork"))
 }
 tasks.named("preBuild") { dependsOn(syncFrontend, syncArtwork) }
 

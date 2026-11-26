@@ -1,5 +1,5 @@
 {
   "default": "icon.png",
-  "android_fg": "icon-fullbleed.png",
+  "android_fg": "android-foreground.png",
   "android_fg_scale": 100
 }

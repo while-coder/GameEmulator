@@ -4,6 +4,8 @@ Generated with the built-in image_gen tool. The universal controller represents 
 
 - `icon.png`: generated RGBA source with transparent outer corners.
 - `icon-fullbleed.png`: opaque 1024px RGB version, produced by Tauri's iOS icon conversion with background `#0f172a` (`ios/AppIcon-512@2x.png`), then saved as RGB to remove the alpha channel.
+- `android-foreground.png`: transparent controller artwork for the adaptive launcher icon.
+- `android/res/`: shared Android and Android TV adaptive icon resources and a 320×180 icon-only launcher banner.
 - `icons.json`: native icon generation inputs.
 
 Run `pnpm sync:icons` to refresh Web, Windows, Linux, Android, and iOS resources. macOS icon generation runs on macOS.
