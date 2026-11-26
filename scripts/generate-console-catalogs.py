@@ -49,13 +49,15 @@ def versioned_game(entry, base, source_base=None):
         'genre': entry.get('genre', ''),
         'publisher': entry.get('publisher', ''),
     }
-    for field in ('name_en', 'system', 'year', 'developer', 'category', 'tags'):
+    for field in ('name_en', 'system', 'year', 'developer', 'category', 'source_url', 'tags'):
         if field in entry:
             game[field] = entry[field]
     game['screenshots'] = [asset(entry['screenshot_url'])] if entry.get('screenshot_url') else []
     version = {'name': '默认版', 'download_url': asset(entry['download_url']), 'size': entry['file_size'], 'sha256': entry['sha256']}
-    version.update({key: value for key, value in entry.items()
-                    if key not in game and key not in ('screenshot_url', 'file_size', 'download_url', 'sha256')})
+    filename = entry.get('file_name')
+    url_name = urllib.parse.unquote(urllib.parse.urlsplit(version['download_url']).path.rsplit('/', 1)[-1])
+    if filename and filename != url_name:
+        version['file_name'] = filename
     game['versions'] = [version]
     return game
 

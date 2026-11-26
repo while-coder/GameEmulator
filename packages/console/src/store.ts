@@ -93,7 +93,7 @@ export const cacheGame = (system: ConsoleSystem, game: Game, file: Blob) => writ
   tags: game.tags ? [...game.tags] : undefined,
   aliases: game.aliases ? [...game.aliases] : undefined,
   group_screenshots: game.group_screenshots ? [...game.group_screenshots] : undefined,
-  details: game.details ? { ...game.details, screenshots: game.details.screenshots ? [...game.details.screenshots] : undefined } : undefined,
+  details: game.details ? { ...game.details } : undefined,
   key: `${system}:${game.hash}`,
   file,
 })

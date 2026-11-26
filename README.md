@@ -38,7 +38,7 @@ Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自
 
 本地截图保存在 `games/<平台>/screenshots/`，同一平台内按来源网址去重。`manifest.json` 记录游戏名、ROM 校验值、图片来源、公开截图地址、本地文件、图片校验值及缺图列表。NES 的 `matches.json` 额外记录匹配依据。ROM 和截图本地副本由 Git 忽略，应用按目录地址加载资源。
 
-各平台的在线目录随应用构建，源文件为 `games/<平台>/catalog.json`。每个 `games` 条目保存共用的名称、介绍、截图和标签，`versions` 列出 ROM，首项是默认版。每个版本有自己的 `download_url`、字节数 `size` 和 `sha256`，可选 `desc`、`screenshots`、专属 `tags` 及用于搜索的 `aliases`。存档和下载缓存以版本的 SHA-256 为键。
+各平台的在线目录随应用构建，源文件为 `games/<平台>/catalog.json`。每个 `games` 条目保存共用的名称、介绍、截图和标签，`versions` 列出 ROM，首项是默认版。每个版本的基本字段为 `name`、`download_url`、字节数 `size` 和 `sha256`，可附加专属 `tags` 及用于搜索的 `aliases`。存档和下载缓存以版本的 SHA-256 为键。
 
 目录的 `base_url` 指向资源根目录，`screenshots` 和 `download_url` 可使用 `screenshots/xxx.png` 和 `roms/xxx.nes` 这样的相对路径。独立上游地址直接写完整 URL。街机和 Neo Geo 的 ROM 版本另外提供 `rom_name`、`file_name` 和 `dependencies`，目录顶层的 `dependency_files` 记录父 ROM、BIOS 等支持文件。
 

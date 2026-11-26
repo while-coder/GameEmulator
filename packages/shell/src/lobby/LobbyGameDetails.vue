@@ -13,21 +13,12 @@ const screenshotIndex = ref(0)
 const selected = computed(() => props.card.versions.find(game => game.key === selectedKey.value) ?? props.card.launch)
 const versionLabel = (game: LobbyGame) => game.details?.version ?? game.name
 const sharedDescription = computed(() => props.card.base.groupDescription)
-const versionDescription = computed(() => selected.value.details?.description)
 const gallery = computed(() => {
-  const game = selected.value
-  const base = props.card.base
-  const shared = base.groupScreenshots
-  const basePictures = shared?.length ? shared : [base.screenshot, ...(base.details?.screenshots ?? [])]
-  const ownPictures = [game.screenshot, ...(game.details?.screenshots ?? [])]
-  const images = [...new Set(ownPictures.filter((url): url is string => !!url))]
-  return images.length
-    ? { images, caption: '' }
-    : { images: [...new Set(basePictures.filter((url): url is string => !!url))],
-        caption: shared?.length ? '共用截图' : `${versionLabel(base)}截图` }
+  const { groupScreenshots, screenshot } = props.card.base
+  return groupScreenshots?.length ? groupScreenshots : screenshot ? [screenshot] : []
 })
-watch(() => selected.value.key, key => { selectedKey.value = key; screenshotIndex.value = 0 })
-watch(() => gallery.value.images.length, length => { if (screenshotIndex.value >= length) screenshotIndex.value = 0 })
+watch(() => selected.value.key, key => { selectedKey.value = key })
+watch(() => gallery.value.length, length => { if (screenshotIndex.value >= length) screenshotIndex.value = 0 })
 watch(() => props.busy, async busy => {
   if (busy) return
   await nextTick()
@@ -58,14 +49,14 @@ onBeforeUnmount(() => dialog.value?.close())
 
       <div class="details-content">
         <section class="details-preview" aria-label="游戏截图">
-          <GamePreview :key="gallery.images[screenshotIndex] || selected.key" :game-key="selected.key" :name="selected.name"
-            :system="selected.badge" :screenshot="gallery.images[screenshotIndex]" />
-          <div v-if="gallery.images.length > 1" class="details-gallery" data-nav-row>
+          <GamePreview :key="gallery[screenshotIndex] || card.base.key" :game-key="card.base.key" :name="card.name"
+            :system="card.base.badge" :screenshot="gallery[screenshotIndex]" />
+          <div v-if="gallery.length > 1" class="details-gallery" data-nav-row>
             <button type="button" :disabled="busy || screenshotIndex === 0" @click="screenshotIndex--">上一张</button>
-            <span aria-live="polite">{{ screenshotIndex + 1 }} / {{ gallery.images.length }}</span>
-            <button type="button" :disabled="busy || screenshotIndex === gallery.images.length - 1" @click="screenshotIndex++">下一张</button>
+            <span aria-live="polite">{{ screenshotIndex + 1 }} / {{ gallery.length }}</span>
+            <button type="button" :disabled="busy || screenshotIndex === gallery.length - 1" @click="screenshotIndex++">下一张</button>
           </div>
-          <p v-if="gallery.caption && gallery.images.length" class="details-note">{{ gallery.caption }}</p>
+          <p v-if="card.base.groupId && gallery.length" class="details-note">共用截图</p>
           <p v-if="sharedDescription">{{ sharedDescription }}</p>
         </section>
         <section class="details-versions" :aria-label="card.versions.length > 1 ? '选择版本' : '版本详情'">
@@ -82,7 +73,6 @@ onBeforeUnmount(() => dialog.value?.close())
             </div>
           </template>
           <h3 v-else-if="selected.details?.version">{{ selected.details.version }}</h3>
-          <p v-if="versionDescription && versionDescription !== sharedDescription">{{ versionDescription }}</p>
           <p v-if="selected.tags?.length" class="details-note">{{ selected.tags.join(' · ') }}</p>
           <div class="details-actions" data-nav-row>
             <button v-if="card.versions.length === 1" type="button" :disabled="busy" @click="emit('play', selected)">开始游戏</button>

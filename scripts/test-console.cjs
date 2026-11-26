@@ -53,7 +53,6 @@ fixtures.nes = ['原版', '无敌版', '汉化版'].map((version, index) => {
   return {
     name: version, file_name: `version-${index}.nes`, data: bytes.toString('base64'),
     download_url: 'http://127.0.0.1:18124/test-roms/' + `version-${index}.nes`,
-    desc: version + '的版本说明', screenshots: index === 2 ? ['gameemulator-512.png', 'gameemulator-maskable-512.png'] : undefined,
   }
 })
 fixtures.nes.push({ ...fixtures.nes[0], name: '测试卡带别名' })
@@ -91,7 +90,7 @@ function inject(fixtures, version) {
       if (sessionStorage.getItem('nes-test-reorder')) [versions[0], versions[1]] = [versions[1], versions[0]]
       return Response.json({ base_url: window.location.origin + '/icons', games: [{
         name: '测试卡带', desc: '测试卡带的共用介绍', genre: '动作', publisher: '测试', tags: ['双人合作'],
-        screenshots: ['gameemulator-192.png', 'gameemulator-favicon.png'], versions,
+        screenshots: ['gameemulator-192.png', 'gameemulator-favicon.png', 'gameemulator-maskable-512.png'], versions,
       }] })
     }
     if (system) {
@@ -101,8 +100,8 @@ function inject(fixtures, version) {
       if (sessionStorage.getItem('console-test-catalog-failure') === system) throw new TypeError('Offline catalog fixture')
       if (sessionStorage.getItem('console-test-invalid-catalog') === system) return Response.json({ games: [null] })
       window.__consoleCatalogRequests.push(url)
-      return Response.json({ games: fixtures[system].map(({ name, tags, file_size, file_name, download_url, sha256 }) => ({
-        name, tags, versions: [{ name: '默认版', size: file_size, file_name, download_url, sha256 }],
+      return Response.json({ games: fixtures[system].map(({ name, tags, file_size, download_url, sha256 }) => ({
+        name, tags, versions: [{ name: '默认版', size: file_size, download_url, sha256 }],
       })) })
     }
     const game = Object.values(fixtures).flat().find(game => game.download_url === url)
@@ -241,12 +240,12 @@ async function testNesVersions() {
   await until(`document.querySelector('${dialog} [aria-pressed=true] small')?.textContent === '已下载' && !document.querySelector('.library-loading[open]')`, 'original downloaded')
   await selectVersion('无敌版')
   assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('双人合作 · 特殊玩法')`))
-  assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('无敌版的版本说明')`))
   assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('测试卡带的共用介绍')`))
   assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('共用截图')`))
   await selectVersion('汉化版')
+  assert.ok(await evaluate(`document.querySelector('${dialog} img')?.src.endsWith('gameemulator-favicon.png')`), 'switching versions leaves the shared gallery at the same image')
   await click('下一张')
-  await until(`document.querySelector('${dialog} img')?.src.endsWith('gameemulator-maskable-512.png')`, 'version screenshots override shared artwork')
+  await until(`document.querySelector('${dialog} img')?.src.endsWith('gameemulator-maskable-512.png')`, 'shared gallery can advance after switching versions')
   await playVersion('无敌版')
   await pause('无敌版')
   await click('保存进度')

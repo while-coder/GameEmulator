@@ -1,6 +1,6 @@
 import { catalogAssetBase } from './romUrl'
 
-export type RomDetails = { version?: string; description?: string; screenshots?: string[]; source_url?: string }
+export type RomDetails = { version?: string; source_url?: string }
 
 export type RomMetadata = {
   name: string
@@ -24,13 +24,8 @@ type CatalogVersion = {
   archive_size?: number
   sha256: string
   file_name?: string
-  system?: string
-  genre?: string
-  publisher?: string
   tags?: string[]
   aliases?: string[]
-  desc?: string
-  screenshots?: string[]
   source_url?: string
 }
 
@@ -83,11 +78,10 @@ export function readVersionedCatalog(value: unknown, source: string) {
     const sharedTags = strings(game.tags)
     const sharedAliases = [...strings(game.aliases), ...strings([game.name_en])]
     return game.versions.map((version, index) => {
-      const screenshots = strings(version.screenshots).flatMap(image => webUrl(image, base) ?? [])
       const metadata: RomMetadata = {
         name: groupId ? `${game.name} ${version.name}` : game.name,
-        genre: text(version.genre) ?? text(game.genre),
-        publisher: text(version.publisher) ?? text(game.publisher),
+        genre: text(game.genre),
+        publisher: text(game.publisher),
         tags: [...new Set([...sharedTags, ...strings(version.tags)])],
         aliases: [...new Set([...sharedAliases, ...strings(version.aliases)])],
         group_id: groupId,
@@ -95,15 +89,12 @@ export function readVersionedCatalog(value: unknown, source: string) {
         group_default: index === 0,
         group_description: text(game.desc),
         group_screenshots: sharedScreenshots,
-        screenshot_url: screenshots[0],
         details: {
           version: version.name,
-          description: text(version.desc),
-          screenshots,
           source_url: webUrl(version.source_url, source) ?? webUrl(game.source_url, source),
         },
       }
-      return { metadata, version, system: version.system ?? game.system, downloadUrl: new URL(version.download_url, base) }
+      return { metadata, version, system: game.system, downloadUrl: new URL(version.download_url, base) }
     })
   })
   return { base, games, updatedAt: catalog.updated_at, dependencyFiles: catalog.dependency_files }
