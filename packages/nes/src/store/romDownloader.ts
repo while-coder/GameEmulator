@@ -1,3 +1,4 @@
+import { unzipSync } from 'fflate'
 import type { RomEntry } from './romCatalog'
 
 export type DownloadProgress = {
@@ -16,6 +17,7 @@ const ALLOWED_DOWNLOAD_HOSTS = new Set([
   'github.com',
   'youxi.s3.bitiful.net',
   'vm3-cdn.s3-us-west-2.amazonaws.com',
+  'img.femooc.com',
 ])
 
 export async function downloadRom(
@@ -35,16 +37,33 @@ export async function downloadRom(
     throw new Error(`下载失败: HTTP ${response.status}`)
   }
 
-  const total = parseContentLength(response.headers.get('content-length')) ?? entry.file_size ?? null
-  const bytes = response.body
-    ? await readStream(response.body, total, options.onProgress)
+  const expectedSize = entry.archive_size ?? entry.file_size
+  const total = expectedSize ?? parseContentLength(response.headers.get('content-length'))
+  const downloaded = response.body
+    ? await readStream(response.body, total, expectedSize, options.onProgress)
     : new Uint8Array(await response.arrayBuffer())
 
-  options.onProgress?.({ received: bytes.byteLength, total, ratio: 1 })
+  options.onProgress?.({ received: downloaded.byteLength, total, ratio: 1 })
   options.signal?.throwIfAborted()
+  const bytes = entry.archive_size === undefined ? downloaded : unzipRom(downloaded, entry.archive_size, entry.file_size)
   await validateRomBytes(entry, bytes)
   options.signal?.throwIfAborted()
   return bytes
+}
+
+function unzipRom(bytes: Uint8Array, archiveSize: number, romSize?: number): Uint8Array {
+  if (bytes.byteLength !== archiveSize) throw new Error('ZIP 文件大小与目录不符')
+  let romCount = 0
+  const files = unzipSync(bytes, {
+    filter: ({ name, originalSize }) => {
+      if (!/\.nes$/i.test(name) || /(?:^|\/)(?:__MACOSX\/|\._)/i.test(name)) return false
+      if (++romCount !== 1) throw new Error('ZIP 中有多个 NES ROM')
+      if (originalSize !== romSize) throw new Error('ZIP 中的 ROM 大小与目录不符')
+      return true
+    },
+  })
+  if (romCount !== 1) throw new Error('ZIP 中找不到 NES ROM')
+  return Object.values(files)[0]
 }
 
 export async function validateRomBytes(entry: RomEntry, bytes: Uint8Array): Promise<void> {
@@ -84,23 +103,26 @@ function resolveTrustedDownloadUrl(url: string): string {
 async function readStream(
   stream: ReadableStream<Uint8Array>,
   total: number | null,
+  expectedSize?: number,
   onProgress?: (progress: DownloadProgress) => void,
 ): Promise<Uint8Array> {
   const reader = stream.getReader()
   const chunks: Uint8Array[] = []
   let received = 0
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    if (!value) continue
-    chunks.push(value)
-    received += value.byteLength
-    onProgress?.({
-      received,
-      total,
-      ratio: total && total > 0 ? Math.min(received / total, 1) : null,
-    })
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (!value) continue
+      received += value.byteLength
+      if (expectedSize !== undefined && received > expectedSize) throw new Error('下载大小超过目录记录')
+      chunks.push(value)
+      onProgress?.({ received, total, ratio: total && total > 0 ? received / total : null })
+    }
+  } finally {
+    await reader.cancel().catch(() => {})
+    reader.releaseLock()
   }
 
   const bytes = new Uint8Array(received)

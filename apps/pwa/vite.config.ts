@@ -45,7 +45,7 @@ export default defineConfig({
         importScripts: ['psp-isolation-worker.js'],
         globIgnores: ['**/psp.html', '**/PPSSPPSDL*', '**/psp-isolation-worker.js'],
         // 纳入 wasm:libretro 核心(fceumm_libretro.wasm)需被 PWA 预缓存以支持离线。
-        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,wasm,webmanifest}', '**/catalog-*.json'],
         // NES 与街机核心均预缓存；街机 WASM 约 12 MB。
         maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
       },

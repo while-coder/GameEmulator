@@ -10,6 +10,7 @@ import { acquireRomByKey } from '../../../nes/src/store/romResolver'
 import { useGameCollection } from '../../../player-ui/useGameCollection'
 import { usePlayHistory } from '../../../player-ui/usePlayHistory'
 import type { GameSystem } from '../../../shared/playHistory'
+import type { RomDetails } from '../../../shared/versionedCatalog'
 
 export const platforms = [
   { value: 'nes', label: '红白机', badge: 'NES / FC' },
@@ -25,6 +26,15 @@ export type LobbyGame = {
   key: string
   name: string
   screenshot?: string
+  genre?: string
+  publisher?: string
+  tags?: string[]
+  details?: RomDetails
+  groupId?: string
+  groupName?: string
+  groupDefault?: boolean
+  groupDescription?: string
+  groupScreenshots?: string[]
   badge: string
   terms: Array<string | undefined>
   local: boolean
@@ -39,14 +49,8 @@ export type LobbyGame = {
 
 export type LobbyDownloadProgress = { received: number; total: number | null; label?: string }
 
-type Metadata = {
-  name?: string
-  screenshot_url?: string
-  genre?: string
-  publisher?: string
-  tags?: string[]
-  download_url?: string
-}
+type Metadata = Partial<Pick<RomEntry, 'name' | 'screenshot_url' | 'genre' | 'publisher' | 'tags' | 'aliases'
+  | 'group_id' | 'group_name' | 'group_default' | 'group_description' | 'group_screenshots' | 'details' | 'download_url'>>
 type LocalGames<T> = { games: T[]; playedAt?: Map<string, number> }
 type Catalog<T> = { games: T[]; incomplete?: boolean }
 
@@ -124,8 +128,18 @@ function useSystemLibrary<T extends Metadata>(platform: typeof platforms[number]
       system,
       name: options.title(game),
       screenshot: game.screenshot_url,
+      genre: game.genre,
+      publisher: game.publisher,
+      tags: game.tags,
+      details: game.details,
+      groupId: game.group_id,
+      groupName: game.group_name,
+      groupDefault: game.group_default,
+      groupDescription: game.group_description,
+      groupScreenshots: game.group_screenshots,
       badge: platform.badge,
-      terms: [options.title(game), platform.label, platform.badge, game.genre, game.publisher, ...(game.tags ?? []), ...(options.extraTerms?.(game) ?? [])],
+      terms: [options.title(game), game.details?.version, platform.label, platform.badge, game.genre, game.publisher,
+        ...(game.tags ?? []), ...(game.aliases ?? []), ...(options.extraTerms?.(game) ?? [])],
       local: localGames.has(key),
       online: onlineKeys.has(key),
       favorite: collection.isFavorite(key),
@@ -170,8 +184,10 @@ export function useLobbyLibrary() {
     loadLocal: async () => {
       const roms = await listCachedRomSummaries()
       return {
-        games: roms.map(({ key, name, screenshot_url, genre, publisher, tags, size }) => ({
+        games: roms.map(({ key, name, screenshot_url, genre, publisher, tags, size, aliases, group_id, group_name,
+          group_default, group_description, group_screenshots, details }) => ({
           sha256: key, name, screenshot_url, genre, publisher, tags, download_url: '', file_size: size,
+          aliases, group_id, group_name, group_default, group_description, group_screenshots, details,
         })),
         playedAt: new Map(roms.map(rom => [rom.key, rom.lastPlayedAt ?? 0])),
       }

@@ -41,4 +41,12 @@ apps/pwa/public/icons/
 .tmp/
 
 # Local game downloads
-/games/
+/games/*
+!/games/download.py
+!/games/nes/
+!/games/gba/
+!/games/sfc/
+!/games/arcade/
+!/games/neogeo/
+/games/*/*
+!/games/*/catalog.json

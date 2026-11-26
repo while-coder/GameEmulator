@@ -2,8 +2,8 @@
 """Build the mGBA/SFC catalogs from pinned GitHub sources and verified bytes.
 
 Usage: python3 scripts/generate-console-catalogs.py [--workers 8] [--plan]
-Outputs follow the existing games/<system>/catalog.json layout (git-ignored).
-ROMs are cached locally; catalogs use the verified upstream raw URLs directly.
+Outputs use the shared versioned catalog format in games/<system>/catalog.json.
+ROMs are cached locally; catalogs use the verified upstream raw URLs.
 """
 import argparse
 import collections
@@ -31,6 +31,33 @@ def dump(path, data):
     temporary = path.with_name(path.name + '.tmp')
     temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     os.replace(temporary, path)
+
+
+def catalog_base(system):
+    return f'https://raw.githubusercontent.com/while-coder/{system}-roms/main/'
+
+
+def versioned_game(entry, base, source_base=None):
+    source_base = source_base or base
+
+    def asset(path):
+        return urllib.parse.urljoin(source_base, path).removeprefix(base)
+
+    game = {
+        'name': entry['name'],
+        'desc': entry.get('desc', ''),
+        'genre': entry.get('genre', ''),
+        'publisher': entry.get('publisher', ''),
+    }
+    for field in ('name_en', 'system', 'year', 'developer', 'category', 'tags'):
+        if field in entry:
+            game[field] = entry[field]
+    game['screenshots'] = [asset(entry['screenshot_url'])] if entry.get('screenshot_url') else []
+    version = {'name': '默认版', 'download_url': asset(entry['download_url']), 'size': entry['file_size'], 'sha256': entry['sha256']}
+    version.update({key: value for key, value in entry.items()
+                    if key not in game and key not in ('screenshot_url', 'file_size', 'download_url', 'sha256')})
+    game['versions'] = [version]
+    return game
 
 
 def request(url, origin=False):
@@ -247,10 +274,12 @@ def main():
                 duplicates.append({'system': system, 'name': entry['name'], 'same_as': unique[entry['sha256']]['name']})
             else:
                 unique[entry['sha256']] = entry
+        base = catalog_base(system)
         dump(ROOT / 'games' / system / 'catalog.json', {
             'updated_at': generated[:10], 'generated_at': generated,
             'system': system, 'sources': [source for source in [sources['classic'], *sources['homebrew']] if 'system' not in source or source['system'] == system],
-            'games': list(unique.values()),
+            'base_url': base,
+            'games': [versioned_game(entry, base) for entry in unique.values()],
         })
     report = {'generated_at': generated, 'plan': plan, 'verified': len(verified),
               'catalog_games': {system: len(json.loads((ROOT/'games'/system/'catalog.json').read_text(encoding='utf-8'))['games']) for system in results},

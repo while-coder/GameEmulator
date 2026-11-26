@@ -1,6 +1,7 @@
 import { romKey, type RomEntry } from './romCatalog'
 
-export type CachedRom = {
+export type CachedRom = Pick<RomEntry, 'aliases' | 'group_id' | 'group_name' | 'group_default'
+  | 'group_description' | 'group_screenshots' | 'details'> & {
   key: string
   name: string
   bytes: Uint8Array
@@ -8,7 +9,6 @@ export type CachedRom = {
   sha256?: string
   genre?: string
   publisher?: string
-  mapper?: number
   tags?: string[]
   screenshot_url?: string
   savedAt: number
@@ -59,9 +59,15 @@ export async function saveCachedRom(entry: RomEntry, bytes: Uint8Array): Promise
     sha256: entry.sha256,
     genre: entry.genre,
     publisher: entry.publisher,
-    mapper: entry.mapper,
     tags: entry.tags ? [...entry.tags] : undefined,
     screenshot_url: entry.screenshot_url,
+    aliases: entry.aliases,
+    group_id: entry.group_id,
+    group_name: entry.group_name,
+    group_default: entry.group_default,
+    group_description: entry.group_description,
+    group_screenshots: entry.group_screenshots,
+    details: entry.details,
     savedAt: Date.now(),
   }
   await requestToPromise(tx.objectStore(STORE_NAME).put(record))

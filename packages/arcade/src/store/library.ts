@@ -4,7 +4,7 @@ import { wasmSaveBuilds } from '../../../shared/saveBuilds'
 export { saveKindOf } from '../../../shared/saveSlots'
 
 export const CORE_BUILD = wasmSaveBuilds.arcade
-interface CachedCatalog { url: string; catalog: ArcadeCatalog }
+interface CachedCatalog { url: string; catalog: ArcadeCatalog; manifest?: unknown }
 export type ArchiveKind = 'game' | 'support'
 export interface Archive {
   id: string

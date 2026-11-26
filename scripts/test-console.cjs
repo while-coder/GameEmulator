@@ -43,8 +43,32 @@ let sum=0;for(const byte of snes)sum=(sum+byte)&65535;snes.writeUInt16LE(sum^655
 const batterySnes=Buffer.from(snes);batterySnes[0x7fd6]=2;batterySnes[0x7fd8]=1
 batterySnes.set([0x78,0x18,0xfb,0xe2,0x20,0xa9,0x55,0x8f,0,0,0x70,0x80,0xfe])
 const fixtures={gba:[{name:'GBA Test',file_name:'test.gba',data:gba.toString('base64')} ,{name:'GB Test',file_name:'test.gb',data:gb.toString('base64')}],sfc:[{name:'SFC Test',file_name:'test.sfc',data:snes.toString('base64')},{name:'SFC Battery Test',file_name:'battery.sfc',data:batterySnes.toString('base64')}]}
+const nes = Buffer.alloc(16 + 16384 + 8192)
+nes.set([0x4e, 0x45, 0x53, 0x1a, 1, 1])
+nes.set([0x4c, 0x00, 0x80], 16) // JMP $8000
+for (const offset of [0x3ffa, 0x3ffc, 0x3ffe]) nes.writeUInt16LE(0x8000, 16 + offset)
+fixtures.nes = ['原版', '无敌版', '汉化版'].map((version, index) => {
+  const bytes = Buffer.from(nes)
+  bytes[19] = index
+  return {
+    name: version, file_name: `version-${index}.nes`, data: bytes.toString('base64'),
+    download_url: 'http://127.0.0.1:18124/test-roms/' + `version-${index}.nes`,
+    desc: version + '的版本说明', screenshots: index === 2 ? ['gameemulator-512.png', 'gameemulator-maskable-512.png'] : undefined,
+  }
+})
+fixtures.nes.push({ ...fixtures.nes[0], name: '测试卡带别名' })
 for(let i=0;i<49;i++){const bytes=Buffer.from(gba);bytes[0x200]=i+1;fixtures.gba.push({name:`Library Game ${i}`,file_name:`library-${i}.gba`,data:bytes.toString('base64')})}
-for(const games of Object.values(fixtures))for(const game of games){const bytes=Buffer.from(game.data,'base64');game.sha256=crypto.createHash('sha256').update(bytes).digest('hex');game.file_size=bytes.length;game.download_url='https://console.test/'+game.file_name;game.tags=[game.file_name.split('.').pop().toUpperCase(),'经典游戏','英语']}
+for(const games of Object.values(fixtures))for(const game of games){const bytes=Buffer.from(game.data,'base64');game.sha256=crypto.createHash('sha256').update(bytes).digest('hex');game.file_size=bytes.length;game.download_url??='https://console.test/'+game.file_name;game.tags=[game.file_name.split('.').pop().toUpperCase(),'经典游戏','英语']}
+const { zipSync } = require(require.resolve('fflate', { paths: [path.join(root, 'packages/nes')] }))
+const zippedNes = fixtures.nes[1]
+const zippedBytes = zipSync({
+  'version-1.nes': Buffer.from(zippedNes.data, 'base64'),
+  '__MACOSX/._version-1.nes': Buffer.from('ignored metadata'),
+})
+zippedNes.archive_size = zippedBytes.length
+zippedNes.archive_data = Buffer.from(zippedBytes).toString('base64')
+zippedNes.download_url = zippedNes.download_url.replace(/\.nes$/, '.zip')
+
 function inject(fixtures, version) {
   window.__consoleFixtures = fixtures
   window.__consoleTestDocument = Math.random()
@@ -58,16 +82,28 @@ function inject(fixtures, version) {
   const original = window.fetch.bind(window)
   window.fetch = async (input, options) => {
     const url = String(input instanceof Request ? input.url : input)
-    if (url.endsWith('/catalog.json')) {
-      const system = Object.keys(fixtures).find(id => url.includes('/' + id + '-roms/'))
-      if (!system) return Response.json({ games: [], dependency_files: [] })
+    const system = url.match(/\/games\/(nes|gba|sfc)\/catalog\.json$/)?.[1]
+    if (system === 'nes') {
+      const versions = fixtures.nes.map(({ data, archive_data, file_size, file_name, ...version }) => ({
+        ...version, size: file_size, download_url: '../test-roms/' + version.download_url.split('/').pop(),
+        tags: file_name === 'version-1.nes' ? ['特殊玩法'] : [],
+      }))
+      if (sessionStorage.getItem('nes-test-reorder')) [versions[0], versions[1]] = [versions[1], versions[0]]
+      return Response.json({ base_url: window.location.origin + '/icons', games: [{
+        name: '测试卡带', desc: '测试卡带的共用介绍', genre: '动作', publisher: '测试', tags: ['双人合作'],
+        screenshots: ['gameemulator-192.png', 'gameemulator-favicon.png'], versions,
+      }] })
+    }
+    if (system) {
       if (sessionStorage.getItem('console-test-hold-catalog') === system) {
         await new Promise(resolve => { window.__releaseCatalogRequest = resolve })
       }
       if (sessionStorage.getItem('console-test-catalog-failure') === system) throw new TypeError('Offline catalog fixture')
       if (sessionStorage.getItem('console-test-invalid-catalog') === system) return Response.json({ games: [null] })
       window.__consoleCatalogRequests.push(url)
-      return Response.json({ games: fixtures[system].map(({ data, ...game }) => game) })
+      return Response.json({ games: fixtures[system].map(({ name, tags, file_size, file_name, download_url, sha256 }) => ({
+        name, tags, versions: [{ name: '默认版', size: file_size, file_name, download_url, sha256 }],
+      })) })
     }
     const game = Object.values(fixtures).flat().find(game => game.download_url === url)
     if (!game) return original(input, options)
@@ -77,7 +113,7 @@ function inject(fixtures, version) {
         options?.signal?.addEventListener('abort', () => { clearTimeout(timer); reject(options.signal.reason) }, { once: true })
       })
     }
-    return new Response(Uint8Array.from(atob(game.data), c => c.charCodeAt(0)))
+    return new Response(Uint8Array.from(atob(game.archive_data ?? game.data), c => c.charCodeAt(0)))
   }
 }
 async function click(text){
@@ -141,7 +177,7 @@ async function lobbyGameSaves(system, index = 0) {
   await until(`document.querySelector(${JSON.stringify(selector)})`, 'game card')
   await evaluate(`document.querySelector(${JSON.stringify(selector)}).dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))`)
   await until("document.querySelector('.game-card-menu[open]')", 'game menu')
-  assert.equal(await evaluate("document.querySelector('.game-card-menu').textContent.includes('游戏详情')"), false)
+  assert.ok(await evaluate("document.querySelector('.game-card-menu').textContent.includes('游戏详情')"))
   await click('查看存档')
   await until("document.querySelector('.player-save-list[open]')", 'standalone save list')
   assert.equal(await evaluate("!!document.querySelector('.console-settings-modal')"), false)
@@ -156,6 +192,121 @@ async function lobbyPlatformSettings(system) {
   await until("document.querySelector('.console-settings-modal .player-settings')", 'platform settings')
   assert.equal(await evaluate("!!document.querySelector('.library-browser, .console-game, .player-toolbar')"), false, 'no legacy library beneath settings')
 }
+
+async function testNesVersions() {
+  const cardFor = index => `[data-lobby-focus="game:nes:group:${fixtures.nes[index].sha256}"]`
+  const card = cardFor(0)
+  const heading = card + ' h3'
+  const trigger = card + ' .game-launch'
+  const dialog = '.lobby-game-details[open]'
+  const openVersions = async () => {
+    await evaluate(`document.querySelector(${JSON.stringify(card + ' .version-picker')}).click()`)
+    await until(`document.querySelector('${dialog}')`, 'version dialog')
+  }
+  const selectVersion = async version => {
+    await evaluate(`[...document.querySelectorAll('${dialog} .details-version-label')]
+      .find(button => button.textContent.includes(${JSON.stringify(version)})).click()`)
+  }
+  const playVersion = async version => {
+    await evaluate(`[...document.querySelectorAll('${dialog} button')]
+      .find(button => button.getAttribute('aria-label') === ${JSON.stringify('开始游戏：' + version)}).click()`)
+  }
+  const pause = async name => {
+    await until("location.pathname === '/nes.html' && document.querySelector('.game-playing canvas')", 'NES launches')
+    await click('暂停 · Esc / 返回')
+    await until(`document.querySelector('.player-pause-modal')?.textContent.includes(${JSON.stringify('测试卡带 ' + name)})`, 'launches requested version')
+  }
+  const returnToLibrary = async (selector = card) => {
+    await click('返回游戏库')
+    await until(`document.querySelector(${JSON.stringify(selector + ' h3')})`, 'group after returning from game')
+    await until(`document.activeElement?.matches(${JSON.stringify(selector + ' .game-launch')})`, 'restored group focus')
+  }
+
+  await selectLobbyTab('nes')
+  await until(`document.querySelector(${JSON.stringify(heading)})?.textContent === '测试卡带'`, 'grouped NES catalog')
+  assert.equal(await evaluate("document.querySelectorAll('.game-card').length"), 1)
+  await click('搜索')
+  await click('输入关键词')
+  await evaluate("const input=document.querySelector('.search-keyword input');input.value='测试卡带别名';input.dispatchEvent(new Event('input',{bubbles:true}))")
+  await until(`document.querySelector(${JSON.stringify(heading)})`, 'duplicate hash retained as searchable alias')
+  await click('‹ 返回')
+  await openVersions()
+  assert.equal(await evaluate(`document.querySelectorAll('${dialog} .details-version').length`), 3)
+  assert.equal(await evaluate(`document.querySelector('${dialog} [aria-pressed=true]').textContent.trim()`), '原版')
+  assert.ok(await evaluate(`document.querySelector('${dialog} .details-versions').textContent.includes('双人合作')`))
+  assert.ok(!await evaluate(`document.querySelector('${dialog} .details-versions').textContent.includes('特殊玩法')`))
+  await click('下一张')
+  await until(`document.querySelector('${dialog} img')?.src.endsWith('gameemulator-favicon.png')`, 'shared gallery has both screenshots')
+  await click('下载此版本')
+  await until(`document.querySelector('${dialog} [aria-pressed=true] small')?.textContent === '已下载' && !document.querySelector('.library-loading[open]')`, 'original downloaded')
+  await selectVersion('无敌版')
+  assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('双人合作 · 特殊玩法')`))
+  assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('无敌版的版本说明')`))
+  assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('测试卡带的共用介绍')`))
+  assert.ok(await evaluate(`document.querySelector('${dialog}').textContent.includes('共用截图')`))
+  await selectVersion('汉化版')
+  await click('下一张')
+  await until(`document.querySelector('${dialog} img')?.src.endsWith('gameemulator-maskable-512.png')`, 'version screenshots override shared artwork')
+  await playVersion('无敌版')
+  await pause('无敌版')
+  await click('保存进度')
+  await until("document.querySelector('.pause-message')?.textContent === '已新建存档'", 'save for the modified ROM')
+  await returnToLibrary()
+  await selectLobbyTab('mine')
+  await until(`document.querySelector(${JSON.stringify(card + ' .version-picker')})?.textContent.includes('已下载 2 个版本')`, 'one local card for both versions')
+  await openVersions()
+  assert.equal(await evaluate(`document.querySelectorAll('${dialog} .details-version').length`), 2)
+  await selectVersion('原版')
+  await click('查看存档')
+  await until("document.querySelector('.save-list-empty')?.textContent === '这个游戏还没有存档'", 'original has separate saves')
+  await pressGameKey('Escape', 'Escape', 27)
+  await until("!document.querySelector('.player-save-list[open]')", 'return from version saves')
+  await evaluate(`document.querySelector(${JSON.stringify(trigger)}).click()`)
+  await pause('无敌版')
+  await returnToLibrary()
+  await openVersions()
+  await click('移除下载')
+  await until(`document.querySelector('${dialog} .details-versions h3')?.textContent === '原版'`, 'remaining local version is selected')
+  await pressGameKey('Escape', 'Escape', 27)
+  await until(`!document.querySelector('${dialog}') && document.activeElement?.matches(${JSON.stringify(trigger)})`, 'details restores group focus')
+  await evaluate(`document.querySelector(${JSON.stringify(trigger)}).click()`)
+  await pause('原版')
+  await returnToLibrary()
+  await selectLobbyTab('nes')
+  await evaluate(`document.querySelector(${JSON.stringify(trigger)}).click()`)
+  await pause('原版')
+  await evaluate("sessionStorage.setItem('nes-test-reorder', '1')")
+  await returnToLibrary(cardFor(1))
+  console.log('nes version grouping, launch, saves and download removal passed')
+}
+
+async function testArcadeCatalogs() {
+  await selectLobbyTab('arcade')
+  await until("document.querySelector('.game-card')", 'packaged arcade library')
+  const result = await evaluate(`(async () => {
+    const library = await import(${JSON.stringify('/@fs' + root + '/packages/arcade/src/store/catalog.ts')})
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    try {
+      const { catalogs, errors } = await library.loadCatalogs(undefined, true)
+      const [arcade, neogeo] = catalogs
+      const child = arcade.games.find(game => game.dependencies.length)
+      const game = neogeo.games.find(game => game.dependencies.includes('neogeo.zip'))
+      const cached = await library.findCachedCatalogGame(game.sha256)
+      return {
+        counts: catalogs.map(catalog => catalog.games.length),
+        errors,
+        parent: library.dependencyPlan(child, arcade).map(entry => entry.file_name),
+        bios: library.dependencyPlan(cached.game, cached.catalog).map(entry => entry.file_name),
+      }
+    } finally { delete navigator.onLine }
+  })()`)
+  assert.deepEqual(result.counts, [85, 168])
+  assert.deepEqual(result.errors, [])
+  assert.ok(result.parent.length)
+  assert.ok(result.bios.includes('neogeo.zip'))
+  console.log('arcade and Neo Geo packaged catalogs, parent ROMs and cached BIOS dependencies passed')
+}
+
 async function main(){
  const vite=spawn(process.execPath,[path.join(root,'node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port','18124','--strictPort'],{cwd:path.join(root,'apps/pwa'),stdio:['ignore','pipe','pipe']});children.push(vite)
  for(let i=0;i<100;i++){try{if((await fetch('http://127.0.0.1:18124/')).ok)break}catch{}await delay(100)}
@@ -163,12 +314,14 @@ async function main(){
  const browserUrl=await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error('Chrome startup timed out')),15000);chrome.stderr.on('data',data=>{const match=data.toString().match(/DevTools listening on (ws:\/\/\S+)/);if(match){clearTimeout(timeout);resolve(match[1])}})})
  socket=new WebSocket(browserUrl);await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.id&&pending.has(message.id)){const p=pending.get(message.id);pending.delete(message.id);message.error?p.reject(new Error(JSON.stringify(message.error))):p.resolve(message.result)}if(message.method==='Runtime.exceptionThrown')errors.push(message.params.exceptionDetails)})
  const {targetId}=await send('Target.createTarget',{url:'about:blank'},null);({sessionId}=await send('Target.attachToTarget',{targetId,flatten:true},null));await send('Page.enable');await send('Runtime.enable');await send('Page.addScriptToEvaluateOnNewDocument',{source:`(${inject})(${JSON.stringify(fixtures)}, ${JSON.stringify(require('../package.json').version)})`})
- for(const system of (process.argv[2] || 'gba,sfc').split(',')){
+ for(const system of (process.argv[2] || 'nes,gba,sfc,arcade').split(',')){
   await send('Page.navigate',{url:'http://127.0.0.1:18124/index.html'})
+  if (system === 'nes') { await testNesVersions(); continue }
+  if (system === 'arcade') { await testArcadeCatalogs(); continue }
   await selectLobbyTab(system)
   const pageSize = 36
   await until(`document.querySelectorAll('.game-card').length === ${Math.min(pageSize, fixtures[system].length)}`, 'catalog ' + system)
-  assert.ok(await evaluate(`window.__consoleCatalogRequests.includes('https://raw.githubusercontent.com/while-coder/${system}-roms/main/catalog.json')`), 'fixed catalog URL')
+  assert.ok(await evaluate(`window.__consoleCatalogRequests.some(url => url.endsWith('/games/${system}/catalog.json'))`), 'packaged catalog URL')
   if (system === 'gba') {
     await click('下一页 ›')
     await until(`document.querySelectorAll('.game-card').length === ${fixtures[system].length - pageSize}`, 'lobby pagination')

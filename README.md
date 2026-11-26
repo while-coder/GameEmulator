@@ -34,11 +34,15 @@ iOS SideStore 统一订阅源：[while-coder Store](https://while-coder.github.i
 
 Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自 `CHANGELOG.md` 中对应版本的段落；点击“知道了”后，同一版本不再重复展示。Tauri 应用发现新版本时优先显示更新提示。PWA 在加载新版页面后展示对应版本的内容，离线时也可查看已缓存版本的说明。
 
-游戏库优先显示目录中的 `screenshot_url`，否则根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图；截图按需加载。
+卡片优先显示游戏的首张 `screenshots`。缺图时根据 ROM 的 SHA-256 匹配 [Libretro 游戏截图](https://github.com/libretro-thumbnails/libretro-thumbnails)。未匹配或加载失败时显示占位图。截图按需加载。
 
-本地封面资源保存在 `games/<平台>/screenshots/`，同一平台内按来源网址去重。`manifest.json` 记录游戏名、ROM 校验值、原始图片来源、公开截图地址、本地文件、图片校验值及缺图列表；NES 的 `matches.json` 额外记录匹配依据。目录中的 `screenshot_url` 指向对应 `nes-roms`、`arcade-roms`、`neogeo-roms` 仓库的 `screenshots/` 图片，应用按需加载。本地副本用于资源管理，尚未打包进应用。`games/` 仍由 Git 忽略。
+本地截图保存在 `games/<平台>/screenshots/`，同一平台内按来源网址去重。`manifest.json` 记录游戏名、ROM 校验值、图片来源、公开截图地址、本地文件、图片校验值及缺图列表。NES 的 `matches.json` 额外记录匹配依据。ROM 和截图本地副本由 Git 忽略，应用按目录地址加载资源。
 
-游戏目录的 `download_url` 可保存相对于 `rom_url_base` 的路径（例如 `2020bb.zip`），游戏和依赖文件在读取目录时统一解析为完整地址；旧的完整 URL 仍然兼容。未指定 `rom_url_base` 时，相对路径按 `catalog.json` 所在目录解析。
+各平台的在线目录随应用构建，源文件为 `games/<平台>/catalog.json`。每个 `games` 条目保存共用的名称、介绍、截图和标签，`versions` 列出 ROM，首项是默认版。每个版本有自己的 `download_url`、字节数 `size` 和 `sha256`，可选 `desc`、`screenshots`、专属 `tags` 及用于搜索的 `aliases`。存档和下载缓存以版本的 SHA-256 为键。
+
+目录的 `base_url` 指向资源根目录，`screenshots` 和 `download_url` 可使用 `screenshots/xxx.png` 和 `roms/xxx.nes` 这样的相对路径。独立上游地址直接写完整 URL。街机和 Neo Geo 的 ROM 版本另外提供 `rom_name`、`file_name` 和 `dependencies`，目录顶层的 `dependency_files` 记录父 ROM、BIOS 等支持文件。
+
+NES 版本使用 ZIP 源时，`archive_size` 记录 ZIP 字节数，`file_name` 记录解包后保存的文件名，`size` 和 `sha256` 记录解包后的 ROM。游戏和版本可填写 `source_url`，供详情页打开资料来源。
 
 NES / FC 与街机（含 Neo Geo）使用一致的存档方式：暂停菜单「保存进度」或存档页「新建存档」会新增普通存档，可保留多份、重命名和单独删除；Ctrl+S / F8 覆盖本游戏、当前内核的快速存档，F9 仅读取快速存档。旧街机存档按快速存档保留，原生与 WASM 存档仍分别保存并校验兼容性。
 
@@ -58,24 +62,29 @@ NES / FC 与街机（含 Neo Geo）使用一致的存档方式：暂停菜单「
 
 两个新入口共用 `packages/console` 播放器，游戏库和设置沿用 NES／街机的组件、样式与布局。设置分为「存档、按键、显示、音频、其他」五类；存档页可按游戏筛选、搜索并切换游戏读档。支持拼音搜索、分类、收藏、排序、下载缓存、游玩时长、暂停、全屏、键盘改键、标准手柄和可编辑触屏布局。GBA / GB / GBC 与 SFC 分别保存设置与数据，GB / GBC 自动使用 10:9 显示比例。Android TV 的自动触屏模式保持隐藏。
 
-GBA / GB / GBC 与 SFC 分别固定使用 `while-coder/gba-roms`、`while-coder/sfc-roms` 仓库的 `main/catalog.json`，进入后自动加载在线游戏库，刷新按钮重新获取目录并同步下载状态。设置界面不提供游戏源地址配置。目录格式与现有 NES 目录一致，可选 `file_name` 用于下载地址没有 ROM 扩展名的情况：
+GBA / GB / GBC 与 SFC 使用随应用构建的目录，ROM 资源按游戏版本中的地址加载。下载地址没有 ROM 扩展名时，版本可以指定 `file_name`。
 
 ```json
 {
-  "rom_url_base": "https://example.com/gba/",
+  "base_url": "https://example.com/gba/",
   "games": [
     {
       "name": "My Homebrew",
-      "download_url": "homebrew.gba",
-      "file_name": "homebrew.gba",
-      "file_size": 32768,
-      "sha256": "<ROM 文件的 64 位 SHA-256>"
+      "screenshots": ["screenshots/homebrew.png"],
+      "versions": [
+        {
+          "name": "默认版",
+          "download_url": "roms/homebrew.gba",
+          "size": 32768,
+          "sha256": "<ROM 文件的 64 位 SHA-256>"
+        }
+      ]
     }
   ]
 }
 ```
 
-还可提供 `genre`、`publisher`、`tags`、`screenshot_url`。目录按 SHA-256 去重，下载时校验大小和哈希；失败时保留已有缓存。内核已随应用打包，PWA 在成功安装缓存后支持离线启动已下载游戏。
+目录按 SHA-256 去重，下载时校验大小和哈希，失败时保留已有缓存。内核已随应用打包，PWA 在成功安装缓存后支持离线启动已下载游戏。
 
 默认键盘：方向键移动，X/Z 对应 A/B，Q/W 对应 L/R，Enter 开始，右 Shift 选择；SFC 的 S/A 对应 X/Y。Esc / 返回键暂停，F11 全屏，Ctrl+S / F8 覆盖快速存档，F9 读取快速存档。手柄可同时按 L3 + R3 暂停。暂停菜单「保存进度」新增普通存档，存档页支持重命名和删除。游戏内存档定期、暂停和正常退出时保存；即时存档按平台、ROM 与内核构建隔离，Android 原生和 WASM 不互读。
 

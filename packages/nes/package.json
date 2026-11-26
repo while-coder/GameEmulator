@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@qingfeng346/ui-kit": "link:../../../ui-kit/ui-kit",
+    "fflate": "0.8.2",
     "nostalgist": "0.21.1",
     "pinyin-pro": "3.29.5",
     "vue": "catalog:"

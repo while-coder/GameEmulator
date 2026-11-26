@@ -1,27 +1,12 @@
 import { cacheCatalog, readCatalogCache } from '../../../shared/catalogCache'
-import { catalogDownloadBase } from '../../../shared/romUrl'
+import { readVersionedCatalog, type RomMetadata } from '../../../shared/versionedCatalog'
+import catalogUrl from '../../../../games/nes/catalog.json?url'
 
-export type RomEntry = {
-  name: string
-  screenshot_url?: string
-  genre?: string
-  publisher?: string
-  tags?: string[]
-  download_url: string
-  file_size?: number
-  sha256?: string
-  mapper?: number
-}
+export type RomEntry = RomMetadata & { download_url: string; file_size?: number; sha256?: string; archive_size?: number }
 
-export type RomCatalog = {
-  updated_at?: string
-  rom_url_base?: string
-  games: RomEntry[]
-}
+export type RomCatalog = { updated_at?: string; base_url?: string; games: RomEntry[] }
 
-// ROM 目录运行时从远程加载(web/app 均不打包进产物);切换源改此处即可。
-export const DEFAULT_CATALOG_URL =
-  'https://raw.githubusercontent.com/while-coder/nes-roms/main/catalog.json'
+export const DEFAULT_CATALOG_URL = new URL(catalogUrl, import.meta.url).href
 
 async function requestCatalog(url: string, signal?: AbortSignal): Promise<unknown> {
   const abort = new AbortController()
@@ -59,31 +44,27 @@ export async function loadRomCatalog(url = DEFAULT_CATALOG_URL, options: { signa
 }
 
 function parseCatalog(value: unknown, url: string): RomCatalog {
-  const catalog = value as RomCatalog | null
-  if (!Array.isArray(catalog?.games)) {
-    throw new Error('ROM 目录格式无效')
-  }
-  const downloadBase = catalogDownloadBase(url, catalog.rom_url_base)
-  const games = catalog.games.map(game => {
-    if (!game || typeof game.name !== 'string' || !game.name || typeof game.download_url !== 'string' || !game.download_url || typeof game.sha256 !== 'string' || !game.sha256 || typeof game.file_size !== 'number') {
-      throw new Error('ROM 目录缺少必要字段')
-    }
-    return { ...game, download_url: new URL(game.download_url, downloadBase).href }
+  const catalog = readVersionedCatalog(value, url)
+  const games = catalog.games.map(({ metadata, version, downloadUrl }) => {
+    const size = version.archive_size
+    if (size !== undefined && (!Number.isSafeInteger(size) || size <= 0)) throw new Error('ROM ZIP 大小无效')
+    return { ...metadata, download_url: downloadUrl.href, file_size: version.size, sha256: version.sha256, archive_size: size }
   })
-  // 远程目录可能存在 sha256 相同的重复条目(同一 ROM 内容多次收录)。
-  // sha256 同时是 romKey / 缓存键,重复会导致 v-for key 冲突且无法区分,
-  // 故按 sha256 去重,保留首次出现的条目。
-  return { ...catalog, games: dedupeBySha256(games) }
+  // Keep the first record for a shared ROM hash and retain other names for search.
+  return { updated_at: catalog.updatedAt, base_url: catalog.base, games: dedupeBySha256(games) }
 }
 
 function dedupeBySha256(games: RomEntry[]): RomEntry[] {
-  const seen = new Set<string>()
-  return games.filter((game) => {
-    const key = game.sha256!
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+  const seen = new Map<string, RomEntry>()
+  for (const game of games) {
+    const key = romKey(game).toLowerCase()
+    const previous = seen.get(key)
+    if (previous) {
+      previous.aliases = [...new Set([...(previous.aliases ?? []), game.name, ...(game.aliases ?? [])])]
+        .filter(name => name !== previous.name)
+    } else seen.set(key, game)
+  }
+  return [...seen.values()]
 }
 
 export function romKey(game: RomEntry): string {

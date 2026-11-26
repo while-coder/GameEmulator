@@ -1,5 +1,7 @@
 import { getCachedCatalog, putCachedCatalog } from './library'
-import { catalogDownloadBase } from '../../../shared/romUrl'
+import { readVersionedCatalog, type RomMetadata } from '../../../shared/versionedCatalog'
+import arcadeCatalog from '../../../../games/arcade/catalog.json?url'
+import neogeoCatalog from '../../../../games/neogeo/catalog.json?url'
 
 export interface CatalogFile {
   file_name: string
@@ -8,26 +10,21 @@ export interface CatalogFile {
   sha256: string
   dependencies?: string[]
 }
-export interface CatalogGame extends CatalogFile {
-  name?: string
+export interface CatalogGame extends CatalogFile, Partial<RomMetadata> {
   name_en?: string
-  screenshot_url?: string
-  genre?: string
-  publisher?: string
-  tags?: string[]
   system?: string
   rom_name: string
   dependencies: string[]
 }
 export interface ArcadeCatalog {
-  rom_url_base?: string
+  base_url?: string
   games: CatalogGame[]
   dependency_files: CatalogFile[]
 }
 
 export const DEFAULT_CATALOG_URLS = [
-  'https://raw.githubusercontent.com/while-coder/arcade-roms/main/catalog.json',
-  'https://raw.githubusercontent.com/while-coder/neogeo-roms/main/catalog.json',
+  new URL(arcadeCatalog, import.meta.url).href,
+  new URL(neogeoCatalog, import.meta.url).href,
 ]
 const configuredUrls = String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').trim()
 const catalogUrls = [...new Set(configuredUrls ? configuredUrls.split(/[\s,]+/).filter(Boolean) : DEFAULT_CATALOG_URLS)]
@@ -38,18 +35,19 @@ const archiveName = /^[a-z0-9_+\-]+\.zip$/i
 
 function remoteUrl(value: string, base = window.location.href): string {
   const url = new URL(value, base)
-  if (url.protocol !== 'https:' && url.origin !== window.location.origin) throw new Error('目录和下载地址必须使用 HTTPS')
+  if (url.protocol !== 'https:' && !DEFAULT_CATALOG_URLS.includes(url.href)
+      && (url.protocol !== 'http:' || url.origin !== window.location.origin)) throw new Error('目录和下载地址必须使用 HTTPS')
   if (url.username || url.password) throw new Error('目录和下载地址不能包含登录信息')
   return url.href
 }
 
 function parseCatalog(value: unknown, source: string): ArcadeCatalog {
-  if (!value || typeof value !== 'object' || !('games' in value) || !Array.isArray(value.games)) throw new Error('游戏目录格式无效')
-  const romUrlBase = 'rom_url_base' in value ? value.rom_url_base : undefined
-  const base = remoteUrl(catalogDownloadBase(source, romUrlBase))
+  const manifest = readVersionedCatalog(value, source)
+  const base = remoteUrl(manifest.base)
   const readFile = (value: unknown): CatalogFile => {
     if (!value || typeof value !== 'object') throw new Error('游戏目录文件信息无效')
-    const file = value as CatalogFile
+    const { size, ...fields } = value as Omit<CatalogFile, 'file_size'> & { size: number }
+    const file = { ...fields, file_size: size }
     validateCatalogFile(file)
     if (typeof file.download_url !== 'string' || !file.download_url.trim() ||
         (file.dependencies !== undefined && (!Array.isArray(file.dependencies) || file.dependencies.some(name => typeof name !== 'string' || !archiveName.test(name))))) {
@@ -57,15 +55,14 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
     }
     return { ...file, sha256: file.sha256.toLowerCase(), download_url: remoteUrl(file.download_url, base) }
   }
-  const games = value.games.map(value => {
-    const file = readFile(value) as CatalogGame
+  const games = manifest.games.map(({ version, metadata, system }) => {
+    const file = { ...readFile(version), ...metadata, system } as CatalogGame
     if (typeof file.rom_name !== 'string' || file.file_name !== `${file.rom_name}.zip` || !Array.isArray(file.dependencies)) throw new Error(`游戏目录缺少驱动或依赖信息：${file.file_name}`)
     return file
   })
-  const dependencies = 'dependency_files' in value ? value.dependency_files : []
+  const dependencies = manifest.dependencyFiles === undefined ? [] : manifest.dependencyFiles
   if (!Array.isArray(dependencies)) throw new Error('游戏目录依赖列表无效')
-  const catalog: ArcadeCatalog = { games, dependency_files: dependencies.map(readFile) }
-  if (romUrlBase !== undefined) catalog.rom_url_base = base
+  const catalog: ArcadeCatalog = { base_url: base, games, dependency_files: dependencies.map(readFile) }
   const files = new Map<string, CatalogFile>()
   for (const file of [...catalog.dependency_files, ...games]) {
     const existing = files.get(file.file_name)
@@ -79,7 +76,7 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
 async function readCachedCatalog(url: string): Promise<ArcadeCatalog | undefined> {
   try {
     const cached = await getCachedCatalog(url)
-    if (cached) return parseCatalog(cached.catalog, url)
+    if (cached?.manifest) return parseCatalog(cached.manifest, url)
   } catch { /* A bad cache entry must not block a network refresh. */ }
 }
 
@@ -97,14 +94,15 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogRe
   const timer = setTimeout(cancel, 8_000)
   try {
     signal?.throwIfAborted()
-    if (navigator.onLine === false) throw new Error('当前处于离线状态')
+    if (navigator.onLine === false && !DEFAULT_CATALOG_URLS.includes(url)) throw new Error('当前处于离线状态')
     const response = await fetch(url, { cache: 'no-store', signal: abort.signal })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const catalog = parseCatalog(await response.json(), url)
+    const manifest: unknown = await response.json()
+    const catalog = parseCatalog(manifest, url)
     signal?.throwIfAborted()
     // Cache only a fully validated manifest. A failed refresh must not replace
     // the last usable catalog or clear previously imported ROMs and snapshots.
-    try { await putCachedCatalog({ url, catalog }) } catch { /* Use the fresh catalog in memory. */ }
+    try { await putCachedCatalog({ url, catalog, manifest }) } catch { /* Use the fresh catalog in memory. */ }
     signal?.throwIfAborted()
     return { catalog, stale: false }
   } catch (error) {

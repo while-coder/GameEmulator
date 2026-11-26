@@ -14,6 +14,8 @@ import type { GameSystem } from '../../../shared/playHistory'
 import { onlinePlatforms, platforms, useLobbyLibrary, type LobbyDownloadProgress, type LobbyGame } from './useLobbyLibrary'
 import { densityOptions, loadPreferences, readLobbyReturn, saveLobbyReturn, savePreferences, type LobbyState, type LobbyTab } from './lobbyPreferences'
 import LobbyGameCard from './LobbyGameCard.vue'
+import LobbyGameDetails from './LobbyGameDetails.vue'
+import { groupLobbyGames, lobbyCard, lobbyGameId, type LobbyCard } from './lobbyGames'
 import '../../../player-ui/library.css'
 
 const PAGE_SIZE = 36
@@ -25,6 +27,7 @@ const settingsArea = ref<HTMLElement | null>(null)
 const launchError = ref('')
 const navigating = ref(false)
 const saveGame = shallowRef<LobbyGame | null>(null)
+const detailsId = ref<string>()
 const savePanel = ref<InstanceType<typeof PlayerSaveList> | null>(null)
 const removing = ref(false)
 const { operation, cancelling, cancelOperation, runOperation } = useLibraryOperation()
@@ -53,7 +56,7 @@ const sortOptions = [
   { value: 'recent', label: '最近游玩优先' },
 ] as const
 const { sources, games } = useLobbyLibrary()
-const gameId = (game: LobbyGame) => `${game.system}:${game.key}`
+const groups = computed(() => groupLobbyGames(games.value))
 const currentPage = computed({
   get: () => searchOpen.value ? searchPage.value : page.value,
   set: value => { if (searchOpen.value) searchPage.value = value; else page.value = value },
@@ -65,14 +68,19 @@ const loading = computed(() => searchOpen.value || onlineTab.value
 const failures = computed(() => relevantSources.value.filter(source => source.failed.value))
 const hasQuery = computed(() => searchQuery.value.trim().length > 0)
 const filtered = computed(() => {
-  let list: LobbyGame[]
-  if (searchOpen.value) {
-    if (!hasQuery.value) return []
-    const matches = createGameSearch(searchQuery.value)
-    list = games.value.filter(game => matches(game.terms))
-  } else if (selectedTab.value === 'mine') list = games.value.filter(game => game.local || game.lastPlayedAt > 0)
-  else if (selectedTab.value === 'favorites') list = games.value.filter(game => game.favorite)
-  else list = games.value.filter(game => game.system === selectedTab.value && game.online)
+  if (searchOpen.value && !hasQuery.value) return []
+  const matchesSearch = searchOpen.value ? createGameSearch(searchQuery.value) : undefined
+  const list: LobbyCard[] = []
+  for (const [id, group] of groups.value) {
+    let matches: LobbyGame[]
+    if (matchesSearch) matches = group.filter(game => matchesSearch([game.groupName, ...game.terms]))
+    else if (selectedTab.value === 'mine') {
+      const downloaded = group.filter(game => game.local)
+      matches = downloaded.length ? downloaded : group.filter(game => game.lastPlayedAt > 0)
+    } else if (selectedTab.value === 'favorites') matches = group.filter(game => game.favorite)
+    else matches = group.filter(game => game.system === selectedTab.value && game.online)
+    if (matches.length) list.push(lobbyCard(id, group, matches, !!matchesSearch))
+  }
   if (preferences.sort === 'name') list.sort((a, b) => compareGameNames(a.name, b.name))
   if (preferences.sort === 'recent' || (preferences.sort === 'default' && !searchOpen.value && selectedTab.value === 'mine')) {
     list.sort((a, b) => b.lastPlayedAt - a.lastPlayedAt)
@@ -81,6 +89,8 @@ const filtered = computed(() => {
 })
 const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)))
 const visibleGames = computed(() => filtered.value.slice((currentPage.value - 1) * PAGE_SIZE, currentPage.value * PAGE_SIZE))
+const detailCard = computed(() => detailsId.value ? filtered.value.find(card => card.id === detailsId.value) : undefined)
+watch(detailCard, card => { if (!card && detailsId.value) closeDetails() })
 const emptyMessage = computed(() => {
   if (searchOpen.value && !hasQuery.value) return '输入游戏名或拼音搜索'
   if (loading.value) return '正在读取游戏…'
@@ -89,7 +99,8 @@ const emptyMessage = computed(() => {
   if (selectedTab.value === 'favorites') return '长按或右键点击游戏卡片即可收藏'
   return '当前没有可显示的在线游戏'
 })
-const focusId = (game: LobbyGame) => `game:${gameId(game)}`
+const focusId = (id: string) => `game:${id}`
+const gameFocus = (game: LobbyGame) => focusId(lobbyGameId(game))
 
 function focusById(id: string, reveal = false): boolean {
   for (const item of root.value?.querySelectorAll<HTMLElement>('[data-lobby-focus]') ?? []) {
@@ -114,7 +125,9 @@ async function restoreLobby() {
   if (!settingsOpen.value && loading.value) return
   pendingReturn.value = undefined
   if (!settingsOpen.value) {
-    const selected = filtered.value.findIndex(game => focusId(game) === state.focus)
+    const selected = filtered.value.findIndex(card => focusId(card.id) === state.focus
+      || card.versions.some(game => focusId(`${game.system}:${game.key}`) === state.focus))
+    if (selected >= 0) state.focus = focusId(filtered.value[selected].id)
     currentPage.value = selected >= 0 ? Math.floor(selected / PAGE_SIZE) + 1 : Math.min(currentPage.value, totalPages.value)
   }
   await nextTick()
@@ -142,7 +155,7 @@ function changePage(delta: number) {
   resetScroll()
   void nextTick(() => {
     const game = visibleGames.value[0]
-    if (game) focusById(focusId(game))
+    if (game) focusById(focusId(game.id))
   })
 }
 function openSearch() {
@@ -185,15 +198,38 @@ function closeSaves() {
   const game = saveGame.value
   saveGame.value = null
   if (game) void nextTick(() => {
-    if (!focusById(focusId(game), true)) focusDefault()
+    if (!focusById(gameFocus(game), true)) focusDefault()
   })
+}
+
+function openDetails(card: LobbyCard) {
+  launchError.value = ''
+  detailsId.value = card.id
+}
+
+function closeDetails(restoreFocus = true) {
+  const id = detailsId.value
+  detailsId.value = undefined
+  if (restoreFocus && id) void nextTick(() => {
+    if (!focusById(focusId(id), true)) focusDefault()
+  })
+}
+
+function launchVersion(game: LobbyGame) {
+  closeDetails(false)
+  void goToPlayer(game.system, gameFocus(game), game)
+}
+
+function openVersionSaves(game: LobbyGame) {
+  closeDetails(false)
+  saveGame.value = game
 }
 
 function loadSaves() {
   const game = saveGame.value
   if (!game) return Promise.resolve([])
   return loadLobbySaves(game.system, game.key, !!props.nativeSaves, async saveKey => {
-    await goToPlayer(game.system, focusId(game), game, saveKey)
+    await goToPlayer(game.system, gameFocus(game), game, saveKey)
     saveGame.value = null
   })
 }
@@ -206,7 +242,8 @@ async function goToPlayer(system: GameSystem, focus: string, game?: LobbyGame, s
     tab: selectedTab.value, page: page.value,
     searchOpen: searchOpen.value, searchQuery: searchQuery.value,
     searchPage: searchPage.value, browseScroll, browseBeforeSettings, settingsOpen: settingsOpen.value,
-    focus, scroll: (settingsOpen.value ? settingsArea.value : scrollArea.value)?.scrollTop ?? 0,
+    focus: game ? focusId(`${system}:${game.key}`) : focus,
+    scroll: (settingsOpen.value ? settingsArea.value : scrollArea.value)?.scrollTop ?? 0,
   }
   saveLobbyReturn(launchState)
   navigating.value = true
@@ -237,7 +274,7 @@ async function changeCache(game: LobbyGame, action: 'download' | 'remove') {
     downloadProgress.value = null
     removing.value = false
     await nextTick()
-    if (!focusById(focusId(game), true)) focusDefault()
+    if (!detailCard.value && !focusById(gameFocus(game), true)) focusDefault()
   }
 }
 
@@ -255,6 +292,7 @@ async function resume() {
 function handleBack(): boolean {
   if (operation.value) { cancelOperation(); return true }
   if (saveGame.value) { savePanel.value?.back(); return true }
+  if (detailCard.value) { if (!busy.value) closeDetails(); return true }
   const menu = document.querySelector<HTMLDialogElement>('dialog.game-card-menu[open]')
   if (menu) { menu.close(); return true }
   const filter = document.querySelector<HTMLElement>('.rs-backdrop')
@@ -271,7 +309,7 @@ function retry() {
 
 useRemoteNav({
   container: root,
-  active: computed(() => props.active && !busy.value && !saveGame.value),
+  active: computed(() => props.active && !busy.value && !saveGame.value && !detailCard.value),
   autoFocus: true,
   onBack: () => { if (!handleBack()) emit('unhandledBack') },
 })
@@ -333,9 +371,9 @@ onBeforeUnmount(() => document.documentElement.classList.remove('game-lobby-page
           <div ref="scrollArea" class="lobby-scroll player-library">
             <div v-if="visibleGames.length" :id="searchOpen ? 'lobby-search-results' : undefined" class="lobby-grid" data-nav-grid
               :data-nav-exit-left="searchOpen ? '#lobby-search-keyboard [data-search-key]' : undefined">
-              <LobbyGameCard v-for="game in visibleGames" :key="gameId(game)" :game="game" :focus-id="focusId(game)" :disabled="busy"
-                @play="goToPlayer(game.system, focusId(game), game)" @saves="saveGame = game"
-                @download="changeCache(game, 'download')" @remove="changeCache(game, 'remove')" />
+              <LobbyGameCard v-for="card in visibleGames" :key="card.id" :card="card" :focus-id="focusId(card.id)" :disabled="busy"
+                :mine="!searchOpen && selectedTab === 'mine'" @play="launchVersion(card.launch)" @saves="openVersionSaves(card.launch)"
+                @download="changeCache(card.launch, 'download')" @remove="changeCache(card.launch, 'remove')" @details="openDetails(card)" />
             </div>
             <p v-else class="lobby-empty" role="status">{{ emptyMessage }}</p>
           </div>
@@ -352,7 +390,10 @@ onBeforeUnmount(() => document.documentElement.classList.remove('game-lobby-page
         <small v-if="visibleGames.length" class="lobby-help">确定开始 · 长按更多</small>
       </footer>
     </template>
-    <p v-if="launchError" class="lobby-status" role="alert">{{ launchError }}</p>
+    <p v-if="launchError && !detailCard" class="lobby-status" role="alert">{{ launchError }}</p>
+    <LobbyGameDetails v-if="detailCard" :card="detailCard" :busy="busy" :error="launchError"
+      @close="closeDetails()" @play="launchVersion" @saves="openVersionSaves"
+      @download="game => changeCache(game, 'download')" @remove="game => changeCache(game, 'remove')" />
     <PlayerSaveList v-if="saveGame" ref="savePanel" :game-name="saveGame.name" :load="loadSaves" @close="closeSaves" />
     <LibraryLoading v-if="operation" :name="operation.name" :action="operation.action"
       :progress="downloadProgress" :cancelling="cancelling" @cancel="cancelOperation" />

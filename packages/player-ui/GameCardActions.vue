@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useCardActionMenu } from './useCardActionMenu'
 
-const props = defineProps<{ name: string; detail: string; disabled: boolean; busy: boolean; canRemove: boolean; canDownload: boolean; favorite: boolean }>()
-const emit = defineEmits<{ play: []; remove: []; download: []; favorite: []; saves: [] }>()
+const props = defineProps<{ name: string; detail: string; disabled: boolean; busy: boolean; canRemove: boolean; canDownload: boolean; favorite: boolean; detailsLabel?: string }>()
+const emit = defineEmits<{ play: []; remove: []; download: []; favorite: []; saves: []; details: [] }>()
 const { trigger, dialog, shown, position, contextMenu, closeMenu, closed, click, pointerDown, pointerMove, pointerUp,
   cancelPointer, cancelPress, keyDown, keyUp, padDown, padUp } = useCardActionMenu(() => props.disabled, () => emit('play'))
 
-function choose(action: 'play' | 'remove' | 'download' | 'favorite' | 'saves') {
+function choose(action: 'play' | 'remove' | 'download' | 'favorite' | 'saves' | 'details') {
   closeMenu()
   if (!props.disabled) {
     trigger.value?.focus({ preventScroll: true })
@@ -14,6 +14,7 @@ function choose(action: 'play' | 'remove' | 'download' | 'favorite' | 'saves') {
     else if (action === 'remove' && props.canRemove) emit('remove')
     else if (action === 'download' && props.canDownload) emit('download')
     else if (action === 'favorite') emit('favorite')
+    else if (action === 'details') emit('details')
     else if (action === 'saves') emit('saves')
   }
 }
@@ -33,6 +34,7 @@ function choose(action: 'play' | 'remove' | 'download' | 'favorite' | 'saves') {
       @cancel.prevent="closeMenu" @close="closed" @click="event => { if (event.target === dialog) closeMenu() }">
       <h2>{{ name }}</h2>
       <button type="button" @click="choose('play')">开始游戏</button>
+      <button v-if="detailsLabel" type="button" @click="choose('details')">{{ detailsLabel }}</button>
       <button v-if="canDownload" type="button" @click="choose('download')">下载游戏</button>
       <button type="button" @click="choose('saves')">查看存档</button>
       <button type="button" :aria-pressed="favorite" @click="choose('favorite')">{{ favorite ? '取消收藏' : '收藏游戏' }}</button>
