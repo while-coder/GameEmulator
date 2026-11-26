@@ -1,4 +1,4 @@
-import { cacheCatalog, readCatalogCache } from '../../shared/catalogCache'
+import { cacheCatalog, loadCatalogWithFallback, readCatalogCache } from '../../shared/catalogCache'
 import { readVersionedCatalog, type RomMetadata } from '../../shared/versionedCatalog'
 import { newSaveSlot, type SaveKind } from '../../shared/saveSlots'
 import { romExtension, systems, type ConsoleSystem } from './systems'
@@ -97,13 +97,17 @@ export const cacheGame = (system: ConsoleSystem, game: Game, file: Blob) => writ
   key: `${system}:${game.hash}`,
   file,
 })
-const catalogKey = (system: ConsoleSystem, source: string) => `${system}:${new URL(source).href}`
+const catalogSources: Partial<Record<ConsoleSystem, string>> = {
+  gba: import.meta.env.VITE_GBA_CATALOG_URL?.trim(),
+  sfc: import.meta.env.VITE_SFC_CATALOG_URL?.trim(),
+}
+const catalogKey = (system: ConsoleSystem, source: string) => `${system}:${source}`
 
-export function readCachedConsoleCatalog(system: ConsoleSystem, source: string): Promise<Game[] | undefined> {
+function readCachedConsoleCatalog(system: ConsoleSystem, source: string): Promise<Game[] | undefined> {
   return readCatalogCache(catalogKey(system, source), value => parseCatalog(system, value, source))
 }
 
-export async function loadCatalog(system: ConsoleSystem, source: string, signal?: AbortSignal): Promise<Game[]> {
+async function loadAndCacheCatalog(system: ConsoleSystem, source: string, signal?: AbortSignal): Promise<Game[]> {
   const url = new URL(source)
   if (url.href !== systems[system].catalogUrl && !['https:', 'http:'].includes(url.protocol)) throw new Error('游戏源需使用 HTTP 或 HTTPS 地址')
   const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.any([AbortSignal.timeout(10000), ...(signal ? [signal] : [])]) })
@@ -111,9 +115,17 @@ export async function loadCatalog(system: ConsoleSystem, source: string, signal?
   const value: unknown = await response.json()
   const games = parseCatalog(system, value, url.href)
   signal?.throwIfAborted()
-  await cacheCatalog(catalogKey(system, url.href), value, signal)
+  await cacheCatalog(catalogKey(system, source), value, signal)
   signal?.throwIfAborted()
   return games
+}
+
+export async function loadCatalog(system: ConsoleSystem, signal?: AbortSignal): Promise<Game[]> {
+  signal?.throwIfAborted()
+  const packaged = systems[system].catalogUrl
+  if (!packaged) return []
+  return loadCatalogWithFallback(catalogSources[system], packaged,
+    url => loadAndCacheCatalog(system, url, signal), url => readCachedConsoleCatalog(system, url), signal)
 }
 
 function parseCatalog(system: ConsoleSystem, value: unknown, source: string): Game[] {

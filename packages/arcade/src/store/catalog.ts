@@ -26,10 +26,15 @@ export const DEFAULT_CATALOG_URLS = [
   new URL(arcadeCatalog, import.meta.url).href,
   new URL(neogeoCatalog, import.meta.url).href,
 ]
-const configuredUrls = String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').trim()
-const catalogUrls = [...new Set(configuredUrls ? configuredUrls.split(/[\s,]+/).filter(Boolean) : DEFAULT_CATALOG_URLS)]
-interface CatalogResult { catalog: ArcadeCatalog; stale: boolean; error?: string }
-const loadedCatalogs = new Map<string, Promise<CatalogResult>>()
+const legacyUrls = [...new Set(String(import.meta.env.VITE_ARCADE_CATALOG_URLS ?? '').split(/[\s,]+/).filter(Boolean))]
+const catalogSources = [
+  { url: import.meta.env.VITE_ARCADE_CATALOG_URL?.trim() || legacyUrls[0] || DEFAULT_CATALOG_URLS[0], packaged: DEFAULT_CATALOG_URLS[0] },
+  { url: import.meta.env.VITE_NEOGEO_CATALOG_URL?.trim() || legacyUrls[1] || DEFAULT_CATALOG_URLS[1], packaged: DEFAULT_CATALOG_URLS[1] },
+  ...legacyUrls.slice(2).map(url => ({ url })),
+]
+type CatalogSource = { url: string; packaged?: string }
+interface CatalogResult { catalog: ArcadeCatalog; error?: string }
+const loadedCatalogs = new Map<CatalogSource, Promise<CatalogResult>>()
 const downloadBase = import.meta.env.VITE_ARCADE_ROM_URL_BASE?.trim()
 const archiveName = /^[a-z0-9_+\-]+\.zip$/i
 
@@ -75,25 +80,20 @@ function parseCatalog(value: unknown, source: string): ArcadeCatalog {
 
 async function readCachedCatalog(url: string): Promise<ArcadeCatalog | undefined> {
   try {
-    const cached = await getCachedCatalog(url)
-    if (cached?.manifest) return parseCatalog(cached.manifest, url)
+    const source = remoteUrl(url)
+    const cached = await getCachedCatalog(source)
+    if (cached?.manifest) return parseCatalog(cached.manifest, source)
   } catch { /* A bad cache entry must not block a network refresh. */ }
 }
 
-export async function readCachedArcadeCatalogs(): Promise<ArcadeCatalog[]> {
-  const catalogs = await Promise.all(catalogUrls.map(source => readCachedCatalog(remoteUrl(source))))
-  return catalogs.filter(catalog => catalog !== undefined)
-}
-
-async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogResult> {
+async function refreshCatalog(source: string, signal?: AbortSignal): Promise<ArcadeCatalog> {
   signal?.throwIfAborted()
-  const cached = await readCachedCatalog(url)
+  const url = remoteUrl(source)
   const abort = new AbortController()
   const cancel = () => abort.abort()
   signal?.addEventListener('abort', cancel, { once: true })
   const timer = setTimeout(cancel, 8_000)
   try {
-    signal?.throwIfAborted()
     if (navigator.onLine === false && !DEFAULT_CATALOG_URLS.includes(url)) throw new Error('当前处于离线状态')
     const response = await fetch(url, { cache: 'no-store', signal: abort.signal })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -102,47 +102,74 @@ async function readCatalog(url: string, signal?: AbortSignal): Promise<CatalogRe
     signal?.throwIfAborted()
     // Cache only a fully validated manifest. A failed refresh must not replace
     // the last usable catalog or clear previously imported ROMs and snapshots.
-    try { await putCachedCatalog({ url, catalog, manifest }) } catch { /* Use the fresh catalog in memory. */ }
+    try {
+      await putCachedCatalog({ url, catalog, manifest })
+    } catch (error) {
+      if (!DEFAULT_CATALOG_URLS.includes(url)) throw error
+    }
     signal?.throwIfAborted()
-    return { catalog, stale: false }
+    return catalog
   } catch (error) {
     if (signal?.aborted) throw error
     const detail = abort.signal.aborted ? '连接超时' : error instanceof Error ? error.message : String(error)
-    if (cached) return { catalog: cached, stale: true, error: detail }
-    throw new Error(`读取游戏目录失败：${url}（${detail}）。首次使用需联网读取目录，请确认目录已发布。`)
+    throw new Error(`读取游戏目录失败：${url}（${detail}）`)
   } finally {
     clearTimeout(timer)
     signal?.removeEventListener('abort', cancel)
   }
 }
 
-function loadCatalog(source: string, signal?: AbortSignal): Promise<CatalogResult> {
-  const url = remoteUrl(source)
-  let loading = loadedCatalogs.get(url)
+async function readCatalog({ url, packaged }: CatalogSource, signal?: AbortSignal): Promise<CatalogResult> {
+  let failure: unknown
+  try {
+    const catalog = await refreshCatalog(url, signal)
+    if (url === packaged) return { catalog }
+  } catch (error) {
+    signal?.throwIfAborted()
+    failure = error
+  }
+  const cached = await readCachedCatalog(url)
+  signal?.throwIfAborted()
+  const error = failure instanceof Error ? failure.message : failure === undefined ? undefined : String(failure)
+  if (cached) return { catalog: cached, error }
+  if (!packaged || url === packaged) throw failure ?? new Error('无法读取已缓存的游戏目录')
+
+  try {
+    return { catalog: await refreshCatalog(packaged, signal), error }
+  } catch (packagedError) {
+    signal?.throwIfAborted()
+    const cachedPackaged = await readCachedCatalog(packaged)
+    signal?.throwIfAborted()
+    if (cachedPackaged) return { catalog: cachedPackaged, error }
+    throw packagedError
+  }
+}
+
+function loadCatalog(source: CatalogSource, signal?: AbortSignal): Promise<CatalogResult> {
+  let loading = loadedCatalogs.get(source)
   if (!loading) {
-    loading = readCatalog(url, signal).catch(error => {
-      if (loadedCatalogs.get(url) === loading) loadedCatalogs.delete(url)
+    loading = readCatalog(source, signal).catch(error => {
+      if (loadedCatalogs.get(source) === loading) loadedCatalogs.delete(source)
       throw error
     })
-    loadedCatalogs.set(url, loading)
+    loadedCatalogs.set(source, loading)
   }
   return loading
 }
 
-export async function loadCatalogs(signal?: AbortSignal, refresh = false): Promise<{ catalogs: ArcadeCatalog[]; errors: string[]; fresh: number; bySource: Record<string, ArcadeCatalog> }> {
-  if (refresh) for (const url of catalogUrls) loadedCatalogs.delete(remoteUrl(url))
-  const results = await Promise.allSettled(catalogUrls.map(url => loadCatalog(url, signal)))
+export async function loadCatalogs(signal?: AbortSignal, refresh = false) {
+  if (refresh) loadedCatalogs.clear()
+  const results = await Promise.allSettled(catalogSources.map(source => loadCatalog(source, signal)))
   signal?.throwIfAborted()
   return {
     catalogs: results.flatMap(result => result.status === 'fulfilled' ? [result.value.catalog] : []),
     errors: results.flatMap(result => result.status === 'rejected' ? [result.reason instanceof Error ? result.reason.message : String(result.reason)] : result.value.error ? [result.value.error] : []),
-    fresh: results.filter(result => result.status === 'fulfilled' && !result.value.stale).length,
-    bySource: Object.fromEntries(results.flatMap((result, index) => result.status === 'fulfilled' ? [[remoteUrl(catalogUrls[index]), result.value.catalog]] : [])),
+    incomplete: results.some(result => result.status === 'rejected'),
   }
 }
 
 export async function findCatalogGame(hash: string, signal?: AbortSignal): Promise<{ game: CatalogGame; catalog: ArcadeCatalog } | undefined> {
-  const results = await Promise.allSettled(catalogUrls.map(async url => loadCatalog(url, signal)))
+  const results = await Promise.allSettled(catalogSources.map(source => loadCatalog(source, signal)))
   signal?.throwIfAborted()
   for (const result of results) {
     if (result.status !== 'fulfilled') continue
@@ -152,14 +179,6 @@ export async function findCatalogGame(hash: string, signal?: AbortSignal): Promi
   }
   const failure = results.find(result => result.status === 'rejected')
   if (failure?.status === 'rejected') throw failure.reason
-}
-
-export async function findCachedCatalogGame(hash: string) {
-  for (const source of catalogUrls) {
-    const catalog = await readCachedCatalog(remoteUrl(source))
-    const game = catalog?.games.find(item => item.sha256.toLowerCase() === hash.toLowerCase())
-    if (catalog && game) return { game, catalog }
-  }
 }
 
 export function dependencyPlan(game: CatalogGame, catalog: ArcadeCatalog): CatalogFile[] {

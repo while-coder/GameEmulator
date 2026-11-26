@@ -1,4 +1,4 @@
-import { cacheCatalog, readCatalogCache } from '../../../shared/catalogCache'
+import { cacheCatalog, loadCatalogWithFallback, readCatalogCache } from '../../../shared/catalogCache'
 import { readVersionedCatalog, type RomMetadata } from '../../../shared/versionedCatalog'
 import catalogUrl from '../../../../games/nes/catalog.json?url'
 
@@ -44,30 +44,9 @@ async function loadAndCacheCatalog(url: string, signal?: AbortSignal) {
   return catalog
 }
 
-export async function loadRomCatalog(url = configuredCatalogUrl, { signal }: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
-  signal?.throwIfAborted()
-  if (url !== DEFAULT_CATALOG_URL) {
-    if (navigator.onLine !== false) {
-      try {
-        await loadAndCacheCatalog(url, signal)
-      } catch {
-        signal?.throwIfAborted()
-      }
-    }
-    const cached = await readCachedRomCatalog(url)
-    signal?.throwIfAborted()
-    if (cached) return cached
-  }
-
-  try {
-    return await loadAndCacheCatalog(DEFAULT_CATALOG_URL, signal)
-  } catch (error) {
-    signal?.throwIfAborted()
-    const cached = await readCachedRomCatalog(DEFAULT_CATALOG_URL)
-    signal?.throwIfAborted()
-    if (cached) return cached
-    throw error
-  }
+export function loadRomCatalog(url = configuredCatalogUrl, { signal }: { signal?: AbortSignal } = {}): Promise<RomCatalog> {
+  return loadCatalogWithFallback(url, DEFAULT_CATALOG_URL,
+    source => loadAndCacheCatalog(source, signal), readCachedRomCatalog, signal)
 }
 
 function parseCatalog(value: unknown, url: string): RomCatalog {

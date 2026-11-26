@@ -97,9 +97,9 @@ function inject(fixtures, version) {
       if (sessionStorage.getItem('console-test-hold-catalog') === system) {
         await new Promise(resolve => { window.__releaseCatalogRequest = resolve })
       }
+      window.__consoleCatalogRequests.push(url)
       if (sessionStorage.getItem('console-test-catalog-failure') === system) throw new TypeError('Offline catalog fixture')
       if (sessionStorage.getItem('console-test-invalid-catalog') === system) return Response.json({ games: [null] })
-      window.__consoleCatalogRequests.push(url)
       return Response.json({ games: fixtures[system].map(({ name, tags, file_size, download_url, sha256 }) => ({
         name, tags, versions: [{ name: '默认版', size: file_size, download_url, sha256 }],
       })) })
@@ -290,7 +290,7 @@ async function testArcadeCatalogs() {
       const [arcade, neogeo] = catalogs
       const child = arcade.games.find(game => game.dependencies.length)
       const game = neogeo.games.find(game => game.dependencies.includes('neogeo.zip'))
-      const cached = await library.findCachedCatalogGame(game.sha256)
+      const cached = await library.findCatalogGame(game.sha256)
       return {
         counts: catalogs.map(catalog => catalog.games.length),
         errors,
@@ -374,16 +374,17 @@ async function main(){
     await send('Page.reload')
     await until(`window.__consoleTestDocument && window.__consoleTestDocument !== ${oldDocument} && document.querySelector('.game-lobby h1')`, 'reloaded lobby')
     await selectLobbyTab(system)
-    await until("window.__releaseCatalogRequest && document.querySelectorAll('.game-card').length === 36", 'disk cache is visible before network settles')
+    await until("window.__releaseCatalogRequest", 'catalog request starts before cache is displayed')
+    assert.equal(await evaluate("document.querySelectorAll('.game-card').length"), 0)
     await evaluate("sessionStorage.removeItem('console-test-hold-catalog'); window.__releaseCatalogRequest()")
-    await until("document.querySelector('.lobby-status')?.textContent.includes('正在显示上次的目录')", 'refresh failure status')
-    assert.equal(await evaluate("document.querySelectorAll('.game-card').length"), pageSize, 'keep cached list on refresh failure')
+    await until(`document.querySelectorAll('.game-card').length === ${pageSize}`, 'keep cached list on refresh failure')
     await evaluate("sessionStorage.removeItem('console-test-catalog-failure'); sessionStorage.setItem('console-test-invalid-catalog', 'gba')")
-    await click('重试')
-    await until("document.querySelector('.lobby-status')?.textContent.includes('正在显示上次的目录')", 'invalid response preserves catalog')
+    const failedDocument = await evaluate('window.__consoleTestDocument')
+    await send('Page.reload')
+    await until(`window.__consoleTestDocument && window.__consoleTestDocument !== ${failedDocument} && document.querySelector('.game-lobby h1')`, 'reload with invalid catalog')
+    await selectLobbyTab(system)
+    await until(`document.querySelectorAll('.game-card').length === ${pageSize}`, 'invalid response preserves catalog')
     await evaluate("sessionStorage.removeItem('console-test-invalid-catalog')")
-    await click('重试')
-    await until("!document.querySelector('.lobby-status')", 'refresh retry')
     await evaluate("sessionStorage.setItem('console-test-slow-download', '1')")
     await lobbyGame(system)
     await until("document.querySelector('.library-loading button')", 'cancellable loading')

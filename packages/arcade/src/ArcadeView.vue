@@ -19,7 +19,7 @@ import SHint from '@qingfeng346/ui-kit/components/SHint.vue'
 import SSwitch from '@qingfeng346/ui-kit/components/SSwitch.vue'
 import TouchControls from './components/TouchControls.vue'
 import RemoteSelect from '../../player-ui/RemoteSelect.vue'
-import { findCachedCatalogGame, findCatalogGame } from './store/catalog'
+import { findCatalogGame } from './store/catalog'
 import { createArcadeRunner, type ArcadeRunnerApi } from './emulator/runner'
 import { ACTIONS, bindKey, defaultKeymap, keyLabel, settings, type Action, type TouchLayout } from './emulator/settings'
 import { CORE_BUILD, bundleKey, getSnapshot, listArchives, listSnapshots, putSnapshot, createSnapshot, renameSnapshot, saveKindOf, snapshotBundleKey, removeSnapshot, type Archive, type Snapshot } from './store/library'
@@ -154,7 +154,7 @@ async function launchGame(entry: Extract<PlayerEntry, { kind: 'play' }>) {
       const snapshot = entry.saveKey ? await getSnapshot(entry.saveKey) : undefined
       if (entry.saveKey && (!snapshot || snapshot.gameHash !== key)) throw new Error('找不到此游戏的指定存档')
       if (snapshot && snapshot.coreBuild !== coreBuild()) throw new Error('此存档属于其他内核版本，已保留原存档')
-      const match = await findCachedCatalogGame(key) ?? await findCatalogGame(key, signal)
+      const match = await findCatalogGame(key, signal)
       signal.throwIfAborted()
       if (!match) throw new Error('找不到游戏目录和依赖，请回大厅刷新后重试')
       const { game, dependencies } = await prepareCatalogGame(match.game, match.catalog, {

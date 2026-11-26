@@ -40,7 +40,17 @@ Tauri 应用和 PWA 启动时会展示当前版本的更新内容，内容来自
 
 各平台的在线目录随应用构建，源文件为 `games/<平台>/catalog.json`。每个 `games` 条目保存共用的名称、介绍、截图和标签，`versions` 列出 ROM，首项是默认版。每个版本的基本字段为 `name`、`download_url`、字节数 `size` 和 `sha256`，可附加专属 `tags` 及用于搜索的 `aliases`。存档和下载缓存以版本的 SHA-256 为键。
 
-构建时可通过 `VITE_NES_CATALOG_URL` 为 NES 指定一个远程目录，例如 `VITE_NES_CATALOG_URL=https://example.com/nes/catalog.json pnpm run build:pwa`。目录服务要允许应用跨域读取，ROM 地址使用应用支持的下载源。加载或刷新时，应用先下载并缓存通过校验的目录，再从缓存读取。下载失败、目录无效或设备离线时，沿用最近一次有效缓存。没有有效缓存时读取随应用打包的目录，省略配置时直接使用内置目录。
+构建时可为各平台设置远程目录。加载或刷新时，应用先下载并缓存通过校验的目录，再从缓存读取。下载失败、目录无效或设备离线时，沿用最近一次有效缓存。没有有效缓存时读取随应用打包的目录，省略配置时直接使用内置目录。目录服务需允许跨域读取。
+
+| 平台 | 构建变量 | 在线目录 |
+| --- | --- | --- |
+| NES / FC | `VITE_NES_CATALOG_URL` | [catalog.json](https://raw.githubusercontent.com/while-coder/GameEmulator/main/games/nes/catalog.json) |
+| GBA / GB / GBC | `VITE_GBA_CATALOG_URL` | [catalog.json](https://raw.githubusercontent.com/while-coder/GameEmulator/main/games/gba/catalog.json) |
+| SFC / SNES | `VITE_SFC_CATALOG_URL` | [catalog.json](https://raw.githubusercontent.com/while-coder/GameEmulator/main/games/sfc/catalog.json) |
+| 街机 | `VITE_ARCADE_CATALOG_URL` | [catalog.json](https://raw.githubusercontent.com/while-coder/GameEmulator/main/games/arcade/catalog.json) |
+| Neo Geo | `VITE_NEOGEO_CATALOG_URL` | [catalog.json](https://raw.githubusercontent.com/while-coder/GameEmulator/main/games/neogeo/catalog.json) |
+
+旧版的 `VITE_ARCADE_CATALOG_URLS` 列表继续可用，前两项分别对应街机和 Neo Geo，后续项作为附加目录。PSP 游戏通过本地导入。
 
 目录的 `base_url` 指向资源根目录，`screenshots` 和 `download_url` 可使用 `screenshots/xxx.png` 和 `roms/xxx.nes` 这样的相对路径。独立上游地址直接写完整 URL。街机和 Neo Geo 的 ROM 版本另外提供 `rom_name`、`file_name` 和 `dependencies`，目录顶层的 `dependency_files` 记录父 ROM、BIOS 等支持文件。
 
@@ -64,7 +74,7 @@ NES / FC 与街机（含 Neo Geo）使用一致的存档方式：暂停菜单「
 
 两个新入口共用 `packages/console` 播放器，游戏库和设置沿用 NES／街机的组件、样式与布局。设置分为「存档、按键、显示、音频、其他」五类；存档页可按游戏筛选、搜索并切换游戏读档。支持拼音搜索、分类、收藏、排序、下载缓存、游玩时长、暂停、全屏、键盘改键、标准手柄和可编辑触屏布局。GBA / GB / GBC 与 SFC 分别保存设置与数据，GB / GBC 自动使用 10:9 显示比例。Android TV 的自动触屏模式保持隐藏。
 
-GBA / GB / GBC 与 SFC 使用随应用构建的目录，ROM 资源按游戏版本中的地址加载。下载地址没有 ROM 扩展名时，版本可以指定 `file_name`。
+GBA / GB / GBC 与 SFC 的 ROM 资源按游戏版本中的地址加载。下载地址没有 ROM 扩展名时，版本可以指定 `file_name`。
 
 ```json
 {

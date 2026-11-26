@@ -1,8 +1,8 @@
 import { computed, onBeforeUnmount, readonly, ref, shallowRef } from 'vue'
-import { findCachedCatalogGame, findCatalogGame, loadCatalogs, readCachedArcadeCatalogs, type CatalogGame } from '../../../arcade/src/store/catalog'
+import { findCatalogGame, loadCatalogs, type CatalogGame } from '../../../arcade/src/store/catalog'
 import { prepareCatalogGame } from '../../../arcade/src/store/dependencies'
 import { listArchiveSummaries, removeArchive } from '../../../arcade/src/store/library'
-import { acquireGame, loadCatalog, readCachedConsoleCatalog, listGames, removeGame, type Game } from '../../../console/src/store'
+import { acquireGame, loadCatalog, listGames, removeGame, type Game } from '../../../console/src/store'
 import { systems, type ConsoleSystem } from '../../../console/src/systems'
 import { loadRomCatalog, romKey, type RomEntry } from '../../../nes/src/store/romCatalog'
 import { deleteCachedRom, listCachedRomSummaries } from '../../../nes/src/store/romLibrary'
@@ -52,7 +52,7 @@ export type LobbyDownloadProgress = { received: number; total: number | null; la
 type Metadata = Partial<Pick<RomEntry, 'name' | 'screenshot_url' | 'genre' | 'publisher' | 'tags' | 'aliases'
   | 'group_id' | 'group_name' | 'group_default' | 'group_description' | 'group_screenshots' | 'details' | 'download_url'>>
 type LocalGames<T> = { games: T[]; playedAt?: Map<string, number> }
-type Catalog<T> = { games: T[]; incomplete?: boolean }
+type Catalog<T> = { games: T[]; incomplete?: boolean; failed?: boolean }
 
 function useSystemLibrary<T extends Metadata>(platform: typeof platforms[number], options: {
   key: (game: T) => string
@@ -62,7 +62,6 @@ function useSystemLibrary<T extends Metadata>(platform: typeof platforms[number]
   download: (game: T, signal: AbortSignal, report: (progress: LobbyDownloadProgress) => void) => Promise<void>
   removeCache: (game: T) => Promise<void>
   loadOnline?: (signal: AbortSignal, force: boolean) => Promise<Catalog<T>>
-  readOnlineCache?: () => Promise<T[] | undefined>
 }) {
   const system = platform.value
   const collection = useGameCollection<T>(system)
@@ -96,17 +95,12 @@ function useSystemLibrary<T extends Metadata>(platform: typeof platforms[number]
     const localRequest = refreshLocal()
     const catalogRequest = (async () => {
       if (!options.loadOnline) return
-      if (!force && options.readOnlineCache) {
-        const cached = await options.readOnlineCache().catch(() => undefined)
-        controller.signal.throwIfAborted()
-        if (cached !== undefined) online.value = cached
-      }
       const result = await options.loadOnline(controller.signal, force)
       if (disposed) return
       online.value = result.incomplete
         ? [...new Map([...online.value, ...result.games].map(game => [options.key(game), game])).values()]
         : result.games
-      if (result.incomplete) fail()
+      if (result.failed || result.incomplete) fail()
     })().catch(fail)
     await Promise.all([localRequest, catalogRequest])
     if (!disposed) loading.value = false
@@ -167,13 +161,12 @@ function useConsoleLibrary(system: ConsoleSystem, platform: typeof platforms[num
     key: game => game.hash,
     title: game => game.name,
     extraTerms: game => [game.fileName],
-    readOnlineCache: source ? () => readCachedConsoleCatalog(system, source) : undefined,
     loadLocal: async () => ({ games: (await listGames(system)).map(({ file: _, ...game }) => game) }),
     download: async (game, signal, report) => {
       await acquireGame(system, game, signal, (received, total) => report({ received, total }))
     },
     removeCache: game => removeGame(system, game.hash),
-    loadOnline: source ? async signal => ({ games: await loadCatalog(system, source, signal) }) : undefined,
+    loadOnline: source ? async signal => ({ games: await loadCatalog(system, signal) }) : undefined,
   })
 }
 
@@ -213,14 +206,13 @@ export function useLobbyLibrary() {
         dependencies: game.dependencies,
       })),
     }),
-    readOnlineCache: async () => (await readCachedArcadeCatalogs()).flatMap(catalog => catalog.games),
     loadOnline: async (signal, force) => {
-      const { catalogs, errors } = await loadCatalogs(signal, force)
-      return { games: catalogs.flatMap(catalog => catalog.games), incomplete: !!errors.length }
+      const { catalogs, errors, incomplete } = await loadCatalogs(signal, force)
+      return { games: catalogs.flatMap(catalog => catalog.games), incomplete, failed: errors.length > 0 }
     },
     download: async (game, signal, report) => {
       const key = game.sha256.toLowerCase()
-      const match = await findCachedCatalogGame(key) ?? await findCatalogGame(key, signal)
+      const match = await findCatalogGame(key, signal)
       signal.throwIfAborted()
       if (!match) throw new Error('找不到游戏目录和依赖，请刷新游戏库后重试')
       await prepareCatalogGame(match.game, match.catalog, {

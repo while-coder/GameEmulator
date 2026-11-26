@@ -39,3 +39,35 @@ export async function cacheCatalog(key: string, value: unknown, signal?: AbortSi
     })
   } catch { /* The validated catalog remains usable in memory. */ }
 }
+
+export async function loadCatalogWithFallback<T>(
+  source: string | undefined,
+  packaged: string,
+  refresh: (url: string) => Promise<T>,
+  read: (url: string) => Promise<T | undefined>,
+  signal?: AbortSignal,
+): Promise<T> {
+  signal?.throwIfAborted()
+  if (source && source !== packaged) {
+    if (navigator.onLine !== false) {
+      try {
+        await refresh(source)
+      } catch {
+        signal?.throwIfAborted()
+      }
+    }
+    const cached = await read(source)
+    signal?.throwIfAborted()
+    if (cached !== undefined) return cached
+  }
+
+  try {
+    return await refresh(packaged)
+  } catch (error) {
+    signal?.throwIfAborted()
+    const cached = await read(packaged)
+    signal?.throwIfAborted()
+    if (cached !== undefined) return cached
+    throw error
+  }
+}
